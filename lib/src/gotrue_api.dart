@@ -1,12 +1,16 @@
-import 'utils/constants.dart';
-import 'utils/cookie_options.dart';
+import 'constants.dart';
+import 'cookie_options.dart';
+import 'gotrue_response.dart';
 
 class GoTrueApi {
+  String url;
+  Map<String, String> headers;
+  CookieOptions cookieOptions;
+
   GoTrueApi(this.url,
       {this.headers = const {},
       this.cookieOptions = Constants.defaultCookieOptions});
 
-  String url;
-  Map<String, String> headers;
-  CookieOptions cookieOptions;
+  Future<GotrueSessionResponse> signUpWithEmail(
+      String email, String password) async {}
 }

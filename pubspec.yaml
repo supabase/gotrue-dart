@@ -8,7 +8,7 @@ environment:
   sdk: ">=2.7.0 <3.0.0"
 
 dependencies:
-  oauth2: ^1.6.3
+  http: ^0.12.2
 
 dev_dependencies:
   test: ^1.15.4

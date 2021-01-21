@@ -1,11 +1,12 @@
 import 'gotrue_error.dart';
-import 'utils/session.dart';
-import 'utils/user.dart';
+import 'session.dart';
+import 'user.dart';
 
 class GotrueResponse {
   GotrueError error;
+  dynamic rawData;
 
-  GotrueResponse({this.error});
+  GotrueResponse({this.rawData, this.error});
 }
 
 class GotrueBaseResponse extends GotrueResponse {
