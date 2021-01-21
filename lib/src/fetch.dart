@@ -12,12 +12,12 @@ class Fetch {
   GotrueError handleError(dynamic error) {
     if (error is http.Response) {
       try {
-        final errorJson = json.decode(error.body);
-        final message = errorJson['msg'] ??
-            errorJson['message'] ??
-            errorJson['error_description'] ??
-            errorJson['error'] ??
-            json.encode(errorJson);
+        final parsedJson = json.decode(error.body);
+        final message = parsedJson['msg'] ??
+            parsedJson['message'] ??
+            parsedJson['error_description'] ??
+            parsedJson['error'] ??
+            json.encode(parsedJson);
         return GotrueError(message as String);
       } on FormatException catch (_) {
         return GotrueError(error.body);
@@ -31,7 +31,7 @@ class Fetch {
     try {
       final client = http.Client();
       final headers = options?.headers ?? {};
-      final http.Response response = await client.post(url, headers: headers);
+      final http.Response response = await client.get(url, headers: headers);
       if (response.statusCode == 200) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);

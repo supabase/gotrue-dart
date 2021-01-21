@@ -1,5 +1,3 @@
-import 'dart:svg';
-
 class CookieOptions {
   final String name;
   final int lifetime;
@@ -7,5 +5,11 @@ class CookieOptions {
   final String path;
   final String sameSite;
 
-  const CookieOptions(this.name, this.lifetime, this.domain, this.path, this.sameSite);
+  const CookieOptions(
+      {String name, int lifetime, String domain, String path, String sameSite})
+      : name = name ?? 'sb:token',
+        lifetime = lifetime ?? 60 * 60 * 8,
+        domain = domain ?? '',
+        path = path ?? '/',
+        sameSite = sameSite ?? 'lax';
 }

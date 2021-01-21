@@ -1,5 +1,7 @@
 import 'dart:math' show Random;
 
+final Uuid uuid = Uuid();
+
 /// A UUID generator.
 /// https://github.com/dart-lang/usage/blob/master/lib/uuid/uuid.dart
 ///

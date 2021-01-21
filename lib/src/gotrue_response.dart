@@ -9,10 +9,10 @@ class GotrueResponse {
   GotrueResponse({this.rawData, this.error});
 }
 
-class GotrueBaseResponse extends GotrueResponse {
+class GotrueJsonResponse extends GotrueResponse {
   Map<String, dynamic> data;
 
-  GotrueBaseResponse({this.data, GotrueError error}) : super(error: error);
+  GotrueJsonResponse({this.data, GotrueError error}) : super(error: error);
 }
 
 class GotrueSessionResponse extends GotrueResponse {
