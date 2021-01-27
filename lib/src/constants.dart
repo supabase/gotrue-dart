@@ -12,3 +12,10 @@ class Provider {
   static const String gitlab = 'gitlab';
   static const String google = 'google';
 }
+
+class AuthChangeEvent {
+  static const String signedIn = 'SIGNED_IN';
+  static const String signedOut = 'SIGNED_OUT';
+  static const String userUpdated = 'USER_UPDATED';
+  static const String passwordRecovery = 'PASSWORD_RECOVERY';
+}
