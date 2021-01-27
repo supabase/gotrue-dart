@@ -1,6 +1,7 @@
 import 'constants.dart';
 import 'cookie_options.dart';
 import 'gotrue_api.dart';
+import 'gotrue_response.dart';
 import 'session.dart';
 import 'storage.dart';
 import 'subscription.dart';
@@ -38,5 +39,53 @@ class GoTrueClient {
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
 
     // TODO: localStorage and detectSessionInUrl
+  }
+
+  Future<GotrueSessionResponse> signUp(String email, String password) async {
+    final response = await api.signInWithEmail(email, password);
+    if (response.error != null) return response;
+
+    if (response.data?.user?.confirmedAt != null) {
+      _saveSession(response.data);
+      _notifyAllSubscribers(AuthChangeEvent.signedOut);
+    }
+
+    return response;
+  }
+
+  // TODO: not implemented yet
+  void _handleEmailSignIn(String email, String password) {}
+
+  // TODO: not implemented yet
+  void _handleProviderSignIn(Provider provider) {}
+
+  // TODO: not implemented yet
+  void _removeSession() {}
+
+  void _saveSession(Session session) {
+    currentSession = session;
+    currentUser = session.user;
+    final tokenExpirySeconds = session.expiresIn;
+
+    if (autoRefreshToken && tokenExpirySeconds != null) {
+      // TODO: call to _callRefreshToken
+    }
+
+    if (persistSession) {
+      _persistSession(currentSession, tokenExpirySeconds);
+    }
+  }
+
+  // TODO: not implemented yet
+  void _persistSession(Session currentSession, int secondsToExpiry) {}
+
+  // TODO: not implemented yet
+  void _recoverSession() {}
+
+  // TODO: not implemented yet
+  void _callRefreshToken(String refreshToken) {}
+
+  void _notifyAllSubscribers(AuthChangeEvent event) {
+    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
   }
 }

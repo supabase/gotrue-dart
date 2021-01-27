@@ -6,16 +6,18 @@ class Constants {
   static const String defaultStorageKey = 'supabase.auth.token';
 }
 
-class Provider {
-  static const String bitbucket = 'bitbucket';
-  static const String github = 'github';
-  static const String gitlab = 'gitlab';
-  static const String google = 'google';
+enum Provider { bitbucket, github, gitlab, google }
+
+extension ProviderName on Provider {
+  String name() {
+    return toString().split('.').last;
+  }
 }
 
-class AuthChangeEvent {
-  static const String signedIn = 'SIGNED_IN';
-  static const String signedOut = 'SIGNED_OUT';
-  static const String userUpdated = 'USER_UPDATED';
-  static const String passwordRecovery = 'PASSWORD_RECOVERY';
+enum AuthChangeEvent { signedIn, signedOut, userUpdated, passwordRecovery }
+
+extension AuthChangeEventName on AuthChangeEvent {
+  String name() {
+    return toString().split('.').last;
+  }
 }

@@ -121,7 +121,7 @@ class GoTrueApi {
   }
 
   String getUrlForProvider(Provider provider) {
-    return '$url/authorize?provider=$provider';
+    return '$url/authorize?provider=${provider.name()}';
   }
 
   /// Gets the user details.
