@@ -7,7 +7,6 @@ import 'gotrue_api.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
 import 'session.dart';
-import 'storage.dart';
 import 'subscription.dart';
 import 'user.dart';
 import 'user_attributes.dart';
@@ -25,7 +24,6 @@ class GoTrueClient {
   Session currentSession;
 
   bool autoRefreshToken;
-  Storage localStorage;
   Map<String, Subscription> stateChangeEmitters;
 
   Timer _refreshTokenTimer;
@@ -34,15 +32,12 @@ class GoTrueClient {
       {String url,
       Map<String, String> headers,
       bool autoRefreshToken,
-      Storage localStorage,
       CookieOptions cookieOptions}) {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
     final _url = url ?? Constants.defaultGotrueUrl;
     final _header = headers ?? Constants.defaultHeaders;
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
-
-    // TODO: localStorage and detectSessionInUrl
   }
 
   /// Returns the user data, if there is a logged in user.
