@@ -1,5 +1,6 @@
 import 'gotrue_error.dart';
 import 'session.dart';
+import 'subscription.dart';
 import 'user.dart';
 
 class GotrueResponse {
@@ -37,4 +38,10 @@ class GotrueUserResponse extends GotrueResponse {
   }
 
   GotrueUserResponse({this.user, GotrueError error}) : super(error: error);
+}
+
+class GotrueSubscription extends GotrueResponse {
+  Subscription data;
+
+  GotrueSubscription({this.data, GotrueError error}) : super(error: error);
 }

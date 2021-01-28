@@ -10,6 +10,7 @@ import 'storage.dart';
 import 'subscription.dart';
 import 'user.dart';
 import 'user_attributes.dart';
+import 'uuid.dart';
 
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
@@ -103,6 +104,60 @@ class GoTrueClient {
     return response;
   }
 
+  /// Gets the session data from a oauth2 callback URL
+  Future<GotrueSessionResponse> getSessionFromUrl(Uri url,
+      {bool storeSession = true}) async {
+    final errorDescription = url.queryParameters['error_description'];
+    if (errorDescription != null) {
+      return GotrueSessionResponse(error: GotrueError(errorDescription));
+    }
+
+    final accessToken = url.queryParameters['access_token'];
+    final expiresIn = url.queryParameters['expires_in'];
+    final refreshToken = url.queryParameters['refresh_token'];
+    final tokenType = url.queryParameters['token_type'];
+
+    if (accessToken == null) {
+      return GotrueSessionResponse(
+          error: GotrueError('No access_token detected.'));
+    }
+    if (expiresIn == null) {
+      return GotrueSessionResponse(
+          error: GotrueError('No expires_in detected.'));
+    }
+    if (refreshToken == null) {
+      return GotrueSessionResponse(
+          error: GotrueError('No refresh_token detected.'));
+    }
+    if (tokenType == null) {
+      return GotrueSessionResponse(
+          error: GotrueError('No token_type detected.'));
+    }
+
+    final response = await api.getUser(accessToken);
+    if (response.error != null) {
+      return GotrueSessionResponse(error: response.error);
+    }
+
+    final session = Session(
+        accessToken: accessToken,
+        expiresIn: expiresIn as int,
+        refreshToken: refreshToken,
+        tokenType: tokenType,
+        user: response.user);
+
+    if (storeSession == true) {
+      _saveSession(session);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+      final type = url.queryParameters['type'];
+      if (type == 'recovery') {
+        _notifyAllSubscribers(AuthChangeEvent.passwordRecovery);
+      }
+    }
+
+    return GotrueSessionResponse(data: session);
+  }
+
   /// Updates user data, if there is a logged in user.
   Future<GotrueUserResponse> update(UserAttributes attributes) async {
     if (currentSession?.accessToken == null) {
@@ -133,6 +188,20 @@ class GoTrueClient {
     return GotrueResponse();
   }
 
+  // Receive a notification every time an auth event happens.
+  GotrueSubscription onAuthStateChange(Callback callback) {
+    final id = uuid.generateV4();
+    final self = this;
+    final subscription = Subscription(
+        id: id,
+        callback: callback,
+        unsubscribe: () {
+          self.stateChangeEmitters.remove(id);
+        });
+    stateChangeEmitters[id] = subscription;
+    return GotrueSubscription(data: subscription);
+  }
+
   Future<GotrueSessionResponse> _handleEmailSignIn(
       String email, String password) async {
     final response = await api.signInWithEmail(email, password);
@@ -152,9 +221,6 @@ class GoTrueClient {
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
-  // TODO: not implemented yet
-  void _removeSession() {}
-
   void _saveSession(Session session) {
     currentSession = session;
     currentUser = session.user;
@@ -172,6 +238,13 @@ class GoTrueClient {
     if (persistSession && currentUser != null) {
       _persistSession(currentSession, tokenExpirySeconds);
     }
+  }
+
+  void _removeSession() {
+    currentSession = null;
+    currentUser = null;
+
+    // TODO: remove from persistant storage
   }
 
   // TODO: not implemented yet
