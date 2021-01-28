@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'constants.dart';
 import 'cookie_options.dart';
@@ -24,7 +25,6 @@ class GoTrueClient {
   Session currentSession;
 
   bool autoRefreshToken;
-  bool persistSession;
   Storage localStorage;
   Map<String, Subscription> stateChangeEmitters;
 
@@ -34,11 +34,9 @@ class GoTrueClient {
       {String url,
       Map<String, String> headers,
       bool autoRefreshToken,
-      bool persistSession,
       Storage localStorage,
       CookieOptions cookieOptions}) {
     this.autoRefreshToken = autoRefreshToken ?? true;
-    this.persistSession = persistSession ?? true;
 
     final _url = url ?? Constants.defaultGotrueUrl;
     final _header = headers ?? Constants.defaultHeaders;
@@ -202,6 +200,48 @@ class GoTrueClient {
     return GotrueSubscription(data: subscription);
   }
 
+  /// Recover session from persisted session json string.
+  /// Persisted session json has the format { currentSession, expiresAt }
+  ///
+  /// currentSession: session json object, expiresAt: timestamp in seconds
+  Future<GotrueSessionResponse> recoverSession(String jsonStr) async {
+    try {
+      final persistedData = json.decode(jsonStr);
+      final currentSession =
+          persistedData['currentSession'] as Map<String, dynamic>;
+      final expiresAt = persistedData['expiresAt'] as int;
+      if (currentSession == null) {
+        return GotrueSessionResponse(
+            error: GotrueError('Missing currentSession.'));
+      }
+      if (expiresAt == null) {
+        return GotrueSessionResponse(error: GotrueError('Missing expiresAt.'));
+      }
+
+      final session = Session.fromJson(currentSession);
+      if (session.user == null) {
+        return GotrueSessionResponse(
+            error: GotrueError('Current session is missing data.'));
+      }
+
+      final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+      if (expiresAt < timeNow) {
+        if (autoRefreshToken && session.refreshToken != null) {
+          final response =
+              await _callRefreshToken(refreshToken: session.refreshToken);
+          return response;
+        } else {
+          return GotrueSessionResponse(error: GotrueError('Session expired.'));
+        }
+      } else {
+        _saveSession(session);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
   Future<GotrueSessionResponse> _handleEmailSignIn(
       String email, String password) async {
     final response = await api.signInWithEmail(email, password);
@@ -234,24 +274,12 @@ class GoTrueClient {
         _callRefreshToken();
       });
     }
-
-    if (persistSession && currentUser != null) {
-      _persistSession(currentSession, tokenExpirySeconds);
-    }
   }
 
   void _removeSession() {
     currentSession = null;
     currentUser = null;
-
-    // TODO: remove from persistant storage
   }
-
-  // TODO: not implemented yet
-  void _persistSession(Session currentSession, int secondsToExpiry) {}
-
-  // TODO: not implemented yet
-  void _recoverSession() {}
 
   Future<GotrueSessionResponse> _callRefreshToken({String refreshToken}) async {
     final token = refreshToken ?? currentSession?.refreshToken;
