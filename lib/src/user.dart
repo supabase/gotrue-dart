@@ -23,7 +23,7 @@ class User {
       this.updatedAt});
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['access_token'] as String,
+        id: json['id'] as String,
         appMetadata: json['app_metadata'] as Map<String, dynamic>,
         userMetadata: json['user_metadata'] as Map<String, dynamic>,
         aud: json['aud'] as String,

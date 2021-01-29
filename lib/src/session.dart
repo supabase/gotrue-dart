@@ -19,6 +19,6 @@ class Session {
         expiresIn: json['expires_in'] as int,
         refreshToken: json['refresh_token'] as String,
         tokenType: json['token_type'] as String,
-        user: User.fromJson(json['statusText'] as Map<String, dynamic>),
+        user: User.fromJson(json['user'] as Map<String, dynamic>),
       );
 }
