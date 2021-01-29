@@ -34,4 +34,17 @@ class User {
         role: json['role'] as String,
         updatedAt: json['updated_at'] as String,
       );
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'app_metadata': appMetadata,
+        'user_metadata': userMetadata,
+        'aud': aud,
+        'email': email,
+        'created_at': createdAt,
+        'confirmed_at': confirmedAt,
+        'last_sign_in_at': lastSignInAt,
+        'role': role,
+        'updated_at': updatedAt,
+      };
 }
