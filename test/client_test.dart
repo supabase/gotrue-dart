@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:gotrue_client/gotrue_client.dart';
-import 'package:gotrue_client/src/session.dart';
 import 'package:test/test.dart';
 
 void main() {
