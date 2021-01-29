@@ -1,3 +1,7 @@
+## [0.0.1-dev.3]
+
+- chore: export Session and User classes
+
 ## [0.0.1-dev.2]
 
 - fix: session and user parsing from json
