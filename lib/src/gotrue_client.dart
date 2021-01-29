@@ -295,6 +295,6 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
+    stateChangeEmitters?.forEach((k, v) => v.callback(event, currentSession));
   }
 }
