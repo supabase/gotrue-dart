@@ -1,3 +1,7 @@
+## [0.0.1-dev.4]
+
+- fix: email verification required on sign up
+
 ## [0.0.1-dev.3]
 
 - chore: export Session and User classes
