@@ -25,6 +25,9 @@ class GoTrueApi {
       final response = await fetch.post('$url/signup', body, options: options);
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
+      } else if (response.rawData['access_token'] == null) {
+        // email validation required
+        return GotrueSessionResponse();
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
