@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:gotrue_client/gotrue_client.dart';
+import 'package:gotrue/gotrue.dart';
 import 'package:test/test.dart';
 
 void main() {
