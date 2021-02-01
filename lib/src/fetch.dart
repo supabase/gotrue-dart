@@ -9,6 +9,10 @@ import 'gotrue_response.dart';
 final Fetch fetch = Fetch();
 
 class Fetch {
+  bool isSuccessStatusCode(int code) {
+    return code >= 200 && code <= 299;
+  }
+
   GotrueError handleError(dynamic error) {
     if (error is http.Response) {
       try {
@@ -32,7 +36,7 @@ class Fetch {
       final client = http.Client();
       final headers = options?.headers ?? {};
       final http.Response response = await client.get(url, headers: headers);
-      if (response.statusCode == 200) {
+      if (isSuccessStatusCode(response.statusCode)) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);
         } else {
@@ -55,7 +59,7 @@ class Fetch {
       final headers = options?.headers ?? {};
       final http.Response response =
           await client.post(url, headers: headers, body: bodyStr);
-      if (response.statusCode == 200) {
+      if (isSuccessStatusCode(response.statusCode)) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);
         } else {
@@ -78,7 +82,7 @@ class Fetch {
       final headers = options?.headers ?? {};
       final http.Response response =
           await client.put(url, headers: headers, body: bodyStr);
-      if (response.statusCode == 200) {
+      if (isSuccessStatusCode(response.statusCode)) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);
         } else {
