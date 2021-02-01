@@ -1,3 +1,9 @@
+## [0.0.1-dev.5]
+
+- fix: updateUser bug
+- fix: http success statusCode check
+- fix: stateChangeEmitters uninitialized value
+
 ## [0.0.1-dev.4]
 
 - fix: email verification required on sign up
