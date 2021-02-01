@@ -24,7 +24,7 @@ class GoTrueClient {
   Session currentSession;
 
   bool autoRefreshToken;
-  Map<String, Subscription> stateChangeEmitters;
+  Map<String, Subscription> stateChangeEmitters = {};
 
   Timer _refreshTokenTimer;
 

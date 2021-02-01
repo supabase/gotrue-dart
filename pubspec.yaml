@@ -1,11 +1,11 @@
 name: gotrue
 description: A dart client library for the GoTrue API.
 version: 0.0.1-dev.4
-homepage: "https://supabase.io"
-repository: "https://github.com/supabase/gotrue-dart"
+homepage: 'https://supabase.io'
+repository: 'https://github.com/supabase/gotrue-dart'
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   http: ^0.12.2
