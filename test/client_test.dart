@@ -90,8 +90,7 @@ void main() {
     );
     final data = res.data;
     final error = res.error;
-    expect(
-        error.message, 'No user found with that email, or password invalid.');
+    expect(error.message, isNotNull);
     expect(data, isNull);
   });
 }
