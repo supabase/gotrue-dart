@@ -1,5 +1,4 @@
 import 'package:gotrue/gotrue.dart';
-import 'package:gotrue/src/constants.dart';
 import 'package:test/test.dart';
 
 void main() {

@@ -1,9 +1,9 @@
-import 'constants.dart';
 import 'cookie_options.dart';
 import 'fetch.dart';
 import 'fetch_options.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
+import 'provider.dart';
 import 'session.dart';
 import 'user.dart';
 import 'user_attributes.dart';

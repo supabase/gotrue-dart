@@ -6,6 +6,7 @@ import 'cookie_options.dart';
 import 'gotrue_api.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
+import 'provider.dart';
 import 'session.dart';
 import 'subscription.dart';
 import 'user.dart';
