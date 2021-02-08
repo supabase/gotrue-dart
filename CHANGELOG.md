@@ -1,3 +1,7 @@
+## [0.0.1-dev.6]
+
+- chore: export Provider class
+
 ## [0.0.1-dev.5]
 
 - fix: updateUser bug
