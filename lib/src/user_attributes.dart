@@ -9,8 +9,8 @@ class UserAttributes {
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> values = {};
     if (email != null) values['email'] = email;
-    if (password != null) values['password'] = email;
-    if (emailChangeToken != null) values['email_change_token'] = email;
+    if (password != null) values['password'] = password;
+    if (emailChangeToken != null) values['email_change_token'] = email_change_token;
     if (data != null) values['data'] = data;
     return values;
   }
