@@ -1,5 +1,3 @@
-part of gotrue;
-
 class UserAttributes {
   String email;
   String password;
