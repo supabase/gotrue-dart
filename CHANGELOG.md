@@ -1,3 +1,8 @@
+## [0.0.1-dev.7]
+
+- fix: Password and other attributes defaulting to email field.
+- chore: export UserAttributes
+
 ## [0.0.1-dev.6]
 
 - chore: export Provider class
