@@ -1,3 +1,7 @@
+## [0.0.1-dev.8]
+
+- chore: Migrate to Null Safety
+
 ## [0.0.1-dev.7]
 
 - fix: Password and other attributes defaulting to email field.

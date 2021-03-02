@@ -1,7 +1,7 @@
 class FetchOptions {
   Map<String, String> headers;
-  bool noResolveJson;
+  bool? noResolveJson;
 
-  FetchOptions(Map<String, String> headers, {this.noResolveJson})
+  FetchOptions(Map<String, String>? headers, {this.noResolveJson})
       : headers = headers ?? {};
 }

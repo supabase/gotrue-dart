@@ -11,9 +11,9 @@ import 'user_attributes.dart';
 class GoTrueApi {
   String url;
   Map<String, String> headers;
-  CookieOptions cookieOptions;
+  CookieOptions? cookieOptions;
 
-  GoTrueApi(this.url, {Map<String, String> headers, this.cookieOptions})
+  GoTrueApi(this.url, {Map<String, String>? headers, this.cookieOptions})
       : headers = headers ?? {};
 
   /// Creates a new user using their email address.
@@ -69,7 +69,7 @@ class GoTrueApi {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>);
+            data: response.rawData as Map<String, dynamic>?);
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
@@ -86,7 +86,7 @@ class GoTrueApi {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>);
+            data: response.rawData as Map<String, dynamic>?);
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
@@ -103,7 +103,7 @@ class GoTrueApi {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>);
+            data: response.rawData as Map<String, dynamic>?);
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));

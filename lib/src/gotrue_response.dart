@@ -4,44 +4,44 @@ import 'subscription.dart';
 import 'user.dart';
 
 class GotrueResponse {
-  GotrueError error;
+  GotrueError? error;
   dynamic rawData;
 
   GotrueResponse({this.rawData, this.error});
 }
 
 class GotrueJsonResponse extends GotrueResponse {
-  Map<String, dynamic> data;
+  Map<String, dynamic>? data;
 
-  GotrueJsonResponse({this.data, GotrueError error}) : super(error: error);
+  GotrueJsonResponse({this.data, GotrueError? error}) : super(error: error);
 }
 
 class GotrueSessionResponse extends GotrueResponse {
-  Session data;
+  Session? data;
 
-  String provider;
-  String url;
+  String? provider;
+  String? url;
 
-  User get user {
+  User? get user {
     return data?.user;
   }
 
-  GotrueSessionResponse({this.data, this.provider, this.url, GotrueError error})
+  GotrueSessionResponse({this.data, this.provider, this.url, GotrueError? error})
       : super(error: error);
 }
 
 class GotrueUserResponse extends GotrueResponse {
-  User user;
+  User? user;
 
-  User get data {
+  User? get data {
     return user;
   }
 
-  GotrueUserResponse({this.user, GotrueError error}) : super(error: error);
+  GotrueUserResponse({this.user, GotrueError? error}) : super(error: error);
 }
 
 class GotrueSubscription extends GotrueResponse {
-  Subscription data;
+  Subscription? data;
 
-  GotrueSubscription({this.data, GotrueError error}) : super(error: error);
+  GotrueSubscription({this.data, GotrueError? error}) : super(error: error);
 }

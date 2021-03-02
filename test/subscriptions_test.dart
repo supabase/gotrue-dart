@@ -7,18 +7,18 @@ void main() {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
 
-  GoTrueClient client;
-  GotrueSubscription res;
-  Subscription subscription;
+  late GoTrueClient client;
+  late GotrueSubscription res;
+  late Subscription subscription;
 
   setUp(() {
-    client ??= GoTrueClient(url: gotrueUrl, headers: {
+    client = GoTrueClient(url: gotrueUrl, headers: {
       'Authorization': 'Bearer $annonToken',
       'apikey': annonToken,
     });
 
-    res ??= client.onAuthStateChange((event, session) {});
-    subscription ??= res.data;
+    res = client.onAuthStateChange((event, session) {});
+    subscription = res.data!;
   });
 
   test('Subscribe a listener', () async {
@@ -26,7 +26,7 @@ void main() {
   });
 
   test('Unsubscribe a listener', () async {
-    subscription?.unsubscribe();
+    subscription.unsubscribe();
     expect(client.stateChangeEmitters.keys.length, 0);
   });
 }
