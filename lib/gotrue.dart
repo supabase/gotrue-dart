@@ -1,5 +1,6 @@
 library gotrue;
 
+export 'src/constants.dart' show AuthChangeEvent;
 export 'src/gotrue_client.dart';
 export 'src/provider.dart';
 export 'src/session.dart';

@@ -3,25 +3,28 @@ import 'dart:convert';
 import 'user.dart';
 
 class Session {
-  String accessToken;
-  int? expiresIn;
-  String? refreshToken;
-  String? tokenType;
-  User? user;
+  final String accessToken;
+  final int? expiresIn;
+  final String? refreshToken;
+  final String? tokenType;
+  final User? user;
 
-  Session(
-      {required this.accessToken,
-      required this.expiresIn,
-      this.refreshToken,
-      this.tokenType,
-      required this.user});
+  Session({
+    required this.accessToken,
+    required this.expiresIn,
+    required this.refreshToken,
+    required this.tokenType,
+    required this.user,
+  });
 
   factory Session.fromJson(Map<String, dynamic> json) => Session(
         accessToken: json['access_token'] as String,
         expiresIn: json['expires_in'] as int,
         refreshToken: json['refresh_token'] as String?,
         tokenType: json['token_type'] as String?,
-        user: User.fromJson(json['user'] as Map<String, dynamic>? ?? {}),
+        user: json['user'] != null
+            ? User.fromJson(json['user'] as Map<String, dynamic>)
+            : null,
       );
 
   Map<String, dynamic> toJson() => {

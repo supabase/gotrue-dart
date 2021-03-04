@@ -52,12 +52,14 @@ void main() {
   });
 
   test('Get user', () async {
+    await client.signIn(email: email, password: password);
     final user = client.user();
     expect(user?.id is String, true);
     expect(user?.appMetadata['provider'], 'email');
   });
 
   test('Update user', () async {
+    await client.signIn(email: email, password: password);
     final response =
         await client.update(UserAttributes(data: {'hello': 'world'}));
     final data = response.data;
@@ -68,17 +70,22 @@ void main() {
   });
 
   test('Get user after updating', () async {
+    await client.signIn(email: email, password: password);
+    await client.update(UserAttributes(data: {'hello': 'world'}));
     final user = client.user();
     expect(user?.id is String, true);
     expect(user?.userMetadata['hello'], 'world');
   });
 
   test('signOut', () async {
+    await client.signIn(email: email, password: password);
     final res = await client.signOut();
     expect(res.error, isNull);
   });
 
   test('Get user after logging out', () async {
+    await client.signIn(email: email, password: password);
+    await client.signOut();
     final user = client.user();
     expect(user, isNull);
   });

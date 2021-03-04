@@ -138,7 +138,7 @@ class GoTrueClient {
         expiresIn: expiresIn as int,
         refreshToken: refreshToken,
         tokenType: tokenType,
-        user: response.user!);
+        user: response.user);
 
     if (storeSession == true) {
       _saveSession(session);
