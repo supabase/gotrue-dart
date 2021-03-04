@@ -132,7 +132,7 @@ class GoTrueApi {
     try {
       final headers = {...this.headers};
       headers['Authorization'] = 'Bearer $jwt';
-      final options = FetchOptions(headers, noResolveJson: false);
+      final options = FetchOptions(headers, noResolveJson: true);
       final response = await fetch.get('$url/user', options: options);
       if (response.error != null) {
         return GotrueUserResponse(error: response.error);
