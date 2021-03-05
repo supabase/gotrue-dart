@@ -5,10 +5,10 @@ void main() {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
 
-  GoTrueClient client;
+  late GoTrueClient client;
 
   setUp(() {
-    client ??= GoTrueClient(url: gotrueUrl, headers: {
+    client = GoTrueClient(url: gotrueUrl, headers: {
       'Authorization': 'Bearer $annonToken',
       'apikey': annonToken,
     });

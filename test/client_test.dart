@@ -11,10 +11,10 @@ void main() {
   final email = 'fake$timestamp@email.com';
   const password = 'secret';
 
-  GoTrueClient client;
+  late GoTrueClient client;
 
-  setUp(() {
-    client ??= GoTrueClient(url: gotrueUrl, headers: {
+  setUpAll(() {
+    client = GoTrueClient(url: gotrueUrl, headers: {
       'Authorization': 'Bearer $annonToken',
       'apikey': annonToken,
     });
@@ -36,25 +36,25 @@ void main() {
     final data = response.data;
     final error = response.error;
     expect(error, isNull);
-    expect(data.accessToken is String, true);
-    expect(data.refreshToken is String, true);
-    expect(data.user.id is String, true);
+    expect(data?.accessToken is String, true);
+    expect(data?.refreshToken is String, true);
+    expect(data?.user?.id is String, true);
   });
 
   test('signIn()', () async {
     final response = await client.signIn(email: email, password: password);
-    final data = response.data;
+    final data = response.data!;
     final error = response.error;
     expect(error, isNull);
     expect(data.accessToken is String, true);
     expect(data.refreshToken is String, true);
-    expect(data.user.id is String, true);
+    expect(data.user?.id is String, true);
   });
 
   test('Get user', () async {
     final user = client.user();
-    expect(user.id is String, true);
-    expect(user.appMetadata['provider'], 'email');
+    expect(user?.id is String, true);
+    expect(user?.appMetadata['provider'], 'email');
   });
 
   test('Update user', () async {
@@ -63,14 +63,14 @@ void main() {
     final data = response.data;
     final error = response.error;
     expect(error, isNull);
-    expect(data.id is String, true);
-    expect(data.userMetadata['hello'], 'world');
+    expect(data?.id is String, true);
+    expect(data?.userMetadata['hello'], 'world');
   });
 
   test('Get user after updating', () async {
     final user = client.user();
-    expect(user.id is String, true);
-    expect(user.userMetadata['hello'], 'world');
+    expect(user?.id is String, true);
+    expect(user?.userMetadata['hello'], 'world');
   });
 
   test('signOut', () async {
@@ -89,7 +89,7 @@ void main() {
       password: '${password}2',
     );
     final data = res.data;
-    final error = res.error;
+    final error = res.error!;
     expect(error.message, isNotNull);
     expect(data, isNull);
   });

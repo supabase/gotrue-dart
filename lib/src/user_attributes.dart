@@ -1,7 +1,7 @@
 class UserAttributes {
-  String email;
-  String password;
-  String emailChangeToken;
+  String? email;
+  String? password;
+  String? emailChangeToken;
   dynamic data;
 
   UserAttributes({this.email, this.password, this.emailChangeToken, this.data});

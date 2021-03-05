@@ -31,11 +31,12 @@ class Fetch {
     }
   }
 
-  Future<GotrueResponse> get(String url, {FetchOptions options}) async {
+  Future<GotrueResponse> get(String url, {FetchOptions? options}) async {
     try {
       final client = http.Client();
       final headers = options?.headers ?? {};
-      final http.Response response = await client.get(url, headers: headers);
+      final http.Response response =
+          await client.get(Uri.parse(url), headers: headers);
       if (isSuccessStatusCode(response.statusCode)) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);
@@ -52,13 +53,13 @@ class Fetch {
   }
 
   Future<GotrueResponse> post(String url, dynamic body,
-      {FetchOptions options}) async {
+      {FetchOptions? options}) async {
     try {
       final client = http.Client();
       final bodyStr = json.encode(body ?? {});
       final headers = options?.headers ?? {};
       final http.Response response =
-          await client.post(url, headers: headers, body: bodyStr);
+          await client.post(Uri.parse(url), headers: headers, body: bodyStr);
       if (isSuccessStatusCode(response.statusCode)) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);
@@ -75,13 +76,13 @@ class Fetch {
   }
 
   Future<GotrueResponse> put(String url, dynamic body,
-      {FetchOptions options}) async {
+      {FetchOptions? options}) async {
     try {
       final client = http.Client();
       final bodyStr = json.encode(body ?? {});
       final headers = options?.headers ?? {};
       final http.Response response =
-          await client.put(url, headers: headers, body: bodyStr);
+          await client.put(Uri.parse(url), headers: headers, body: bodyStr);
       if (isSuccessStatusCode(response.statusCode)) {
         if (options?.noResolveJson == true) {
           return GotrueResponse(rawData: response.body);
