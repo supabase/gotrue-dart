@@ -2,11 +2,11 @@ class User {
   String id;
   Map<String, dynamic> appMetadata;
   Map<String, dynamic> userMetadata;
-  String? aud;
-  String? email;
+  String aud;
+  String email;
   String createdAt;
-  String confirmedAt;
-  String lastSignInAt;
+  String? confirmedAt;
+  String? lastSignInAt;
   String role;
   String updatedAt;
 
@@ -28,11 +28,11 @@ class User {
         id: json['id'] as String,
         appMetadata: json['app_metadata'] as Map<String, dynamic>?,
         userMetadata: json['user_metadata'] as Map<String, dynamic>?,
-        aud: json['aud'] as String?,
-        email: json['email'] as String?,
+        aud: json['aud'] as String,
+        email: json['email'] as String,
         createdAt: json['created_at'] as String,
-        confirmedAt: json['confirmed_at'] as String,
-        lastSignInAt: json['last_sign_in_at'] as String,
+        confirmedAt: json['confirmed_at'] as String?,
+        lastSignInAt: json['last_sign_in_at'] as String?,
         role: json['role'] as String,
         updatedAt: json['updated_at'] as String,
       );
