@@ -202,7 +202,7 @@ class GoTrueClient {
   /// currentSession: session json object, expiresAt: timestamp in seconds
   Future<GotrueSessionResponse> recoverSession(String jsonStr) async {
     try {
-      final persistedData = json.decode(jsonStr);
+      final persistedData = json.decode(jsonStr) as Map<String, dynamic>;
       final currentSession =
           persistedData['currentSession'] as Map<String, dynamic>?;
       final expiresAt = persistedData['expiresAt'] as int?;

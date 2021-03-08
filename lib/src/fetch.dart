@@ -16,7 +16,7 @@ class Fetch {
   GotrueError handleError(dynamic error) {
     if (error is http.Response) {
       try {
-        final parsedJson = json.decode(error.body);
+        final parsedJson = json.decode(error.body) as Map<String, dynamic>;
         final message = parsedJson['msg'] ??
             parsedJson['message'] ??
             parsedJson['error_description'] ??

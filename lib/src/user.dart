@@ -17,8 +17,8 @@ class User {
       required this.aud,
       required this.email,
       required this.createdAt,
-      required this.confirmedAt,
-      required this.lastSignInAt,
+      this.confirmedAt,
+      this.lastSignInAt,
       required this.role,
       required this.updatedAt})
       : appMetadata = appMetadata ?? {},
