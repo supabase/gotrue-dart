@@ -1,3 +1,9 @@
+## [0.0.1-dev.9]
+
+- fix: User nullable params
+- fix: Session nullable params
+- fix: lint errors
+
 ## [0.0.1-dev.8]
 
 - chore: Migrate to Null Safety
