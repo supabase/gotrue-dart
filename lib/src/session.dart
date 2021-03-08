@@ -11,10 +11,10 @@ class Session {
 
   Session({
     required this.accessToken,
-    required this.expiresIn,
-    required this.refreshToken,
-    required this.tokenType,
-    required this.user,
+    this.expiresIn,
+    this.refreshToken,
+    this.tokenType,
+    this.user,
   });
 
   factory Session.fromJson(Map<String, dynamic> json) => Session(
