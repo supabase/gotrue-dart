@@ -16,7 +16,7 @@ Oauth2:
 
 Persist/restore session:
 
-- Users can easily store previous session by calling `await supabaseClient.auth.recoverSession()`
+- Users can restore previous session by calling `await supabaseClient.auth.recoverSession()`
 - Exposed `recoverSession` method allows manual session recovery from the given json string.
 
 ## Contributing
