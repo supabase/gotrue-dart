@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:sembast/sembast.dart';
-import 'package:sembast/sembast_io.dart';
+import 'package:path/path.dart' as path;
 
 import 'constants.dart';
 import 'cookie_options.dart';
+import 'cross_platform/sembast.dart';
 import 'gotrue_api.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
@@ -30,7 +30,7 @@ class GoTrueClient {
 
   late final bool autoRefreshToken;
   late final Database persistSessionDb;
-  late final Future openDb;
+  bool isPersistSessionDbOpen = false;
 
   Map<String, Subscription> stateChangeEmitters = {};
 
@@ -46,8 +46,6 @@ class GoTrueClient {
     final _url = url ?? Constants.defaultGotrueUrl;
     final _header = headers ?? Constants.defaultHeaders;
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
-
-    openDb = openPersistSessionDb();
   }
 
   /// Returns the user data, if there is a logged in user.
@@ -216,6 +214,8 @@ class GoTrueClient {
     try {
       String persistSessionString;
       if (jsonStr == null) {
+        await openPersistSessionDb();
+
         final store = StoreRef.main();
         persistSessionString = await store
             .record(Constants.defaultStorageKey)
@@ -285,6 +285,8 @@ class GoTrueClient {
     currentUser = session.user;
     final tokenExpirySeconds = session.expiresIn;
     final store = StoreRef.main();
+
+    await openPersistSessionDb();
     await store
         .record(Constants.defaultStorageKey)
         .put(persistSessionDb, session.persistSessionString);
@@ -302,6 +304,8 @@ class GoTrueClient {
   Future<void> _removeSession() async {
     currentSession = null;
     currentUser = null;
+
+    await openPersistSessionDb();
 
     await StoreRef.main()
         .record(Constants.defaultStorageKey)
@@ -331,8 +335,11 @@ class GoTrueClient {
     stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession!));
   }
 
-  Future<void> openPersistSessionDb() async {
-    persistSessionDb = await databaseFactoryIo.openDatabase(
-        '${Directory.systemTemp.path}/${Constants.persistSessionDbFileName}');
+  Future openPersistSessionDb() async {
+    if (!isPersistSessionDbOpen) {
+      persistSessionDb = await getDatabaseFactory().openDatabase(
+          '${path.current}/${Constants.persistSessionDbFileName}');
+      isPersistSessionDbOpen = true;
+    }
   }
 }
