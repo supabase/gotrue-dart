@@ -29,12 +29,14 @@ class GoTrueClient {
   Session? currentSession;
 
   late final bool autoRefreshToken;
-  late final Database persistSessionDb;
-  bool isPersistSessionDbOpen = false;
+
+  late final Database _persistSessionDb;
 
   Map<String, Subscription> stateChangeEmitters = {};
 
   Timer? _refreshTokenTimer;
+
+  bool _isPersistSessionDbOpen = false;
 
   GoTrueClient(
       {String? url,
@@ -219,7 +221,7 @@ class GoTrueClient {
         final store = StoreRef.main();
         persistSessionString = await store
             .record(Constants.defaultStorageKey)
-            .get(persistSessionDb) as String;
+            .get(_persistSessionDb) as String;
       } else {
         persistSessionString = jsonStr;
       }
@@ -289,7 +291,7 @@ class GoTrueClient {
     await openPersistSessionDb();
     await store
         .record(Constants.defaultStorageKey)
-        .put(persistSessionDb, session.persistSessionString);
+        .put(_persistSessionDb, session.persistSessionString);
 
     if (autoRefreshToken && tokenExpirySeconds != null) {
       if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
@@ -308,7 +310,7 @@ class GoTrueClient {
     await openPersistSessionDb();
     await StoreRef.main()
         .record(Constants.defaultStorageKey)
-        .delete(persistSessionDb);
+        .delete(_persistSessionDb);
   }
 
   Future<GotrueSessionResponse> _callRefreshToken(
@@ -335,10 +337,10 @@ class GoTrueClient {
   }
 
   Future openPersistSessionDb() async {
-    if (!isPersistSessionDbOpen) {
-      persistSessionDb = await getDatabaseFactory().openDatabase(
+    if (!_isPersistSessionDbOpen) {
+      _persistSessionDb = await getDatabaseFactory().openDatabase(
           '${path.getBasePath()}/${Constants.persistSessionDbFileName}');
-      isPersistSessionDbOpen = true;
+      _isPersistSessionDbOpen = true;
     }
   }
 }

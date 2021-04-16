@@ -16,8 +16,8 @@ Oauth2:
 
 Persist/restore session:
 
-- No persist storage provided. Users can easily store session as json with any Flutter storage library.
-- Expose `recoverSession` method. It's used to recover session from a saved json string.
+- Users can easily store previous session by calling `await supabaseClient.auth.recoverSession()`
+- Exposed `recoverSession` method allows manual session recovery from the given json string.
 
 ## Contributing
 
