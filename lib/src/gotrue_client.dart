@@ -2,10 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:sembast/sembast.dart';
-import 'package:path/path.dart' as path;
 
 import 'constants.dart';
 import 'cookie_options.dart';
+import 'cross_platform/path.dart' as path;
 import 'cross_platform/sembast.dart';
 import 'gotrue_api.dart';
 import 'gotrue_error.dart';
@@ -306,7 +306,6 @@ class GoTrueClient {
     currentUser = null;
 
     await openPersistSessionDb();
-
     await StoreRef.main()
         .record(Constants.defaultStorageKey)
         .delete(persistSessionDb);
@@ -338,7 +337,7 @@ class GoTrueClient {
   Future openPersistSessionDb() async {
     if (!isPersistSessionDbOpen) {
       persistSessionDb = await getDatabaseFactory().openDatabase(
-          '${path.current}/${Constants.persistSessionDbFileName}');
+          '${path.getBasePath()}/${Constants.persistSessionDbFileName}');
       isPersistSessionDbOpen = true;
     }
   }
