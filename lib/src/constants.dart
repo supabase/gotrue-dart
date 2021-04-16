@@ -4,6 +4,7 @@ class Constants {
   static const Map<String, String> defaultHeaders = {};
   static const int defaultExpiryMargin = 60 * 1000;
   static const String defaultStorageKey = 'supabase.auth.token';
+  static const String persistSessionDbFileName = 'persist-session.db';
 }
 
 enum AuthChangeEvent { signedIn, signedOut, userUpdated, passwordRecovery }
