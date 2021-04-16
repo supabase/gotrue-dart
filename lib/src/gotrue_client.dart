@@ -1,5 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
+import 'package:sembast/sembast.dart';
+import 'package:sembast/sembast_io.dart';
 
 import 'constants.dart';
 import 'cookie_options.dart';
@@ -24,7 +28,10 @@ class GoTrueClient {
   /// The session object for the currently logged in user or null.
   Session? currentSession;
 
-  late bool autoRefreshToken;
+  late final bool autoRefreshToken;
+  late final Database persistSessionDb;
+  late final Future openDb;
+
   Map<String, Subscription> stateChangeEmitters = {};
 
   Timer? _refreshTokenTimer;
@@ -39,6 +46,8 @@ class GoTrueClient {
     final _url = url ?? Constants.defaultGotrueUrl;
     final _header = headers ?? Constants.defaultHeaders;
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
+
+    openDb = openPersistSessionDb();
   }
 
   /// Returns the user data, if there is a logged in user.
@@ -53,13 +62,13 @@ class GoTrueClient {
 
   /// Creates a new user.
   Future<GotrueSessionResponse> signUp(String email, String password) async {
-    _removeSession();
+    await _removeSession();
 
     final response = await api.signUpWithEmail(email, password);
     if (response.error != null) return response;
 
     if (response.data?.user?.confirmedAt != null) {
-      _saveSession(response.data!);
+      await _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -69,7 +78,7 @@ class GoTrueClient {
   /// Log in an existing user, or login via a third-party provider.
   Future<GotrueSessionResponse> signIn(
       {String? email, String? password, Provider? provider}) async {
-    _removeSession();
+    await _removeSession();
 
     if (email != null) {
       if (password == null) {
@@ -141,7 +150,7 @@ class GoTrueClient {
         user: response.user);
 
     if (storeSession == true) {
-      _saveSession(session);
+      await _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
       final type = url.queryParameters['type'];
       if (type == 'recovery') {
@@ -176,7 +185,7 @@ class GoTrueClient {
       if (response.error != null) return response;
     }
 
-    _removeSession();
+    await _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
 
     return GotrueResponse();
@@ -199,10 +208,24 @@ class GoTrueClient {
   /// Recover session from persisted session json string.
   /// Persisted session json has the format { currentSession, expiresAt }
   ///
+  /// If the [jsonStr] parameter is null, it will then attempt to recover the session
+  /// from the local sembast db stored [Session.persistSessionString] value.
+  ///
   /// currentSession: session json object, expiresAt: timestamp in seconds
-  Future<GotrueSessionResponse> recoverSession(String jsonStr) async {
+  Future<GotrueSessionResponse> recoverSession([String? jsonStr]) async {
     try {
-      final persistedData = json.decode(jsonStr) as Map<String, dynamic>;
+      String persistSessionString;
+      if (jsonStr == null) {
+        final store = StoreRef.main();
+        persistSessionString = await store
+            .record(Constants.defaultStorageKey)
+            .get(persistSessionDb) as String;
+      } else {
+        persistSessionString = jsonStr;
+      }
+
+      final persistedData =
+          json.decode(persistSessionString) as Map<String, dynamic>;
       final currentSession =
           persistedData['currentSession'] as Map<String, dynamic>?;
       final expiresAt = persistedData['expiresAt'] as int?;
@@ -230,7 +253,7 @@ class GoTrueClient {
           return GotrueSessionResponse(error: GotrueError('Session expired.'));
         }
       } else {
-        _saveSession(session);
+        await _saveSession(session);
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
@@ -244,7 +267,7 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     if (response.data?.user?.confirmedAt != null) {
-      _saveSession(response.data!);
+      await _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -257,10 +280,14 @@ class GoTrueClient {
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
-  void _saveSession(Session session) {
+  Future<void> _saveSession(Session session) async {
     currentSession = session;
     currentUser = session.user;
     final tokenExpirySeconds = session.expiresIn;
+    final store = StoreRef.main();
+    await store
+        .record(Constants.defaultStorageKey)
+        .put(persistSessionDb, session.persistSessionString);
 
     if (autoRefreshToken && tokenExpirySeconds != null) {
       if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
@@ -272,9 +299,13 @@ class GoTrueClient {
     }
   }
 
-  void _removeSession() {
+  Future<void> _removeSession() async {
     currentSession = null;
     currentUser = null;
+
+    await StoreRef.main()
+        .record(Constants.defaultStorageKey)
+        .delete(persistSessionDb);
   }
 
   Future<GotrueSessionResponse> _callRefreshToken(
@@ -289,7 +320,7 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     if (response.data?.accessToken != null) {
-      _saveSession(response.data!);
+      await _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -298,5 +329,10 @@ class GoTrueClient {
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
     stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession!));
+  }
+
+  Future<void> openPersistSessionDb() async {
+    persistSessionDb = await databaseFactoryIo.openDatabase(
+        '${Directory.systemTemp.path}/${Constants.persistSessionDbFileName}');
   }
 }
