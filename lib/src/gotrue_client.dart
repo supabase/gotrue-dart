@@ -176,8 +176,8 @@ class GoTrueClient {
       if (response.error != null) return response;
     }
 
-    _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
+    _removeSession();
 
     return GotrueResponse();
   }
