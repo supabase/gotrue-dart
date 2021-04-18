@@ -135,7 +135,7 @@ class GoTrueClient {
 
     final session = Session(
         accessToken: accessToken,
-        expiresIn: expiresIn as int,
+        expiresIn: int.parse(expiresIn),
         refreshToken: refreshToken,
         tokenType: tokenType,
         user: response.user);
