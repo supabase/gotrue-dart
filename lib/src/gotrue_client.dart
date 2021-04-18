@@ -110,6 +110,7 @@ class GoTrueClient {
     final expiresIn = url.queryParameters['expires_in'];
     final refreshToken = url.queryParameters['refresh_token'];
     final tokenType = url.queryParameters['token_type'];
+    final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
       return GotrueSessionResponse(
@@ -138,6 +139,7 @@ class GoTrueClient {
         expiresIn: expiresIn as int,
         refreshToken: refreshToken,
         tokenType: tokenType,
+        providerToken: providerToken,
         user: response.user);
 
     if (storeSession == true) {
