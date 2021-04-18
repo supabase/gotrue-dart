@@ -68,7 +68,7 @@ class GoTrueClient {
 
   /// Log in an existing user, or login via a third-party provider.
   Future<GotrueSessionResponse> signIn(
-      {String? email, String? password, Provider? provider}) async {
+      {String? email, String? password, Provider? provider, ProviderOptions? options}) async {
     _removeSession();
 
     if (email != null) {
@@ -79,7 +79,7 @@ class GoTrueClient {
         return _handleEmailSignIn(email, password);
       }
     } else if (provider != null) {
-      return _handleProviderSignIn(provider);
+      return _handleProviderSignIn(provider, options);
     } else {
       final error = GotrueError(
           "You must provide either an email or a third-party provider.");
@@ -254,8 +254,8 @@ class GoTrueClient {
   }
 
   /// return provider url only
-  GotrueSessionResponse _handleProviderSignIn(Provider provider) {
-    final url = api.getUrlForProvider(provider);
+  GotrueSessionResponse _handleProviderSignIn(Provider provider, ProviderOptions? options) {
+    final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
