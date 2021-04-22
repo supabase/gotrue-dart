@@ -8,6 +8,8 @@ import 'session.dart';
 import 'user.dart';
 import 'user_attributes.dart';
 
+
+
 class GoTrueApi {
   String url;
   Map<String, String> headers;
@@ -124,8 +126,15 @@ class GoTrueApi {
     }
   }
 
-  String getUrlForProvider(Provider provider) {
-    return '$url/authorize?provider=${provider.name()}';
+  String getUrlForProvider(Provider provider, ProviderOptions? options) {
+    final urlParams = ['provider=${provider.name()}'];
+    if (options?.scopes != null) {
+      urlParams.add('scopes=${options!.scopes!}');
+    }
+    if (options?.redirectTo != null) {
+      urlParams.add('redirect_to=${options!.redirectTo!}');
+    }
+    return '$url/authorize?${urlParams.join('&')}';
   }
 
   /// Gets the user details.
