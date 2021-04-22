@@ -171,14 +171,13 @@ class GoTrueClient {
 
   /// Signs out the current user, if there is a logged in user.
   Future<GotrueResponse> signOut() async {
-    if (currentSession != null) {
-      final response = await api.signOut(currentSession!.accessToken);
-      if (response.error != null) return response;
-    }
-
+    final accessToken = currentSession?.accessToken;
     _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
-
+    if (accessToken != null) {
+      final response = await api.signOut(accessToken);
+      if (response.error != null) return response;
+    }
     return GotrueResponse();
   }
 
@@ -297,6 +296,6 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession!));
+    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
   }
 }
