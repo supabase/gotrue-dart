@@ -5,40 +5,40 @@ import 'cross_platform/path.dart' as path;
 import 'cross_platform/sembast.dart';
 
 class LocalStorage {
-  bool _isPersistSessionDbOpen = false;
-  late final Database _persistSessionDb;
+  bool _isOpen = false;
+  late final Database _localDb;
   late final StoreRef _store;
 
   LocalStorage();
 
-  Future _openPersistSessionDb() async {
-    if (!_isPersistSessionDbOpen) {
-      _persistSessionDb = await getDatabaseFactory().openDatabase(
+  Future _openDb() async {
+    if (!_isOpen) {
+      _localDb = await getDatabaseFactory().openDatabase(
           '${path.getBasePath()}/${Constants.persistSessionDbFileName}');
 
       _store = StoreRef.main();
 
-      _isPersistSessionDbOpen = true;
+      _isOpen = true;
     }
   }
 
   Future<String> read(String key) async {
-    await _openPersistSessionDb();
+    await _openDb();
 
-    final value = await _store.record(key).get(_persistSessionDb);
+    final value = await _store.record(key).get(_localDb);
 
     return value as String;
   }
 
   Future write(String key, String value) async {
-    await _openPersistSessionDb();
+    await _openDb();
 
-    await _store.record(key).put(_persistSessionDb, value);
+    await _store.record(key).put(_localDb, value);
   }
 
   Future delete(String key) async {
-    await _openPersistSessionDb();
+    await _openDb();
 
-    await _store.record(key).delete(_persistSessionDb);
+    await _store.record(key).delete(_localDb);
   }
 }
