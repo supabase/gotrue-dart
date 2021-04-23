@@ -7,6 +7,7 @@ class Session {
   final int? expiresIn;
   final String? refreshToken;
   final String? tokenType;
+  final String? providerToken;
   final User? user;
 
   Session({
@@ -14,6 +15,7 @@ class Session {
     this.expiresIn,
     this.refreshToken,
     this.tokenType,
+    this.providerToken,
     this.user,
   });
 
@@ -22,6 +24,7 @@ class Session {
         expiresIn: json['expires_in'] as int,
         refreshToken: json['refresh_token'] as String?,
         tokenType: json['token_type'] as String?,
+        providerToken: json['provider_token'] as String?,
         user: json['user'] != null
             ? User.fromJson(json['user'] as Map<String, dynamic>)
             : null,
@@ -32,6 +35,7 @@ class Session {
         'expires_in': expiresIn,
         'refresh_token': refreshToken,
         'token_type': tokenType,
+        'provider_token': providerToken,
         'user': user?.toJson(),
       };
 

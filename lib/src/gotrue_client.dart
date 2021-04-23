@@ -74,8 +74,11 @@ class GoTrueClient {
 
   /// Log in an existing user, or login via a third-party provider.
   Future<GotrueSessionResponse> signIn(
-      {String? email, String? password, Provider? provider}) async {
-    await _removeSession();
+      {String? email,
+      String? password,
+      Provider? provider,
+      ProviderOptions? options}) async {
+    _removeSession();
 
     if (email != null) {
       if (password == null) {
@@ -85,7 +88,7 @@ class GoTrueClient {
         return _handleEmailSignIn(email, password);
       }
     } else if (provider != null) {
-      return _handleProviderSignIn(provider);
+      return _handleProviderSignIn(provider, options);
     } else {
       final error = GotrueError(
           "You must provide either an email or a third-party provider.");
@@ -116,6 +119,7 @@ class GoTrueClient {
     final expiresIn = url.queryParameters['expires_in'];
     final refreshToken = url.queryParameters['refresh_token'];
     final tokenType = url.queryParameters['token_type'];
+    final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
       return GotrueSessionResponse(
@@ -141,9 +145,10 @@ class GoTrueClient {
 
     final session = Session(
         accessToken: accessToken,
-        expiresIn: expiresIn as int,
+        expiresIn: int.parse(expiresIn),
         refreshToken: refreshToken,
         tokenType: tokenType,
+        providerToken: providerToken,
         user: response.user);
 
     if (storeSession == true) {
@@ -177,14 +182,13 @@ class GoTrueClient {
 
   /// Signs out the current user, if there is a logged in user.
   Future<GotrueResponse> signOut() async {
-    if (currentSession != null) {
-      final response = await api.signOut(currentSession!.accessToken);
+    final accessToken = currentSession?.accessToken;
+    _removeSession();
+    _notifyAllSubscribers(AuthChangeEvent.signedOut);
+    if (accessToken != null) {
+      final response = await api.signOut(accessToken);
       if (response.error != null) return response;
     }
-
-    await _removeSession();
-    _notifyAllSubscribers(AuthChangeEvent.signedOut);
-
     return GotrueResponse();
   }
 
@@ -269,8 +273,9 @@ class GoTrueClient {
   }
 
   /// return provider url only
-  GotrueSessionResponse _handleProviderSignIn(Provider provider) {
-    final url = api.getUrlForProvider(provider);
+  GotrueSessionResponse _handleProviderSignIn(
+      Provider provider, ProviderOptions? options) {
+    final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
@@ -318,6 +323,6 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession!));
+    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
   }
 }
