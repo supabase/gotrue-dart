@@ -1,15 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:sembast/sembast.dart';
-
 import 'constants.dart';
 import 'cookie_options.dart';
-import 'cross_platform/path.dart' as path;
-import 'cross_platform/sembast.dart';
 import 'gotrue_api.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
+import 'local_storage.dart';
 import 'provider.dart';
 import 'session.dart';
 import 'subscription.dart';
@@ -30,13 +27,11 @@ class GoTrueClient {
 
   late final bool autoRefreshToken;
 
-  late final Database _persistSessionDb;
+  late final LocalStorage _storage;
 
   Map<String, Subscription> stateChangeEmitters = {};
 
   Timer? _refreshTokenTimer;
-
-  bool _isPersistSessionDbOpen = false;
 
   GoTrueClient(
       {String? url,
@@ -48,6 +43,8 @@ class GoTrueClient {
     final _url = url ?? Constants.defaultGotrueUrl;
     final _header = headers ?? Constants.defaultHeaders;
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
+
+    _storage = LocalStorage();
   }
 
   /// Returns the user data, if there is a logged in user.
@@ -216,12 +213,7 @@ class GoTrueClient {
     try {
       String persistSessionString;
       if (jsonStr == null) {
-        await openPersistSessionDb();
-
-        final store = StoreRef.main();
-        persistSessionString = await store
-            .record(Constants.defaultStorageKey)
-            .get(_persistSessionDb) as String;
+        persistSessionString = await _storage.read(Constants.defaultStorageKey);
       } else {
         persistSessionString = jsonStr;
       }
@@ -286,12 +278,8 @@ class GoTrueClient {
     currentSession = session;
     currentUser = session.user;
     final tokenExpirySeconds = session.expiresIn;
-    final store = StoreRef.main();
 
-    await openPersistSessionDb();
-    await store
-        .record(Constants.defaultStorageKey)
-        .put(_persistSessionDb, session.persistSessionString);
+    _storage.write(Constants.defaultStorageKey, session.persistSessionString);
 
     if (autoRefreshToken && tokenExpirySeconds != null) {
       if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
@@ -307,10 +295,7 @@ class GoTrueClient {
     currentSession = null;
     currentUser = null;
 
-    await openPersistSessionDb();
-    await StoreRef.main()
-        .record(Constants.defaultStorageKey)
-        .delete(_persistSessionDb);
+    await _storage.delete(Constants.defaultStorageKey);
   }
 
   Future<GotrueSessionResponse> _callRefreshToken(
@@ -334,13 +319,5 @@ class GoTrueClient {
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
     stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession!));
-  }
-
-  Future openPersistSessionDb() async {
-    if (!_isPersistSessionDbOpen) {
-      _persistSessionDb = await getDatabaseFactory().openDatabase(
-          '${path.getBasePath()}/${Constants.persistSessionDbFileName}');
-      _isPersistSessionDbOpen = true;
-    }
   }
 }
