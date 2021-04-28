@@ -5,13 +5,18 @@ import 'cross_platform/path.dart' as path;
 
 class LocalStorage {
   late Box<String>? _box;
+  bool _isBoxOpen = false;
 
   LocalStorage() {
     Hive.init(path.getBasePath());
   }
 
   Future _openBox() async {
-    _box = await Hive.openBox(Constants.localStorageBoxKey);
+    if (!_isBoxOpen) {
+      _box = await Hive.openBox(Constants.localStorageBoxKey);
+
+      _isBoxOpen = true;
+    }
   }
 
   Future<String?> read(String key) async {
