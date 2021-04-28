@@ -33,11 +33,17 @@ class GoTrueClient {
 
   Timer? _refreshTokenTimer;
 
+  /// Indicates auth persistence type. [AuthPersistence.local] indicates session will be persisted locally, this
+  /// is the default option. [AuthPersistence.none] indicates session will only be stored in memory and cleared
+  /// when application restarts.
+  final AuthPersistence authPersistence;
+
   GoTrueClient(
       {String? url,
       Map<String, String>? headers,
       bool? autoRefreshToken,
-      CookieOptions? cookieOptions}) {
+      CookieOptions? cookieOptions,
+      this.authPersistence = AuthPersistence.local}) {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
     final _url = url ?? Constants.defaultGotrueUrl;
@@ -45,6 +51,8 @@ class GoTrueClient {
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
 
     _storage = LocalStorage();
+
+    _recoverSession();
   }
 
   /// Returns the user data, if there is a logged in user.
@@ -59,13 +67,13 @@ class GoTrueClient {
 
   /// Creates a new user.
   Future<GotrueSessionResponse> signUp(String email, String password) async {
-    await _removeSession();
+    _removeSession();
 
     final response = await api.signUpWithEmail(email, password);
     if (response.error != null) return response;
 
     if (response.data?.user?.confirmedAt != null) {
-      await _saveSession(response.data!);
+      _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -152,7 +160,7 @@ class GoTrueClient {
         user: response.user);
 
     if (storeSession == true) {
-      await _saveSession(session);
+      _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
       final type = url.queryParameters['type'];
       if (type == 'recovery') {
@@ -209,21 +217,10 @@ class GoTrueClient {
   /// Recover session from persisted session json string.
   /// Persisted session json has the format { currentSession, expiresAt }
   ///
-  /// If the [jsonStr] parameter is null, it will then attempt to recover the session
-  /// from the local sembast db stored [Session.persistSessionString] value.
-  ///
   /// currentSession: session json object, expiresAt: timestamp in seconds
-  Future<GotrueSessionResponse> recoverSession([String? jsonStr]) async {
+  Future<GotrueSessionResponse> recoverSession(String jsonStr) async {
     try {
-      String persistSessionString;
-      if (jsonStr == null) {
-        persistSessionString = await _storage.read(Constants.defaultStorageKey);
-      } else {
-        persistSessionString = jsonStr;
-      }
-
-      final persistedData =
-          json.decode(persistSessionString) as Map<String, dynamic>;
+      final persistedData = json.decode(jsonStr) as Map<String, dynamic>;
       final currentSession =
           persistedData['currentSession'] as Map<String, dynamic>?;
       final expiresAt = persistedData['expiresAt'] as int?;
@@ -251,12 +248,24 @@ class GoTrueClient {
           return GotrueSessionResponse(error: GotrueError('Session expired.'));
         }
       } else {
-        await _saveSession(session);
+        _saveSession(session);
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
     }
+  }
+
+  Future<GotrueSessionResponse> _recoverSession() async {
+    final String? persistSessionString =
+        _storage.read(Constants.defaultStorageKey);
+
+    if (persistSessionString == null) {
+      return GotrueSessionResponse(
+          error: GotrueError('Missing currentSession.'));
+    }
+
+    return recoverSession(persistSessionString);
   }
 
   Future<GotrueSessionResponse> _handleEmailSignIn(
@@ -265,7 +274,7 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     if (response.data?.user?.confirmedAt != null) {
-      await _saveSession(response.data!);
+      _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -279,12 +288,14 @@ class GoTrueClient {
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
-  Future<void> _saveSession(Session session) async {
+  void _saveSession(Session session) {
     currentSession = session;
     currentUser = session.user;
     final tokenExpirySeconds = session.expiresIn;
 
-    _storage.write(Constants.defaultStorageKey, session.persistSessionString);
+    if (authPersistence == AuthPersistence.local) {
+      _storage.write(Constants.defaultStorageKey, session.persistSessionString);
+    }
 
     if (autoRefreshToken && tokenExpirySeconds != null) {
       if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
@@ -296,11 +307,11 @@ class GoTrueClient {
     }
   }
 
-  Future<void> _removeSession() async {
+  void _removeSession() {
     currentSession = null;
     currentUser = null;
 
-    await _storage.delete(Constants.defaultStorageKey);
+    _storage.delete(Constants.defaultStorageKey);
   }
 
   Future<GotrueSessionResponse> _callRefreshToken(
@@ -315,7 +326,7 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     if (response.data?.accessToken != null) {
-      await _saveSession(response.data!);
+      _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 

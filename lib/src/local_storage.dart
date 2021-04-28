@@ -1,44 +1,38 @@
-import 'package:sembast/sembast.dart';
-
+import 'package:hive/hive.dart';
 import 'constants.dart';
+
 import 'cross_platform/path.dart' as path;
-import 'cross_platform/sembast.dart';
 
 class LocalStorage {
-  bool _isOpen = false;
-  late final Database _localDb;
-  late final StoreRef _store;
+  late Box<String>? _box;
 
-  LocalStorage();
+  LocalStorage() {
+    Hive.init(path.getBasePath());
 
-  Future _openDb() async {
-    if (!_isOpen) {
-      _localDb = await getDatabaseFactory().openDatabase(
-          '${path.getBasePath()}/${Constants.persistSessionDbFileName}');
-
-      _store = StoreRef.main();
-
-      _isOpen = true;
-    }
+    // _box = Hive.openBox(Constants.localStorageBoxKey);
   }
 
-  Future<String> read(String key) async {
-    await _openDb();
-
-    final value = await _store.record(key).get(_localDb);
-
-    return value as String;
+  Future _openBox() async {
+    _box = await Hive.openBox(Constants.localStorageBoxKey);
   }
 
-  Future write(String key, String value) async {
-    await _openDb();
+  Future<String?> read(String key) async {
+    await _openBox();
 
-    await _store.record(key).put(_localDb, value);
+    final String? value = _box!.get(key);
+
+    return value;
   }
 
-  Future delete(String key) async {
-    await _openDb();
+  Future<void> write(String key, String value) async {
+    await _openBox();
 
-    await _store.record(key).delete(_localDb);
+    _box!.put(key, value);
+  }
+
+  Future<void> delete(String key) async {
+    await _openBox();
+
+    _box!.delete(key);
   }
 }
