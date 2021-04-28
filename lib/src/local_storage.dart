@@ -8,8 +8,6 @@ class LocalStorage {
 
   LocalStorage() {
     Hive.init(path.getBasePath());
-
-    // _box = Hive.openBox(Constants.localStorageBoxKey);
   }
 
   Future _openBox() async {
