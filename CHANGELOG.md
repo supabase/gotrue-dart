@@ -1,6 +1,10 @@
+## [0.0.1-dev.11]
+
+- fix: parsing provider callback url with fragment #12
+
 ## [0.0.1-dev.10]
 
-- fix: fix: parses provider token and adds oauth scopes and redirectTo
+- fix: parses provider token and adds oauth scopes and redirectTo
 - fix: expiresAt conversion to int and getUser resolving JSON
 - fix: signOut method
 
