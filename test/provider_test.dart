@@ -4,9 +4,6 @@ import 'package:test/test.dart';
 void main() {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
-  final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-  final email = 'fake$timestamp@email.com';
-  const password = 'secret';
 
   late GoTrueClient client;
   late Session session;
@@ -16,6 +13,9 @@ void main() {
       'Authorization': 'Bearer $annonToken',
       'apikey': annonToken,
     });
+    final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+    final email = 'fake2$timestamp@email.com';
+    const password = 'secret';
     final res = await client.signUp(email, password);
     session = res.data!;
   });
