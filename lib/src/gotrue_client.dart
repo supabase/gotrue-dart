@@ -68,7 +68,10 @@ class GoTrueClient {
 
   /// Log in an existing user, or login via a third-party provider.
   Future<GotrueSessionResponse> signIn(
-      {String? email, String? password, Provider? provider, ProviderOptions? options}) async {
+      {String? email,
+      String? password,
+      Provider? provider,
+      ProviderOptions? options}) async {
     _removeSession();
 
     if (email != null) {
@@ -99,8 +102,17 @@ class GoTrueClient {
   }
 
   /// Gets the session data from a oauth2 callback URL
-  Future<GotrueSessionResponse> getSessionFromUrl(Uri url,
+  Future<GotrueSessionResponse> getSessionFromUrl(Uri originUrl,
       {bool storeSession = true}) async {
+    var url = originUrl;
+    if (originUrl.hasQuery) {
+      final decoded = originUrl.toString().replaceAll('#', '&');
+      url = Uri.parse(decoded);
+    } else {
+      final decoded = originUrl.toString().replaceAll('#', '?');
+      url = Uri.parse(decoded);
+    }
+
     final errorDescription = url.queryParameters['error_description'];
     if (errorDescription != null) {
       return GotrueSessionResponse(error: GotrueError(errorDescription));
@@ -253,7 +265,8 @@ class GoTrueClient {
   }
 
   /// return provider url only
-  GotrueSessionResponse _handleProviderSignIn(Provider provider, ProviderOptions? options) {
+  GotrueSessionResponse _handleProviderSignIn(
+      Provider provider, ProviderOptions? options) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
