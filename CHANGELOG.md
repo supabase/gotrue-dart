@@ -1,3 +1,7 @@
+## [0.0.1]
+
+- fix: URL encode redirectTo
+
 ## [0.0.1-dev.11]
 
 - fix: parsing provider callback url with fragment #12
