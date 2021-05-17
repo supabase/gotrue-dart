@@ -132,7 +132,8 @@ class GoTrueApi {
       urlParams.add('scopes=${options!.scopes!}');
     }
     if (options?.redirectTo != null) {
-      urlParams.add('redirect_to=${options!.redirectTo!}');
+      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+      urlParams.add('redirect_to=$encodedRedirectTo');
     }
     return '$url/authorize?${urlParams.join('&')}';
   }
