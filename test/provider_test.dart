@@ -13,7 +13,7 @@ void main() {
       'Authorization': 'Bearer $annonToken',
       'apikey': annonToken,
     });
-    final timestamp = DateTime.now().second;
+    final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     final email = 'fake2$timestamp@email.com';
     const password = 'secret';
     final res = await client.signUp(email, password);

@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 void main() {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
-  final timestamp = DateTime.now().second;
+  final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
   final email = 'fake$timestamp@email.com';
   const password = 'secret';
 
