@@ -1,3 +1,7 @@
+## [0.0.3]
+
+- fix: wrong timestamp value
+
 ## [0.0.2]
 
 - fix: persistSessionString with wrong expiresAt
