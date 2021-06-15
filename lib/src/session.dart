@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:jwt_decode/jwt_decode.dart';
+
 import 'user.dart';
 
 class Session {
@@ -40,9 +42,8 @@ class Session {
       };
 
   String get persistSessionString {
-    final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    final expiresAt = timeNow + expiresIn!;
-    final data = {'currentSession': toJson(), 'expiresAt': expiresAt};
+    final payload = Jwt.parseJwt(accessToken);
+    final data = {'currentSession': toJson(), 'expiresAt': payload['exp']};
     return json.encode(data);
   }
 }
