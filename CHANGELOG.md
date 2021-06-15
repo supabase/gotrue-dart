@@ -1,3 +1,7 @@
+## [0.0.2]
+
+- fix: persistSessionString with wrong expiresAt
+
 ## [0.0.1]
 
 - fix: URL encode redirectTo
