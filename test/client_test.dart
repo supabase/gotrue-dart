@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/user_attributes.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
 void main() {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
-  final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+  final timestamp = DateTime.now().second;
   final email = 'fake$timestamp@email.com';
   const password = 'secret';
 
@@ -45,10 +46,16 @@ void main() {
     final response = await client.signIn(email: email, password: password);
     final data = response.data!;
     final error = response.error;
+
     expect(error, isNull);
     expect(data.accessToken is String, true);
     expect(data.refreshToken is String, true);
     expect(data.user?.id is String, true);
+
+    final payload = Jwt.parseJwt(data.accessToken);
+    final persistSession = json.decode(data.persistSessionString);
+    // ignore: avoid_dynamic_calls
+    expect(payload['exp'], persistSession['expiresAt']);
   });
 
   test('Get user', () async {

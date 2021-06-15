@@ -233,7 +233,7 @@ class GoTrueClient {
             error: GotrueError('Current session is missing data.'));
       }
 
-      final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+      final timeNow = DateTime.now().second;
       if (expiresAt < timeNow) {
         if (autoRefreshToken && session.refreshToken != null) {
           final response =
