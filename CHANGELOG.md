@@ -1,3 +1,7 @@
+## [0.0.4]
+
+- fix: session refresh timer
+
 ## [0.0.3]
 
 - fix: wrong timestamp value
