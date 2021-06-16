@@ -274,15 +274,21 @@ class GoTrueClient {
   void _saveSession(Session session) {
     currentSession = session;
     currentUser = session.user;
-    final tokenExpirySeconds = session.expiresIn;
+    final expiresAt = session.expiresAt;
 
-    if (autoRefreshToken && tokenExpirySeconds != null) {
+    if (autoRefreshToken && expiresAt != null) {
       if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
 
-      final timerDuration = Duration(seconds: tokenExpirySeconds - 60);
-      _refreshTokenTimer = Timer(timerDuration, () {
+      final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+      final nextDuration = expiresAt - timeNow - 60;
+      if (nextDuration > 0) {
+        final timerDuration = Duration(seconds: nextDuration);
+        _refreshTokenTimer = Timer(timerDuration, () {
+          _callRefreshToken();
+        });
+      } else {
         _callRefreshToken();
-      });
+      }
     }
   }
 

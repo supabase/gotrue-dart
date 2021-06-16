@@ -41,9 +41,17 @@ class Session {
         'user': user?.toJson(),
       };
 
+  int? get expiresAt {
+    try {
+      final payload = Jwt.parseJwt(accessToken);
+      return payload['exp'] as int;
+    } catch (_) {
+      return null;
+    }
+  }
+
   String get persistSessionString {
-    final payload = Jwt.parseJwt(accessToken);
-    final data = {'currentSession': toJson(), 'expiresAt': payload['exp']};
+    final data = {'currentSession': toJson(), 'expiresAt': expiresAt};
     return json.encode(data);
   }
 }
