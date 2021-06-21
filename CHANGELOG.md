@@ -1,3 +1,9 @@
+## [0.0.5]
+
+- BREAKING CHANGE: rename 'ProviderOptions' to 'AuthOptions'
+- feat: support redirectTo option
+- fix: handle jwt expiry less than 60 seconds
+
 ## [0.0.4]
 
 - fix: session refresh timer
