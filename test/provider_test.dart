@@ -30,6 +30,22 @@ void main() {
     expect(provider, 'google');
   });
 
+  test('signIn() with Provider and options', () async {
+    final res = await client.signIn(
+        provider: Provider.github,
+        options: AuthOptions(
+          redirectTo: 'redirectToURL',
+          scopes: 'repo',
+        ));
+    final error = res.error;
+    final url = res.url;
+    final provider = res.provider;
+    expect(error, isNull);
+    expect(url,
+        '$gotrueUrl/authorize?provider=github&scopes=repo&redirect_to=redirectToURL');
+    expect(provider, 'github');
+  });
+
   test('parse provider callback url with fragment', () async {
     final accessToken = session.accessToken;
     const expiresIn = 12345;

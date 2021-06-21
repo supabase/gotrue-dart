@@ -1,3 +1,6 @@
+import 'package:gotrue/gotrue.dart';
+
+import 'auth_options.dart';
 import 'cookie_options.dart';
 import 'fetch.dart';
 import 'fetch_options.dart';
@@ -8,8 +11,6 @@ import 'session.dart';
 import 'user.dart';
 import 'user_attributes.dart';
 
-
-
 class GoTrueApi {
   String url;
   Map<String, String> headers;
@@ -19,12 +20,19 @@ class GoTrueApi {
       : headers = headers ?? {};
 
   /// Creates a new user using their email address.
-  Future<GotrueSessionResponse> signUpWithEmail(
-      String email, String password) async {
+  Future<GotrueSessionResponse> signUpWithEmail(String email, String password,
+      {AuthOptions? options}) async {
     try {
       final body = {'email': email, 'password': password};
-      final options = FetchOptions(headers);
-      final response = await fetch.post('$url/signup', body, options: options);
+      final fetchOptions = FetchOptions(headers);
+      final urlParams = [];
+      if (options?.redirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+        urlParams.add('redirect_to=$encodedRedirectTo');
+      }
+      final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
+      final response = await fetch.post('$url/signup$queryString', body,
+          options: fetchOptions);
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
@@ -42,13 +50,19 @@ class GoTrueApi {
   }
 
   /// Logs in an existing user using their email address.
-  Future<GotrueSessionResponse> signInWithEmail(
-      String email, String password) async {
+  Future<GotrueSessionResponse> signInWithEmail(String email, String password,
+      {AuthOptions? options}) async {
     try {
       final body = {'email': email, 'password': password};
-      final options = FetchOptions(headers);
-      final response = await fetch.post('$url/token?grant_type=password', body,
-          options: options);
+      final fetchOptions = FetchOptions(headers);
+      final urlParams = ['grant_type=password'];
+      if (options?.redirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+        urlParams.add('redirect_to=$encodedRedirectTo');
+      }
+      final queryString = '?${urlParams.join('&')}';
+      final response = await fetch.post('$url/token$queryString', body,
+          options: fetchOptions);
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else {
@@ -62,12 +76,19 @@ class GoTrueApi {
   }
 
   /// Sends a magic login link to an email address.
-  Future<GotrueJsonResponse> sendMagicLinkEmail(String email) async {
+  Future<GotrueJsonResponse> sendMagicLinkEmail(String email,
+      {AuthOptions? options}) async {
     try {
       final body = {'email': email};
-      final options = FetchOptions(headers);
-      final response =
-          await fetch.post('$url/magiclink', body, options: options);
+      final fetchOptions = FetchOptions(headers);
+      final urlParams = [];
+      if (options?.redirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+        urlParams.add('redirect_to=$encodedRedirectTo');
+      }
+      final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
+      final response = await fetch.post('$url/magiclink$queryString', body,
+          options: fetchOptions);
       if (response.error != null) {
         return GotrueJsonResponse(error: response.error);
       } else {
@@ -80,11 +101,19 @@ class GoTrueApi {
   }
 
   /// Sends an invite link to an email address.
-  Future<GotrueJsonResponse> inviteUserByEmail(String email) async {
+  Future<GotrueJsonResponse> inviteUserByEmail(String email,
+      {AuthOptions? options}) async {
     try {
       final body = {'email': email};
-      final options = FetchOptions(headers);
-      final response = await fetch.post('$url/invite', body, options: options);
+      final fetchOptions = FetchOptions(headers);
+      final urlParams = [];
+      if (options?.redirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+        urlParams.add('redirect_to=$encodedRedirectTo');
+      }
+      final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
+      final response = await fetch.post('$url/invite$queryString', body,
+          options: fetchOptions);
       if (response.error != null) {
         return GotrueJsonResponse(error: response.error);
       } else {
@@ -97,11 +126,19 @@ class GoTrueApi {
   }
 
   /// Sends a reset request to an email address.
-  Future<GotrueJsonResponse> resetPasswordForEmail(String email) async {
+  Future<GotrueJsonResponse> resetPasswordForEmail(String email,
+      {AuthOptions? options}) async {
     try {
       final body = {'email': email};
-      final options = FetchOptions(headers);
-      final response = await fetch.post('$url/recover', body, options: options);
+      final fetchOptions = FetchOptions(headers);
+      final urlParams = [];
+      if (options?.redirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+        urlParams.add('redirect_to=$encodedRedirectTo');
+      }
+      final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
+      final response = await fetch.post('$url/recover$queryString', body,
+          options: fetchOptions);
       if (response.error != null) {
         return GotrueJsonResponse(error: response.error);
       } else {
@@ -126,7 +163,7 @@ class GoTrueApi {
     }
   }
 
-  String getUrlForProvider(Provider provider, ProviderOptions? options) {
+  String getUrlForProvider(Provider provider, AuthOptions? options) {
     final urlParams = ['provider=${provider.name()}'];
     if (options?.scopes != null) {
       urlParams.add('scopes=${options!.scopes!}');

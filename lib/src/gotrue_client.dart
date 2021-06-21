@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:gotrue/gotrue.dart';
+
 import 'constants.dart';
 import 'cookie_options.dart';
 import 'gotrue_api.dart';
@@ -52,10 +54,12 @@ class GoTrueClient {
   }
 
   /// Creates a new user.
-  Future<GotrueSessionResponse> signUp(String email, String password) async {
+  Future<GotrueSessionResponse> signUp(String email, String password,
+      {AuthOptions? options}) async {
     _removeSession();
 
-    final response = await api.signUpWithEmail(email, password);
+    final response =
+        await api.signUpWithEmail(email, password, options: options);
     if (response.error != null) return response;
 
     if (response.data?.user?.confirmedAt != null) {
@@ -71,15 +75,15 @@ class GoTrueClient {
       {String? email,
       String? password,
       Provider? provider,
-      ProviderOptions? options}) async {
+      AuthOptions? options}) async {
     _removeSession();
 
     if (email != null) {
       if (password == null) {
-        final response = await api.sendMagicLinkEmail(email);
+        final response = await api.sendMagicLinkEmail(email, options: options);
         return GotrueSessionResponse(error: response.error);
       } else {
-        return _handleEmailSignIn(email, password);
+        return _handleEmailSignIn(email, password, options: options);
       }
     } else if (provider != null) {
       return _handleProviderSignIn(provider, options);
@@ -252,8 +256,10 @@ class GoTrueClient {
   }
 
   Future<GotrueSessionResponse> _handleEmailSignIn(
-      String email, String password) async {
-    final response = await api.signInWithEmail(email, password);
+      String email, String password,
+      {AuthOptions? options}) async {
+    final response =
+        await api.signInWithEmail(email, password, options: options);
     if (response.error != null) return response;
 
     if (response.data?.user?.confirmedAt != null) {
@@ -266,7 +272,7 @@ class GoTrueClient {
 
   /// return provider url only
   GotrueSessionResponse _handleProviderSignIn(
-      Provider provider, ProviderOptions? options) {
+      Provider provider, AuthOptions? options) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
