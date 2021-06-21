@@ -286,7 +286,9 @@ class GoTrueClient {
       if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-      final nextDuration = expiresAt - timeNow - 60;
+      final expiresIn = expiresAt - timeNow;
+      final refreshDurationBeforeExpires = expiresIn > 60 ? 60 : 1;
+      final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
         final timerDuration = Duration(seconds: nextDuration);
         _refreshTokenTimer = Timer(timerDuration, () {
