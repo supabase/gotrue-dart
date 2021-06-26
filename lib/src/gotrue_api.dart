@@ -164,7 +164,7 @@ class GoTrueApi {
   }
 
   String getUrlForProvider(ProviderEnum provider, AuthOptions? options) {
-    final urlParams = ['provider=${provider.name()}'];
+    final urlParams = ['provider=${provider.name}'];
     if (options?.scopes != null) {
       urlParams.add('scopes=${options!.scopes!}');
     }

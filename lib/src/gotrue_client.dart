@@ -274,7 +274,7 @@ class GoTrueClient {
   GotrueSessionResponse _handleProviderSignIn(
       ProviderEnum provider, AuthOptions? options) {
     final url = api.getUrlForProvider(provider, options);
-    return GotrueSessionResponse(provider: provider.name(), url: url);
+    return GotrueSessionResponse(provider: provider.name, url: url);
   }
 
   void _saveSession(Session session) {
