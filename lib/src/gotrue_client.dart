@@ -8,7 +8,7 @@ import 'cookie_options.dart';
 import 'gotrue_api.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
-import 'provider.dart';
+import 'provider_enum.dart';
 import 'session.dart';
 import 'subscription.dart';
 import 'user.dart';
@@ -74,7 +74,7 @@ class GoTrueClient {
   Future<GotrueSessionResponse> signIn(
       {String? email,
       String? password,
-      Provider? provider,
+      ProviderEnum? provider,
       AuthOptions? options}) async {
     _removeSession();
 
@@ -272,7 +272,7 @@ class GoTrueClient {
 
   /// return provider url only
   GotrueSessionResponse _handleProviderSignIn(
-      Provider provider, AuthOptions? options) {
+      ProviderEnum provider, AuthOptions? options) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }

@@ -6,7 +6,7 @@ import 'fetch.dart';
 import 'fetch_options.dart';
 import 'gotrue_error.dart';
 import 'gotrue_response.dart';
-import 'provider.dart';
+import 'provider_enum.dart';
 import 'session.dart';
 import 'user.dart';
 import 'user_attributes.dart';
@@ -163,7 +163,7 @@ class GoTrueApi {
     }
   }
 
-  String getUrlForProvider(Provider provider, AuthOptions? options) {
+  String getUrlForProvider(ProviderEnum provider, AuthOptions? options) {
     final urlParams = ['provider=${provider.name()}'];
     if (options?.scopes != null) {
       urlParams.add('scopes=${options!.scopes!}');

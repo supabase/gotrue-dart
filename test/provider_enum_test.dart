@@ -21,7 +21,7 @@ void main() {
   });
 
   test('signIn() with Provider', () async {
-    final res = await client.signIn(provider: Provider.google);
+    final res = await client.signIn(provider: ProviderEnum.google);
     final error = res.error;
     final url = res.url;
     final provider = res.provider;
@@ -32,7 +32,7 @@ void main() {
 
   test('signIn() with Provider and options', () async {
     final res = await client.signIn(
-        provider: Provider.github,
+        provider: ProviderEnum.github,
         options: AuthOptions(
           redirectTo: 'redirectToURL',
           scopes: 'repo',
