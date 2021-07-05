@@ -1,3 +1,7 @@
+## [0.0.6]
+
+- fix: export gotrue_response classes
+
 ## [0.0.5]
 
 - BREAKING CHANGE: rename 'ProviderOptions' to 'AuthOptions'
