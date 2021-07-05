@@ -6,7 +6,11 @@ class CookieOptions {
   final String sameSite;
 
   const CookieOptions(
-      {String? name, int? lifetime, String? domain, String? path, String? sameSite})
+      {String? name,
+      int? lifetime,
+      String? domain,
+      String? path,
+      String? sameSite})
       : name = name ?? 'sb:token',
         lifetime = lifetime ?? 60 * 60 * 8,
         domain = domain ?? '',

@@ -26,7 +26,8 @@ class GotrueSessionResponse extends GotrueResponse {
     return data?.user;
   }
 
-  GotrueSessionResponse({this.data, this.provider, this.url, GotrueError? error})
+  GotrueSessionResponse(
+      {this.data, this.provider, this.url, GotrueError? error})
       : super(error: error);
 }
 
