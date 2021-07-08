@@ -1,3 +1,3 @@
 #### Examples
 
-- flutter demo: https://github.com/phamhieu/gotrue-dart-demo
+- Supabase flutter user management: https://github.com/phamhieu/supabase-flutter-demo
