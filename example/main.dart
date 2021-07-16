@@ -1,6 +1,6 @@
 import 'package:gotrue/gotrue.dart';
 
-void main(List<String> arguments) async {
+Future<bool> main(List<String> arguments) async {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
   final client = GoTrueClient(url: gotrueUrl, headers: {
@@ -18,4 +18,8 @@ void main(List<String> arguments) async {
   } else {
     print('Error!');
   }
+
+  await client.signOut();
+  print('Logged out!');
+  return true;
 }
