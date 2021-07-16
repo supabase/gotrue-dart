@@ -283,7 +283,9 @@ class GoTrueClient {
     final expiresAt = session.expiresAt;
 
     if (autoRefreshToken && expiresAt != null) {
-      if (_refreshTokenTimer != null) _refreshTokenTimer!.cancel();
+      if (_refreshTokenTimer != null) {
+        _refreshTokenTimer!.cancel();
+      }
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
       final expiresIn = expiresAt - timeNow;
@@ -303,6 +305,10 @@ class GoTrueClient {
   void _removeSession() {
     currentSession = null;
     currentUser = null;
+
+    if (_refreshTokenTimer != null) {
+      _refreshTokenTimer!.cancel();
+    }
   }
 
   Future<GotrueSessionResponse> _callRefreshToken(
