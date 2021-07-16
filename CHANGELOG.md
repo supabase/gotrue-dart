@@ -1,3 +1,10 @@
+## [0.0.7]
+
+- fix: stop refreshToken timer on session removed
+- fix: close http.Client on request done
+- chore: update External OAuth Providers
+- chore: add example code block
+
 ## [0.0.6]
 
 - fix: export gotrue_response classes
