@@ -32,8 +32,8 @@ class Fetch {
   }
 
   Future<GotrueResponse> get(String url, {FetchOptions? options}) async {
+    final client = http.Client();
     try {
-      final client = http.Client();
       final headers = options?.headers ?? {};
       final http.Response response =
           await client.get(Uri.parse(url), headers: headers);
@@ -49,13 +49,15 @@ class Fetch {
       }
     } catch (e) {
       return GotrueResponse(error: handleError(e));
+    } finally {
+      client.close();
     }
   }
 
   Future<GotrueResponse> post(String url, dynamic body,
       {FetchOptions? options}) async {
+    final client = http.Client();
     try {
-      final client = http.Client();
       final bodyStr = json.encode(body ?? {});
       final headers = options?.headers ?? {};
       final http.Response response =
@@ -72,13 +74,15 @@ class Fetch {
       }
     } catch (e) {
       return GotrueResponse(error: handleError(e));
+    } finally {
+      client.close();
     }
   }
 
   Future<GotrueResponse> put(String url, dynamic body,
       {FetchOptions? options}) async {
+    final client = http.Client();
     try {
-      final client = http.Client();
       final bodyStr = json.encode(body ?? {});
       final headers = options?.headers ?? {};
       final http.Response response =
@@ -95,6 +99,8 @@ class Fetch {
       }
     } catch (e) {
       return GotrueResponse(error: handleError(e));
+    } finally {
+      client.close();
     }
   }
 }
