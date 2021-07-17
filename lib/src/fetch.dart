@@ -103,4 +103,29 @@ class Fetch {
       client.close();
     }
   }
+
+  Future<GotrueResponse> delete(String url, dynamic body,
+      {FetchOptions? options}) async {
+    final client = http.Client();
+    try {
+      final bodyStr = json.encode(body ?? {});
+      final headers = options?.headers ?? {};
+      final http.Response response =
+          await client.delete(Uri.parse(url), headers: headers, body: bodyStr);
+      if (isSuccessStatusCode(response.statusCode)) {
+        if (options?.noResolveJson == true) {
+          return GotrueResponse(rawData: response.body);
+        } else {
+          final jsonBody = json.decode(response.body);
+          return GotrueResponse(rawData: jsonBody);
+        }
+      } else {
+        throw response;
+      }
+    } catch (e) {
+      return GotrueResponse(error: handleError(e));
+    } finally {
+      client.close();
+    }
+  }
 }

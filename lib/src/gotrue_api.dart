@@ -232,6 +232,25 @@ class GoTrueApi {
     }
   }
 
+  /// Deletes the user.
+  Future<GotrueUserResponse> deleteUser(String userId, String jwt) async {
+    try {
+      final headers = {...this.headers};
+      headers['Authorization'] = 'Bearer $jwt';
+      final options = FetchOptions(headers);
+      final response = await fetch.delete('$url/admin/users/$userId', null,
+          options: options);
+      if (response.error != null) {
+        return GotrueUserResponse(error: response.error);
+      } else {
+        final user = User.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueUserResponse(user: user);
+      }
+    } catch (e) {
+      return GotrueUserResponse(error: GotrueError(e.toString()));
+    }
+  }
+
   // TODO: not implemented yet
   void setAuthCookie() {}
 
