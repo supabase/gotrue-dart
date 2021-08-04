@@ -75,8 +75,9 @@ class GoTrueApi {
     }
   }
 
-  Future<GotrueSessionResponse> signUpWithPhone(String phone,
-      [String? password]) async {
+  /// Signs up a new user using their phone number and a password.
+  Future<GotrueSessionResponse> signUpWithPhone(
+      String phone, String password) async {
     try {
       final fetchOptions = FetchOptions(headers);
       final body = {'phone': phone, 'password': password};
@@ -89,6 +90,29 @@ class GoTrueApi {
           null) {
         // email validation required
         return GotrueSessionResponse();
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Logs in an existing user using their phone number and password.
+  Future<GotrueSessionResponse> signInWithPhone(
+    String phone, {
+    String? password,
+  }) async {
+    try {
+      final body = {'phone': phone, 'password': password};
+      final fetchOptions = FetchOptions(headers);
+      const queryString = '?grant_type=password';
+      final response = await fetch.post('$url/token$queryString', body,
+          options: fetchOptions);
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
