@@ -70,12 +70,29 @@ class GoTrueClient {
     return response;
   }
 
+  Future<GotrueSessionResponse> signUpWithPhone(String phone, String password,
+      {AuthOptions? options}) async {
+    _removeSession();
+
+    final response = await api.signUpWithPhone(phone, password);
+    if (response.error != null) return response;
+
+    if (response.data?.user?.confirmedAt != null) {
+      _saveSession(response.data!);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
+
+    return response;
+  }
+
   /// Log in an existing user, or login via a third-party provider.
-  Future<GotrueSessionResponse> signIn(
-      {String? email,
-      String? password,
-      Provider? provider,
-      AuthOptions? options}) async {
+  Future<GotrueSessionResponse> signIn({
+    String? email,
+    String? phone,
+    String? password,
+    Provider? provider,
+    AuthOptions? options,
+  }) async {
     _removeSession();
 
     if (email != null) {
@@ -85,6 +102,13 @@ class GoTrueClient {
       } else {
         return _handleEmailSignIn(email, password, options: options);
       }
+    } else if (phone != null) {
+      if (password == null) {
+        final response = await api.sendMobileOTP(phone);
+        return GotrueSessionResponse(error: response.error);
+      } else {
+        return _handlePhoneSignIn(phone, password);
+      }
     } else if (provider != null) {
       return _handleProviderSignIn(provider, options);
     } else {
@@ -92,6 +116,27 @@ class GoTrueClient {
           "You must provide either an email or a third-party provider.");
       return GotrueSessionResponse(error: error);
     }
+  }
+
+  /// Log in a user given a User supplied OTP received via mobile.
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `token` is the token that user was sent to their mobile phone
+  Future<GotrueSessionResponse> verifyOTP(String phone, String token,
+      {AuthOptions? options}) async {
+    _removeSession();
+
+    final response = await api.verifyMobileOTP(phone, token, options: options);
+
+    if (response.error != null) return response;
+
+    if (response.data?.accessToken != null) {
+      _saveSession(response.data!);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
+
+    return response;
   }
 
   /// Force refreshes the session including the user data in case it was updated in a different session.
@@ -275,6 +320,19 @@ class GoTrueClient {
       Provider provider, AuthOptions? options) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
+  }
+
+  Future<GotrueSessionResponse> _handlePhoneSignIn(String phone, [String? password]) async {
+    final response = await api.signInWithPhone(phone, password);
+
+    if (response.error != null) return response;
+
+    if (response.data?.user?.phoneConfirmedAt != null) {
+      _saveSession(response.data!);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
+
+    return response;
   }
 
   void _saveSession(Session session) {

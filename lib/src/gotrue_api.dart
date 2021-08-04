@@ -110,9 +110,9 @@ class GoTrueApi {
   ///
   /// `password` is the password of the user
   Future<GotrueSessionResponse> signInWithPhone(
-    String phone, {
+    String phone, [
     String? password,
-  }) async {
+  ]) async {
     try {
       final body = {'phone': phone, 'password': password};
       final fetchOptions = FetchOptions(headers);
