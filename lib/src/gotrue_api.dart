@@ -76,6 +76,10 @@ class GoTrueApi {
   }
 
   /// Signs up a new user using their phone number and a password.
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `password` is the password of the user
   Future<GotrueSessionResponse> signUpWithPhone(
       String phone, String password) async {
     try {
@@ -101,6 +105,10 @@ class GoTrueApi {
   }
 
   /// Logs in an existing user using their phone number and password.
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `password` is the password of the user
   Future<GotrueSessionResponse> signInWithPhone(
     String phone, {
     String? password,
@@ -169,6 +177,10 @@ class GoTrueApi {
   }
 
   /// Send User supplied Mobile OTP to be verified
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `token` is the token that user was sent to their mobile phone
   Future<GotrueSessionResponse> verifyMobileOTP(String phone, String token,
       {AuthOptions? options}) async {
     try {
