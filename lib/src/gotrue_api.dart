@@ -148,6 +148,51 @@ class GoTrueApi {
     }
   }
 
+  /// Sends a mobile OTP via SMS. Will register the account if it doesn't already exist
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  Future<GotrueJsonResponse> sendMobileOTP(String phone) async {
+    try {
+      final body = {'phone': phone};
+      final fetchOptions = FetchOptions(headers);
+      final response =
+          await fetch.post('$url/otp', body, options: fetchOptions);
+      if (response.error != null) {
+        return GotrueJsonResponse(error: response.error);
+      } else {
+        return GotrueJsonResponse(
+            data: response.rawData as Map<String, dynamic>?);
+      }
+    } catch (e) {
+      return GotrueJsonResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Send User supplied Mobile OTP to be verified
+  Future<GotrueSessionResponse> verifyMobileOTP(String phone, String token,
+      {AuthOptions? options}) async {
+    try {
+      final body = {
+        'phone': phone,
+        'token': token,
+        'type': 'sms',
+        'redirect_to': options?.redirectTo,
+      };
+      final fetchOptions = FetchOptions(headers);
+      final response =
+          await fetch.post('$url/verify', body, options: fetchOptions);
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
   /// Sends an invite link to an email address.
   Future<GotrueJsonResponse> inviteUserByEmail(String email,
       {AuthOptions? options}) async {
