@@ -70,6 +70,11 @@ class GoTrueClient {
     return response;
   }
 
+  /// Signs up a new user using their phone number and a password.
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `password` is the password of the user
   Future<GotrueSessionResponse> signUpWithPhone(String phone, String password,
       {AuthOptions? options}) async {
     _removeSession();
@@ -77,7 +82,7 @@ class GoTrueClient {
     final response = await api.signUpWithPhone(phone, password);
     if (response.error != null) return response;
 
-    if (response.data?.user?.confirmedAt != null) {
+    if (response.data?.user?.phoneConfirmedAt != null) {
       _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
