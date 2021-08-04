@@ -75,6 +75,30 @@ class GoTrueApi {
     }
   }
 
+  Future<GotrueSessionResponse> signUpWithPhone(String phone,
+      [String? password]) async {
+    try {
+      final fetchOptions = FetchOptions(headers);
+      final body = {'phone': phone, 'password': password};
+      final response =
+          await fetch.post('$url/signup', body, options: fetchOptions);
+
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
+          null) {
+        // email validation required
+        return GotrueSessionResponse();
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
   /// Sends a magic login link to an email address.
   Future<GotrueJsonResponse> sendMagicLinkEmail(String email,
       {AuthOptions? options}) async {
