@@ -327,7 +327,8 @@ class GoTrueClient {
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
-  Future<GotrueSessionResponse> _handlePhoneSignIn(String phone, [String? password]) async {
+  Future<GotrueSessionResponse> _handlePhoneSignIn(String phone,
+      [String? password]) async {
     final response = await api.signInWithPhone(phone, password);
 
     if (response.error != null) return response;
