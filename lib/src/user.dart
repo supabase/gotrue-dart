@@ -54,7 +54,7 @@ class User {
         'aud': aud,
         'email': email,
         'created_at': createdAt,
-        'confirmed_at': confirmedAt,
+        'confirmed_at': emailConfirmedAt,
         'last_sign_in_at': lastSignInAt,
         'role': role,
         'updated_at': updatedAt,

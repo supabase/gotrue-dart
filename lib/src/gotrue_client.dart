@@ -62,7 +62,7 @@ class GoTrueClient {
         await api.signUpWithEmail(email, password, options: options);
     if (response.error != null) return response;
 
-    if (response.data?.user?.confirmedAt != null) {
+    if (response.data?.user?.emailConfirmedAt != null) {
       _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
@@ -312,7 +312,7 @@ class GoTrueClient {
         await api.signInWithEmail(email, password, options: options);
     if (response.error != null) return response;
 
-    if (response.data?.user?.confirmedAt != null) {
+    if (response.data?.user?.emailConfirmedAt != null) {
       _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
