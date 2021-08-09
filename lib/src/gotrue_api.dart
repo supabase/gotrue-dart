@@ -75,6 +75,62 @@ class GoTrueApi {
     }
   }
 
+  /// Signs up a new user using their phone number and a password.
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `password` is the password of the user
+  Future<GotrueSessionResponse> signUpWithPhone(
+      String phone, String password) async {
+    try {
+      final fetchOptions = FetchOptions(headers);
+      final body = {'phone': phone, 'password': password};
+      final response =
+          await fetch.post('$url/signup', body, options: fetchOptions);
+
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
+          null) {
+        // email validation required
+        return GotrueSessionResponse();
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Logs in an existing user using their phone number and password.
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `password` is the password of the user
+  Future<GotrueSessionResponse> signInWithPhone(
+    String phone, [
+    String? password,
+  ]) async {
+    try {
+      final body = {'phone': phone, 'password': password};
+      final fetchOptions = FetchOptions(headers);
+      const queryString = '?grant_type=password';
+      final response = await fetch.post('$url/token$queryString', body,
+          options: fetchOptions);
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
   /// Sends a magic login link to an email address.
   Future<GotrueJsonResponse> sendMagicLinkEmail(String email,
       {AuthOptions? options}) async {
@@ -97,6 +153,55 @@ class GoTrueApi {
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Sends a mobile OTP via SMS. Will register the account if it doesn't already exist
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  Future<GotrueJsonResponse> sendMobileOTP(String phone) async {
+    try {
+      final body = {'phone': phone};
+      final fetchOptions = FetchOptions(headers);
+      final response =
+          await fetch.post('$url/otp', body, options: fetchOptions);
+      if (response.error != null) {
+        return GotrueJsonResponse(error: response.error);
+      } else {
+        return GotrueJsonResponse(
+            data: response.rawData as Map<String, dynamic>?);
+      }
+    } catch (e) {
+      return GotrueJsonResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Send User supplied Mobile OTP to be verified
+  ///
+  /// `phone` is the user's phone number WITH international prefix
+  ///
+  /// `token` is the token that user was sent to their mobile phone
+  Future<GotrueSessionResponse> verifyMobileOTP(String phone, String token,
+      {AuthOptions? options}) async {
+    try {
+      final body = {
+        'phone': phone,
+        'token': token,
+        'type': 'sms',
+        'redirect_to': options?.redirectTo,
+      };
+      final fetchOptions = FetchOptions(headers);
+      final response =
+          await fetch.post('$url/verify', body, options: fetchOptions);
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
     }
   }
 
