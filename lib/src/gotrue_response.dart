@@ -4,45 +4,55 @@ import 'subscription.dart';
 import 'user.dart';
 
 class GotrueResponse {
-  GotrueError? error;
-  dynamic rawData;
+  final GotrueError? error;
+  final dynamic rawData;
 
-  GotrueResponse({this.rawData, this.error});
+  const GotrueResponse({this.rawData, this.error});
 }
 
 class GotrueJsonResponse extends GotrueResponse {
-  Map<String, dynamic>? data;
+  final Map<String, dynamic>? data;
 
-  GotrueJsonResponse({this.data, GotrueError? error}) : super(error: error);
+  const GotrueJsonResponse({this.data, GotrueError? error})
+      : super(error: error);
 }
 
 class GotrueSessionResponse extends GotrueResponse {
-  Session? data;
+  final Session? data;
 
-  String? provider;
-  String? url;
+  final String? provider;
+  final String? url;
 
   User? get user {
     return data?.user;
   }
 
-  GotrueSessionResponse(
-      {this.data, this.provider, this.url, GotrueError? error})
-      : super(error: error);
+  const GotrueSessionResponse({
+    this.data,
+    this.provider,
+    this.url,
+    GotrueError? error,
+  }) : super(error: error);
 }
 
 class GotrueUserResponse extends GotrueResponse {
-  User? user;
+  final User? user;
 
   User? get data {
     return user;
   }
 
-  GotrueUserResponse({this.user, GotrueError? error}) : super(error: error);
+  const GotrueUserResponse({
+    this.user,
+    GotrueError? error,
+  }) : super(error: error);
 }
 
 class GotrueSubscription extends GotrueResponse {
-  Subscription? data;
+  final Subscription? data;
 
-  GotrueSubscription({this.data, GotrueError? error}) : super(error: error);
+  const GotrueSubscription({
+    this.data,
+    GotrueError? error,
+  }) : super(error: error);
 }

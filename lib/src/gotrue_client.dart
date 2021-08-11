@@ -31,11 +31,12 @@ class GoTrueClient {
 
   Timer? _refreshTokenTimer;
 
-  GoTrueClient(
-      {String? url,
-      Map<String, String>? headers,
-      bool? autoRefreshToken,
-      CookieOptions? cookieOptions}) {
+  GoTrueClient({
+    String? url,
+    Map<String, String>? headers,
+    bool? autoRefreshToken,
+    CookieOptions? cookieOptions,
+  }) {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
     final _url = url ?? Constants.defaultGotrueUrl;

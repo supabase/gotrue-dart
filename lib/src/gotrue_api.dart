@@ -12,12 +12,11 @@ import 'user.dart';
 import 'user_attributes.dart';
 
 class GoTrueApi {
-  String url;
-  Map<String, String> headers;
-  CookieOptions? cookieOptions;
+  final String url;
+  final Map<String, String> headers;
+  final CookieOptions? cookieOptions;
 
-  GoTrueApi(this.url, {Map<String, String>? headers, this.cookieOptions})
-      : headers = headers ?? {};
+  const GoTrueApi(this.url, {this.headers = const {}, this.cookieOptions});
 
   /// Creates a new user using their email address.
   Future<GotrueSessionResponse> signUpWithEmail(String email, String password,

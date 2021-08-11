@@ -1,10 +1,15 @@
 class UserAttributes {
-  String? email;
-  String? password;
-  String? emailChangeToken;
-  dynamic data;
+  final String? email;
+  final String? password;
+  final String? emailChangeToken;
+  final dynamic data;
 
-  UserAttributes({this.email, this.password, this.emailChangeToken, this.data});
+  const UserAttributes({
+    this.email,
+    this.password,
+    this.emailChangeToken,
+    this.data,
+  });
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> values = {};

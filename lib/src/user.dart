@@ -1,40 +1,39 @@
 class User {
-  String id;
-  Map<String, dynamic> appMetadata;
-  Map<String, dynamic> userMetadata;
-  String aud;
-  String? email;
-  String? phone;
-  String createdAt;
+  final String id;
+  final Map<String, dynamic> appMetadata;
+  final Map<String, dynamic> userMetadata;
+  final String aud;
+  final String? email;
+  final String? phone;
+  final String createdAt;
   @Deprecated('Use emailConfirmedAt')
-  String? confirmedAt;
-  String? emailConfirmedAt;
-  String? phoneConfirmedAt;
-  String? lastSignInAt;
-  String role;
-  String updatedAt;
+  final String? confirmedAt;
+  final String? emailConfirmedAt;
+  final String? phoneConfirmedAt;
+  final String? lastSignInAt;
+  final String role;
+  final String updatedAt;
 
-  User(
-      {required this.id,
-      required Map<String, dynamic>? appMetadata,
-      required Map<String, dynamic>? userMetadata,
-      required this.aud,
-      required this.email,
-      required this.phone,
-      required this.createdAt,
-      this.confirmedAt,
-      this.emailConfirmedAt,
-      this.phoneConfirmedAt,
-      this.lastSignInAt,
-      required this.role,
-      required this.updatedAt})
-      : appMetadata = appMetadata ?? {},
-        userMetadata = userMetadata ?? {};
+  const User({
+    required this.id,
+    this.appMetadata = const {},
+    this.userMetadata = const {},
+    required this.aud,
+    required this.email,
+    required this.phone,
+    required this.createdAt,
+    this.confirmedAt,
+    this.emailConfirmedAt,
+    this.phoneConfirmedAt,
+    this.lastSignInAt,
+    required this.role,
+    required this.updatedAt,
+  });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
         id: json['id'] as String,
-        appMetadata: json['app_metadata'] as Map<String, dynamic>?,
-        userMetadata: json['user_metadata'] as Map<String, dynamic>?,
+        appMetadata: (json['app_metadata'] ?? {}) as Map<String, dynamic>,
+        userMetadata: (json['user_metadata'] ?? {}) as Map<String, dynamic>,
         aud: json['aud'] as String,
         email: json['email'] as String?,
         phone: json['phone'] as String?,

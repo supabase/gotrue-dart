@@ -12,7 +12,7 @@ class Session {
   final String? providerToken;
   final User? user;
 
-  Session({
+  const Session({
     required this.accessToken,
     this.expiresIn,
     this.refreshToken,

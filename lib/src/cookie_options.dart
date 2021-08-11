@@ -5,15 +5,11 @@ class CookieOptions {
   final String path;
   final String sameSite;
 
-  const CookieOptions(
-      {String? name,
-      int? lifetime,
-      String? domain,
-      String? path,
-      String? sameSite})
-      : name = name ?? 'sb:token',
-        lifetime = lifetime ?? 60 * 60 * 8,
-        domain = domain ?? '',
-        path = path ?? '/',
-        sameSite = sameSite ?? 'lax';
+  const CookieOptions({
+    this.name = 'sb:token',
+    this.lifetime = 60 * 80 * 8,
+    this.domain = '',
+    this.path = '/',
+    this.sameSite = 'lax',
+  });
 }

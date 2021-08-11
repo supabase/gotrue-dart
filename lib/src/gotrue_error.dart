@@ -1,5 +1,5 @@
 class GotrueError {
-  String message;
+  final String message;
 
-  GotrueError(this.message);
+  const GotrueError(this.message);
 }
