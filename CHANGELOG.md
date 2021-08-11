@@ -1,3 +1,7 @@
+## [0.1.0]
+
+- feat: add support for phone auth
+
 ## [0.0.7]
 
 - fix: stop refreshToken timer on session removed
