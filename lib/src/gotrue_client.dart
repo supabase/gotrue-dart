@@ -121,7 +121,7 @@ class GoTrueClient {
       return _handleProviderSignIn(provider, options);
     } else {
       const error = GotrueError(
-          "You must provide either an email or a third-party provider.");
+          'You must provide either an email or a third-party provider.');
       return const GotrueSessionResponse(error: error);
     }
   }
