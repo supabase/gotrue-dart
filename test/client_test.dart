@@ -34,7 +34,8 @@ void main() {
 
   test('signUp()', () async {
     final response = await client.signUp(email, password,
-        options: const AuthOptions(redirectTo: 'https://localhost:9999/welcome'));
+        options:
+            const AuthOptions(redirectTo: 'https://localhost:9999/welcome'));
     final data = response.data;
     final error = response.error;
     expect(error, isNull);

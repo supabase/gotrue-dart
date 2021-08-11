@@ -281,7 +281,8 @@ class GoTrueClient {
             error: GotrueError('Missing currentSession.'));
       }
       if (expiresAt == null) {
-        return const GotrueSessionResponse(error: GotrueError('Missing expiresAt.'));
+        return const GotrueSessionResponse(
+            error: GotrueError('Missing expiresAt.'));
       }
 
       final session = Session.fromJson(currentSession);
@@ -297,7 +298,8 @@ class GoTrueClient {
               await _callRefreshToken(refreshToken: session.refreshToken);
           return response;
         } else {
-          return const GotrueSessionResponse(error: GotrueError('Session expired.'));
+          return const GotrueSessionResponse(
+              error: GotrueError('Session expired.'));
         }
       } else {
         _saveSession(session);
