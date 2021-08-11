@@ -120,9 +120,9 @@ class GoTrueClient {
     } else if (provider != null) {
       return _handleProviderSignIn(provider, options);
     } else {
-      final error = GotrueError(
+      const error = GotrueError(
           "You must provide either an email or a third-party provider.");
-      return GotrueSessionResponse(error: error);
+      return const GotrueSessionResponse(error: error);
     }
   }
 
@@ -150,8 +150,8 @@ class GoTrueClient {
   /// Force refreshes the session including the user data in case it was updated in a different session.
   Future<GotrueSessionResponse> refreshSession() async {
     if (currentSession?.accessToken == null) {
-      final error = GotrueError('Not logged in.');
-      return GotrueSessionResponse(error: error);
+      const error = GotrueError('Not logged in.');
+      return const GotrueSessionResponse(error: error);
     }
 
     final response = await _callRefreshToken();
@@ -182,19 +182,19 @@ class GoTrueClient {
     final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
-      return GotrueSessionResponse(
+      return const GotrueSessionResponse(
           error: GotrueError('No access_token detected.'));
     }
     if (expiresIn == null) {
-      return GotrueSessionResponse(
+      return const GotrueSessionResponse(
           error: GotrueError('No expires_in detected.'));
     }
     if (refreshToken == null) {
-      return GotrueSessionResponse(
+      return const GotrueSessionResponse(
           error: GotrueError('No refresh_token detected.'));
     }
     if (tokenType == null) {
-      return GotrueSessionResponse(
+      return const GotrueSessionResponse(
           error: GotrueError('No token_type detected.'));
     }
 
@@ -226,8 +226,8 @@ class GoTrueClient {
   /// Updates user data, if there is a logged in user.
   Future<GotrueUserResponse> update(UserAttributes attributes) async {
     if (currentSession?.accessToken == null) {
-      final error = GotrueError('Not logged in.');
-      return GotrueUserResponse(error: error);
+      const error = GotrueError('Not logged in.');
+      return const GotrueUserResponse(error: error);
     }
 
     final response =
@@ -249,7 +249,7 @@ class GoTrueClient {
       final response = await api.signOut(accessToken);
       if (response.error != null) return response;
     }
-    return GotrueResponse();
+    return const GotrueResponse();
   }
 
   // Receive a notification every time an auth event happens.
@@ -277,16 +277,16 @@ class GoTrueClient {
           persistedData['currentSession'] as Map<String, dynamic>?;
       final expiresAt = persistedData['expiresAt'] as int?;
       if (currentSession == null) {
-        return GotrueSessionResponse(
+        return const GotrueSessionResponse(
             error: GotrueError('Missing currentSession.'));
       }
       if (expiresAt == null) {
-        return GotrueSessionResponse(error: GotrueError('Missing expiresAt.'));
+        return const GotrueSessionResponse(error: GotrueError('Missing expiresAt.'));
       }
 
       final session = Session.fromJson(currentSession);
       if (session.user == null) {
-        return GotrueSessionResponse(
+        return const GotrueSessionResponse(
             error: GotrueError('Current session is missing data.'));
       }
 
@@ -297,7 +297,7 @@ class GoTrueClient {
               await _callRefreshToken(refreshToken: session.refreshToken);
           return response;
         } else {
-          return GotrueSessionResponse(error: GotrueError('Session expired.'));
+          return const GotrueSessionResponse(error: GotrueError('Session expired.'));
         }
       } else {
         _saveSession(session);
@@ -384,8 +384,8 @@ class GoTrueClient {
       {String? refreshToken}) async {
     final token = refreshToken ?? currentSession?.refreshToken;
     if (token == null) {
-      final error = GotrueError('No current session.');
-      return GotrueSessionResponse(error: error);
+      const error = GotrueError('No current session.');
+      return const GotrueSessionResponse(error: error);
     }
 
     final response = await api.refreshAccessToken(token);

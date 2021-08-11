@@ -33,7 +33,7 @@ void main() {
   test('signIn() with Provider and options', () async {
     final res = await client.signIn(
         provider: Provider.github,
-        options: AuthOptions(
+        options: const AuthOptions(
           redirectTo: 'redirectToURL',
           scopes: 'repo',
         ));

@@ -34,7 +34,7 @@ void main() {
 
   test('signUp()', () async {
     final response = await client.signUp(email, password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'));
+        options: const AuthOptions(redirectTo: 'https://localhost:9999/welcome'));
     final data = response.data;
     final error = response.error;
     expect(error, isNull);
@@ -66,7 +66,7 @@ void main() {
 
   test('Update user', () async {
     final response =
-        await client.update(UserAttributes(data: {'hello': 'world'}));
+        await client.update(const UserAttributes(data: {'hello': 'world'}));
     final data = response.data;
     final error = response.error;
     expect(error, isNull);

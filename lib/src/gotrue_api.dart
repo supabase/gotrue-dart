@@ -37,7 +37,7 @@ class GoTrueApi {
       } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
           null) {
         // email validation required
-        return GotrueSessionResponse();
+        return const GotrueSessionResponse();
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
@@ -92,7 +92,7 @@ class GoTrueApi {
       } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
           null) {
         // email validation required
-        return GotrueSessionResponse();
+        return const GotrueSessionResponse();
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
