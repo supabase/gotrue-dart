@@ -22,6 +22,7 @@ class User {
     required this.email,
     required this.phone,
     required this.createdAt,
+    // ignore: deprecated_consistency
     this.confirmedAt,
     this.emailConfirmedAt,
     this.phoneConfirmedAt,
