@@ -22,7 +22,7 @@ class User {
       required this.email,
       required this.phone,
       required this.createdAt,
-      this.confirmedAt,
+      @Deprecated('Use emailConfirmedAt') this.confirmedAt,
       this.emailConfirmedAt,
       this.phoneConfirmedAt,
       this.lastSignInAt,
@@ -41,6 +41,7 @@ class User {
         createdAt: json['created_at'] as String,
         emailConfirmedAt: json['email_confirmed_at'] as String?,
         phoneConfirmedAt: json['phone_confirmed_at'] as String?,
+        // ignore: deprecated_member_use_from_same_package
         confirmedAt: json['confirmed_at'] as String?,
         lastSignInAt: json['last_sign_in_at'] as String?,
         role: json['role'] as String,

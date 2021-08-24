@@ -55,6 +55,7 @@ void main() {
 
     final payload = Jwt.parseJwt(data.accessToken);
     final persistSession = json.decode(data.persistSessionString);
+    // ignore: avoid_dynamic_calls
     expect(payload['exp'], persistSession['expiresAt']);
   });
 
