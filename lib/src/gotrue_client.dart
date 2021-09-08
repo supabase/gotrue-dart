@@ -39,7 +39,10 @@ class GoTrueClient {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
     final _url = url ?? Constants.defaultGotrueUrl;
-    final _header = headers ?? Constants.defaultHeaders;
+    final _header = {
+      ...Constants.defaultHeaders,
+      if (headers != null) ...headers,
+    };
     api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
   }
 
