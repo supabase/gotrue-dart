@@ -1,9 +1,5 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Test
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
   push:
     branches: [main]
@@ -13,7 +9,7 @@ on:
 
 jobs:
   test:
-    name: Test / OS ${{ matrix.os }} / Node ${{ matrix.node }}
+    name: Test / OS ${{ matrix.os }} / Node ${{ matrix.node }} / SDK ${{ matrix.sdk }}
     strategy:
       matrix:
         os: [ubuntu-latest]
