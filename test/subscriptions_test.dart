@@ -12,10 +12,13 @@ void main() {
   late Subscription subscription;
 
   setUp(() {
-    client = GoTrueClient(url: gotrueUrl, headers: {
-      'Authorization': 'Bearer $annonToken',
-      'apikey': annonToken,
-    });
+    client = GoTrueClient(
+      url: gotrueUrl,
+      headers: {
+        'Authorization': 'Bearer $annonToken',
+        'apikey': annonToken,
+      },
+    );
 
     res = client.onAuthStateChange((event, session) {});
     subscription = res.data!;

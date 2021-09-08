@@ -16,10 +16,13 @@ void main() {
     late GoTrueClient client;
 
     setUpAll(() {
-      client = GoTrueClient(url: gotrueUrl, headers: {
-        'Authorization': 'Bearer $annonToken',
-        'apikey': annonToken,
-      });
+      client = GoTrueClient(
+        url: gotrueUrl,
+        headers: {
+          'Authorization': 'Bearer $annonToken',
+          'apikey': annonToken,
+        },
+      );
     });
 
     test('basic json parsing', () async {
@@ -29,13 +32,18 @@ void main() {
       final session = Session.fromJson(bodyJson as Map<String, dynamic>);
 
       expect(session, isNotNull);
-      expect(session.accessToken,
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNjExODk1MzExLCJzdWIiOiI0Njg3YjkzNi02ZDE5LTRkNmUtOGIyYi1kYmU0N2I1ZjYzOWMiLCJlbWFpbCI6InRlc3Q5QGdtYWlsLmNvbSIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIn0sInVzZXJfbWV0YWRhdGEiOm51bGwsInJvbGUiOiJhdXRoZW50aWNhdGVkIn0.GyIokEvKGp0M8PYU8IiIpvzeTAXspoCtR5aj-jCnWys');
+      expect(
+        session.accessToken,
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNjExODk1MzExLCJzdWIiOiI0Njg3YjkzNi02ZDE5LTRkNmUtOGIyYi1kYmU0N2I1ZjYzOWMiLCJlbWFpbCI6InRlc3Q5QGdtYWlsLmNvbSIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIn0sInVzZXJfbWV0YWRhdGEiOm51bGwsInJvbGUiOiJhdXRoZW50aWNhdGVkIn0.GyIokEvKGp0M8PYU8IiIpvzeTAXspoCtR5aj-jCnWys',
+      );
     });
 
     test('signUp()', () async {
-      final response = await client.signUp(email, password,
-          options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'));
+      final response = await client.signUp(
+        email,
+        password,
+        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+      );
       final data = response.data;
       final error = response.error;
       expect(error, isNull);
@@ -106,21 +114,29 @@ void main() {
 
   group('header', () {
     test('X-Client-Info is set', () {
-      final client = GoTrueClient(url: gotrueUrl, headers: {
-        'Authorization': 'Bearer $annonToken',
-        'apikey': annonToken,
-      });
+      final client = GoTrueClient(
+        url: gotrueUrl,
+        headers: {
+          'Authorization': 'Bearer $annonToken',
+          'apikey': annonToken,
+        },
+      );
 
       expect(
-          client.api.headers['X-Client-Info']!.split('/').first, 'gotrue-dart');
+        client.api.headers['X-Client-Info']!.split('/').first,
+        'gotrue-dart',
+      );
     });
 
     test('X-Client-Info can be overridden', () {
-      final client = GoTrueClient(url: gotrueUrl, headers: {
-        'Authorization': 'Bearer $annonToken',
-        'apikey': annonToken,
-        'X-Client-Info': 'supabase-dart/0.0.0'
-      });
+      final client = GoTrueClient(
+        url: gotrueUrl,
+        headers: {
+          'Authorization': 'Bearer $annonToken',
+          'apikey': annonToken,
+          'X-Client-Info': 'supabase-dart/0.0.0'
+        },
+      );
 
       expect(client.api.headers['X-Client-Info'], 'supabase-dart/0.0.0');
     });
