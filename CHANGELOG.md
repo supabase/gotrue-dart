@@ -1,3 +1,7 @@
+## [0.1.1]
+
+- chore: add `X-Client-Info` header
+
 ## [0.1.0]
 
 - feat: add support for phone auth
