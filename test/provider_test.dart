@@ -9,10 +9,13 @@ void main() {
   late Session session;
 
   setUpAll(() async {
-    client = GoTrueClient(url: gotrueUrl, headers: {
-      'Authorization': 'Bearer $annonToken',
-      'apikey': annonToken,
-    });
+    client = GoTrueClient(
+      url: gotrueUrl,
+      headers: {
+        'Authorization': 'Bearer $annonToken',
+        'apikey': annonToken,
+      },
+    );
     final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     final email = 'fake2$timestamp@email.com';
     const password = 'secret';
@@ -32,17 +35,20 @@ void main() {
 
   test('signIn() with Provider and options', () async {
     final res = await client.signIn(
-        provider: Provider.github,
-        options: AuthOptions(
-          redirectTo: 'redirectToURL',
-          scopes: 'repo',
-        ));
+      provider: Provider.github,
+      options: AuthOptions(
+        redirectTo: 'redirectToURL',
+        scopes: 'repo',
+      ),
+    );
     final error = res.error;
     final url = res.url;
     final provider = res.provider;
     expect(error, isNull);
-    expect(url,
-        '$gotrueUrl/authorize?provider=github&scopes=repo&redirect_to=redirectToURL');
+    expect(
+      url,
+      '$gotrueUrl/authorize?provider=github&scopes=repo&redirect_to=redirectToURL',
+    );
     expect(provider, 'github');
   });
 

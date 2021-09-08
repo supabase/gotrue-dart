@@ -20,8 +20,11 @@ class GoTrueApi {
       : headers = headers ?? {};
 
   /// Creates a new user using their email address.
-  Future<GotrueSessionResponse> signUpWithEmail(String email, String password,
-      {AuthOptions? options}) async {
+  Future<GotrueSessionResponse> signUpWithEmail(
+    String email,
+    String password, {
+    AuthOptions? options,
+  }) async {
     try {
       final body = {'email': email, 'password': password};
       final fetchOptions = FetchOptions(headers);
@@ -31,8 +34,11 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post('$url/signup$queryString', body,
-          options: fetchOptions);
+      final response = await fetch.post(
+        '$url/signup$queryString',
+        body,
+        options: fetchOptions,
+      );
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
@@ -50,8 +56,11 @@ class GoTrueApi {
   }
 
   /// Logs in an existing user using their email address.
-  Future<GotrueSessionResponse> signInWithEmail(String email, String password,
-      {AuthOptions? options}) async {
+  Future<GotrueSessionResponse> signInWithEmail(
+    String email,
+    String password, {
+    AuthOptions? options,
+  }) async {
     try {
       final body = {'email': email, 'password': password};
       final fetchOptions = FetchOptions(headers);
@@ -61,8 +70,11 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = '?${urlParams.join('&')}';
-      final response = await fetch.post('$url/token$queryString', body,
-          options: fetchOptions);
+      final response = await fetch.post(
+        '$url/token$queryString',
+        body,
+        options: fetchOptions,
+      );
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else {
@@ -81,7 +93,9 @@ class GoTrueApi {
   ///
   /// `password` is the password of the user
   Future<GotrueSessionResponse> signUpWithPhone(
-      String phone, String password) async {
+    String phone,
+    String password,
+  ) async {
     try {
       final fetchOptions = FetchOptions(headers);
       final body = {'phone': phone, 'password': password};
@@ -117,8 +131,11 @@ class GoTrueApi {
       final body = {'phone': phone, 'password': password};
       final fetchOptions = FetchOptions(headers);
       const queryString = '?grant_type=password';
-      final response = await fetch.post('$url/token$queryString', body,
-          options: fetchOptions);
+      final response = await fetch.post(
+        '$url/token$queryString',
+        body,
+        options: fetchOptions,
+      );
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else {
@@ -132,8 +149,10 @@ class GoTrueApi {
   }
 
   /// Sends a magic login link to an email address.
-  Future<GotrueJsonResponse> sendMagicLinkEmail(String email,
-      {AuthOptions? options}) async {
+  Future<GotrueJsonResponse> sendMagicLinkEmail(
+    String email, {
+    AuthOptions? options,
+  }) async {
     try {
       final body = {'email': email};
       final fetchOptions = FetchOptions(headers);
@@ -143,13 +162,17 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post('$url/magiclink$queryString', body,
-          options: fetchOptions);
+      final response = await fetch.post(
+        '$url/magiclink$queryString',
+        body,
+        options: fetchOptions,
+      );
       if (response.error != null) {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>?);
+          data: response.rawData as Map<String, dynamic>?,
+        );
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
@@ -169,7 +192,8 @@ class GoTrueApi {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>?);
+          data: response.rawData as Map<String, dynamic>?,
+        );
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
@@ -181,8 +205,11 @@ class GoTrueApi {
   /// `phone` is the user's phone number WITH international prefix
   ///
   /// `token` is the token that user was sent to their mobile phone
-  Future<GotrueSessionResponse> verifyMobileOTP(String phone, String token,
-      {AuthOptions? options}) async {
+  Future<GotrueSessionResponse> verifyMobileOTP(
+    String phone,
+    String token, {
+    AuthOptions? options,
+  }) async {
     try {
       final body = {
         'phone': phone,
@@ -206,8 +233,10 @@ class GoTrueApi {
   }
 
   /// Sends an invite link to an email address.
-  Future<GotrueJsonResponse> inviteUserByEmail(String email,
-      {AuthOptions? options}) async {
+  Future<GotrueJsonResponse> inviteUserByEmail(
+    String email, {
+    AuthOptions? options,
+  }) async {
     try {
       final body = {'email': email};
       final fetchOptions = FetchOptions(headers);
@@ -217,13 +246,17 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post('$url/invite$queryString', body,
-          options: fetchOptions);
+      final response = await fetch.post(
+        '$url/invite$queryString',
+        body,
+        options: fetchOptions,
+      );
       if (response.error != null) {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>?);
+          data: response.rawData as Map<String, dynamic>?,
+        );
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
@@ -231,8 +264,10 @@ class GoTrueApi {
   }
 
   /// Sends a reset request to an email address.
-  Future<GotrueJsonResponse> resetPasswordForEmail(String email,
-      {AuthOptions? options}) async {
+  Future<GotrueJsonResponse> resetPasswordForEmail(
+    String email, {
+    AuthOptions? options,
+  }) async {
     try {
       final body = {'email': email};
       final fetchOptions = FetchOptions(headers);
@@ -242,13 +277,17 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post('$url/recover$queryString', body,
-          options: fetchOptions);
+      final response = await fetch.post(
+        '$url/recover$queryString',
+        body,
+        options: fetchOptions,
+      );
       if (response.error != null) {
         return GotrueJsonResponse(error: response.error);
       } else {
         return GotrueJsonResponse(
-            data: response.rawData as Map<String, dynamic>?);
+          data: response.rawData as Map<String, dynamic>?,
+        );
       }
     } catch (e) {
       return GotrueJsonResponse(error: GotrueError(e.toString()));
@@ -300,7 +339,9 @@ class GoTrueApi {
 
   /// Updates the user data.
   Future<GotrueUserResponse> updateUser(
-      String jwt, UserAttributes attributes) async {
+    String jwt,
+    UserAttributes attributes,
+  ) async {
     try {
       final body = attributes.toJson();
       final headers = {...this.headers};

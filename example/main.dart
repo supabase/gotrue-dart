@@ -3,10 +3,13 @@ import 'package:gotrue/gotrue.dart';
 Future<bool> main(List<String> arguments) async {
   const gotrueUrl = 'http://localhost:9999';
   const annonToken = '';
-  final client = GoTrueClient(url: gotrueUrl, headers: {
-    'Authorization': 'Bearer $annonToken',
-    'apikey': annonToken,
-  });
+  final client = GoTrueClient(
+    url: gotrueUrl,
+    headers: {
+      'Authorization': 'Bearer $annonToken',
+      'apikey': annonToken,
+    },
+  );
 
   final login = await client.signIn(
     email: 'email',

@@ -9,6 +9,9 @@ class Subscription {
   Callback callback;
   Unsubscriber unsubscribe;
 
-  Subscription(
-      {required this.id, required this.callback, required this.unsubscribe});
+  Subscription({
+    required this.id,
+    required this.callback,
+    required this.unsubscribe,
+  });
 }

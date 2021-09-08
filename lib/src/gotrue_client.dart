@@ -31,11 +31,12 @@ class GoTrueClient {
 
   Timer? _refreshTokenTimer;
 
-  GoTrueClient(
-      {String? url,
-      Map<String, String>? headers,
-      bool? autoRefreshToken,
-      CookieOptions? cookieOptions}) {
+  GoTrueClient({
+    String? url,
+    Map<String, String>? headers,
+    bool? autoRefreshToken,
+    CookieOptions? cookieOptions,
+  }) {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
     final _url = url ?? Constants.defaultGotrueUrl;
@@ -57,8 +58,11 @@ class GoTrueClient {
   }
 
   /// Creates a new user.
-  Future<GotrueSessionResponse> signUp(String email, String password,
-      {AuthOptions? options}) async {
+  Future<GotrueSessionResponse> signUp(
+    String email,
+    String password, {
+    AuthOptions? options,
+  }) async {
     _removeSession();
 
     final response =
@@ -80,8 +84,11 @@ class GoTrueClient {
   /// `phone` is the user's phone number WITH international prefix
   ///
   /// `password` is the password of the user
-  Future<GotrueSessionResponse> signUpWithPhone(String phone, String password,
-      {AuthOptions? options}) async {
+  Future<GotrueSessionResponse> signUpWithPhone(
+    String phone,
+    String password, {
+    AuthOptions? options,
+  }) async {
     _removeSession();
 
     final response = await api.signUpWithPhone(phone, password);
@@ -123,7 +130,8 @@ class GoTrueClient {
       return _handleProviderSignIn(provider, options);
     } else {
       final error = GotrueError(
-          "You must provide either an email or a third-party provider.");
+        "You must provide either an email or a third-party provider.",
+      );
       return GotrueSessionResponse(error: error);
     }
   }
@@ -133,8 +141,11 @@ class GoTrueClient {
   /// `phone` is the user's phone number WITH international prefix
   ///
   /// `token` is the token that user was sent to their mobile phone
-  Future<GotrueSessionResponse> verifyOTP(String phone, String token,
-      {AuthOptions? options}) async {
+  Future<GotrueSessionResponse> verifyOTP(
+    String phone,
+    String token, {
+    AuthOptions? options,
+  }) async {
     _removeSession();
 
     final response = await api.verifyMobileOTP(phone, token, options: options);
@@ -161,8 +172,10 @@ class GoTrueClient {
   }
 
   /// Gets the session data from a oauth2 callback URL
-  Future<GotrueSessionResponse> getSessionFromUrl(Uri originUrl,
-      {bool storeSession = true}) async {
+  Future<GotrueSessionResponse> getSessionFromUrl(
+    Uri originUrl, {
+    bool storeSession = true,
+  }) async {
     var url = originUrl;
     if (originUrl.hasQuery) {
       final decoded = originUrl.toString().replaceAll('#', '&');
@@ -185,19 +198,23 @@ class GoTrueClient {
 
     if (accessToken == null) {
       return GotrueSessionResponse(
-          error: GotrueError('No access_token detected.'));
+        error: GotrueError('No access_token detected.'),
+      );
     }
     if (expiresIn == null) {
       return GotrueSessionResponse(
-          error: GotrueError('No expires_in detected.'));
+        error: GotrueError('No expires_in detected.'),
+      );
     }
     if (refreshToken == null) {
       return GotrueSessionResponse(
-          error: GotrueError('No refresh_token detected.'));
+        error: GotrueError('No refresh_token detected.'),
+      );
     }
     if (tokenType == null) {
       return GotrueSessionResponse(
-          error: GotrueError('No token_type detected.'));
+        error: GotrueError('No token_type detected.'),
+      );
     }
 
     final response = await api.getUser(accessToken);
@@ -206,12 +223,13 @@ class GoTrueClient {
     }
 
     final session = Session(
-        accessToken: accessToken,
-        expiresIn: int.parse(expiresIn),
-        refreshToken: refreshToken,
-        tokenType: tokenType,
-        providerToken: providerToken,
-        user: response.user);
+      accessToken: accessToken,
+      expiresIn: int.parse(expiresIn),
+      refreshToken: refreshToken,
+      tokenType: tokenType,
+      providerToken: providerToken,
+      user: response.user,
+    );
 
     if (storeSession == true) {
       _saveSession(session);
@@ -259,11 +277,12 @@ class GoTrueClient {
     final id = uuid.generateV4();
     final GoTrueClient self = this;
     final subscription = Subscription(
-        id: id,
-        callback: callback,
-        unsubscribe: () {
-          self.stateChangeEmitters.remove(id);
-        });
+      id: id,
+      callback: callback,
+      unsubscribe: () {
+        self.stateChangeEmitters.remove(id);
+      },
+    );
     stateChangeEmitters[id] = subscription;
     return GotrueSubscription(data: subscription);
   }
@@ -280,7 +299,8 @@ class GoTrueClient {
       final expiresAt = persistedData['expiresAt'] as int?;
       if (currentSession == null) {
         return GotrueSessionResponse(
-            error: GotrueError('Missing currentSession.'));
+          error: GotrueError('Missing currentSession.'),
+        );
       }
       if (expiresAt == null) {
         return GotrueSessionResponse(error: GotrueError('Missing expiresAt.'));
@@ -289,7 +309,8 @@ class GoTrueClient {
       final session = Session.fromJson(currentSession);
       if (session.user == null) {
         return GotrueSessionResponse(
-            error: GotrueError('Current session is missing data.'));
+          error: GotrueError('Current session is missing data.'),
+        );
       }
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
@@ -311,8 +332,10 @@ class GoTrueClient {
   }
 
   Future<GotrueSessionResponse> _handleEmailSignIn(
-      String email, String password,
-      {AuthOptions? options}) async {
+    String email,
+    String password, {
+    AuthOptions? options,
+  }) async {
     final response =
         await api.signInWithEmail(email, password, options: options);
     if (response.error != null) return response;
@@ -329,13 +352,17 @@ class GoTrueClient {
 
   /// return provider url only
   GotrueSessionResponse _handleProviderSignIn(
-      Provider provider, AuthOptions? options) {
+    Provider provider,
+    AuthOptions? options,
+  ) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
-  Future<GotrueSessionResponse> _handlePhoneSignIn(String phone,
-      [String? password]) async {
+  Future<GotrueSessionResponse> _handlePhoneSignIn(
+    String phone, [
+    String? password,
+  ]) async {
     final response = await api.signInWithPhone(phone, password);
 
     if (response.error != null) return response;
@@ -382,8 +409,9 @@ class GoTrueClient {
     }
   }
 
-  Future<GotrueSessionResponse> _callRefreshToken(
-      {String? refreshToken}) async {
+  Future<GotrueSessionResponse> _callRefreshToken({
+    String? refreshToken,
+  }) async {
     final token = refreshToken ?? currentSession?.refreshToken;
     if (token == null) {
       final error = GotrueError('No current session.');

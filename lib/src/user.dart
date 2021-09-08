@@ -14,21 +14,21 @@ class User {
   String role;
   String updatedAt;
 
-  User(
-      {required this.id,
-      required Map<String, dynamic>? appMetadata,
-      required Map<String, dynamic>? userMetadata,
-      required this.aud,
-      required this.email,
-      required this.phone,
-      required this.createdAt,
-      @Deprecated('Use emailConfirmedAt') this.confirmedAt,
-      this.emailConfirmedAt,
-      this.phoneConfirmedAt,
-      this.lastSignInAt,
-      required this.role,
-      required this.updatedAt})
-      : appMetadata = appMetadata ?? {},
+  User({
+    required this.id,
+    required Map<String, dynamic>? appMetadata,
+    required Map<String, dynamic>? userMetadata,
+    required this.aud,
+    required this.email,
+    required this.phone,
+    required this.createdAt,
+    @Deprecated('Use emailConfirmedAt') this.confirmedAt,
+    this.emailConfirmedAt,
+    this.phoneConfirmedAt,
+    this.lastSignInAt,
+    required this.role,
+    required this.updatedAt,
+  })  : appMetadata = appMetadata ?? {},
         userMetadata = userMetadata ?? {};
 
   factory User.fromJson(Map<String, dynamic> json) => User(

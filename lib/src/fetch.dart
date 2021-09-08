@@ -54,8 +54,11 @@ class Fetch {
     }
   }
 
-  Future<GotrueResponse> post(String url, dynamic body,
-      {FetchOptions? options}) async {
+  Future<GotrueResponse> post(
+    String url,
+    dynamic body, {
+    FetchOptions? options,
+  }) async {
     final client = http.Client();
     try {
       final bodyStr = json.encode(body ?? {});
@@ -79,8 +82,11 @@ class Fetch {
     }
   }
 
-  Future<GotrueResponse> put(String url, dynamic body,
-      {FetchOptions? options}) async {
+  Future<GotrueResponse> put(
+    String url,
+    dynamic body, {
+    FetchOptions? options,
+  }) async {
     final client = http.Client();
     try {
       final bodyStr = json.encode(body ?? {});
