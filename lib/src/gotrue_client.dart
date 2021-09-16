@@ -171,6 +171,11 @@ class GoTrueClient {
     return response;
   }
 
+  /// Overrides the JWT on the current client. The JWT will then be sent in all subsequent network requests.
+  Session setAuth(String accessToken) =>
+      currentSession = currentSession?.copyWith(accessToken: accessToken) ??
+          Session(accessToken: accessToken);
+
   /// Gets the session data from a oauth2 callback URL
   Future<GotrueSessionResponse> getSessionFromUrl(
     Uri originUrl, {
