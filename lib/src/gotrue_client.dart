@@ -171,6 +171,15 @@ class GoTrueClient {
     return response;
   }
 
+  /// Sets the session data from refresh_token and returns current Session and Error
+  Future<GotrueSessionResponse> setSession(String refreshToken) async {
+    if (refreshToken.isEmpty) {
+      final error = GotrueError('No current session.');
+      return GotrueSessionResponse(error: error);
+    }
+    return _callRefreshToken(refreshToken: refreshToken);
+  }
+
   /// Overrides the JWT on the current client. The JWT will then be sent in all subsequent network requests.
   Session setAuth(String accessToken) =>
       currentSession = currentSession?.copyWith(accessToken: accessToken) ??
