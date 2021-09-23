@@ -255,6 +255,13 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     currentUser = response.user;
+    currentSession = Session(
+        accessToken: currentSession.accessToken,
+        expiresIn: currentSession.expiresAt,
+        refreshToken: currentSession.refreshToken,
+        tokenType: currentSession.tokenType,
+        providerToken: currentSession.providerToken,
+        user: response.user);
     _notifyAllSubscribers(AuthChangeEvent.userUpdated);
 
     return response;
