@@ -130,6 +130,17 @@ void main(List<String> arguments) {
       expect(newClient.currentSession?.accessToken, equals(jwt));
     });
 
+    test('Set session', () async {
+      final refreshToken = client.currentSession?.refreshToken ?? '';
+      expect(refreshToken, isNotEmpty);
+
+      final newClient = GoTrueClient(url: gotrueUrl);
+
+      expect(newClient.currentSession?.accessToken ?? '', isEmpty);
+      newClient.setSession(refreshToken);
+      expect(newClient.currentSession?.accessToken ?? '', isNotEmpty);
+    });
+
     test('Update user', () async {
       final response =
           await client.update(UserAttributes(data: {'hello': 'world'}));
