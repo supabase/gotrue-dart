@@ -99,15 +99,15 @@ void main(List<String> arguments) {
 
     test('signIn()', () async {
       final response = await client.signIn(email: email, password: password);
-      final data = response.data!;
+      final data = response.data;
       final error = response.error;
 
       expect(error?.message, isNull);
-      expect(data.accessToken, isA<String>());
-      expect(data.refreshToken, isA<String>());
-      expect(data.user?.id, isA<String>());
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user?.id, isA<String>());
 
-      final payload = Jwt.parseJwt(data.accessToken);
+      final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
       // ignore: avoid_dynamic_calls
       expect(payload['exp'], persistSession['expiresAt']);
