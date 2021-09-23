@@ -1,16 +1,61 @@
 import 'dart:convert';
+import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/user_attributes.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
-void main() {
-  const gotrueUrl = 'http://localhost:9999';
-  const annonToken = '';
+void main(List<String> arguments) {
   final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-  final email = 'fake$timestamp@email.com';
-  const password = 'secret';
+
+  final parser = ArgParser();
+
+  parser.addOption(
+    'url',
+    abbr: 'u',
+    defaultsTo: 'http://localhost:9999',
+    help: 'The URL of a GoTrue server instance for testing against.',
+  );
+  parser.addOption(
+    'token',
+    abbr: 't',
+    defaultsTo: '',
+    help: 'Anonymous access token for the GoTrue server.',
+  );
+  parser.addOption(
+    'email',
+    abbr: 'e',
+    defaultsTo: 'fake$timestamp@email.com',
+    help:
+        'Email address to be used to create a new user account on the GoTrue server.\nBy default, a unique address is generated based on the current timestamp.',
+  );
+  parser.addOption(
+    'password',
+    abbr: 'p',
+    defaultsTo: 'secret',
+    help:
+        'Password to be used to create a new user account on the GoTrue server.',
+  );
+  parser.addFlag(
+    'help',
+    abbr: 'h',
+    negatable: false,
+    help: 'Show this help info.',
+  );
+
+  final args = parser.parse(arguments);
+
+  if (args['help'] == true) {
+    print(parser.usage);
+    exit(0);
+  }
+
+  final gotrueUrl = args['url'].toString();
+  final annonToken = args['token'].toString();
+  final email = args['email'].toString();
+  final password = args['password'].toString();
 
   group('client', () {
     late GoTrueClient client;
@@ -46,23 +91,23 @@ void main() {
       );
       final data = response.data;
       final error = response.error;
-      expect(error, isNull);
-      expect(data?.accessToken is String, true);
-      expect(data?.refreshToken is String, true);
-      expect(data?.user?.id is String, true);
+      expect(error?.message, isNull);
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user?.id, isA<String>());
     });
 
     test('signIn()', () async {
       final response = await client.signIn(email: email, password: password);
-      final data = response.data!;
+      final data = response.data;
       final error = response.error;
 
-      expect(error, isNull);
-      expect(data.accessToken is String, true);
-      expect(data.refreshToken is String, true);
-      expect(data.user?.id is String, true);
+      expect(error?.message, isNull);
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user?.id, isA<String>());
 
-      final payload = Jwt.parseJwt(data.accessToken);
+      final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
       // ignore: avoid_dynamic_calls
       expect(payload['exp'], persistSession['expiresAt']);
@@ -70,7 +115,7 @@ void main() {
 
     test('Get user', () async {
       final user = client.user();
-      expect(user?.id is String, true);
+      expect(user?.id, isA<String>());
       expect(user?.appMetadata['provider'], 'email');
     });
 
@@ -90,20 +135,20 @@ void main() {
           await client.update(UserAttributes(data: {'hello': 'world'}));
       final data = response.data;
       final error = response.error;
-      expect(error, isNull);
-      expect(data?.id is String, true);
+      expect(error?.message, isNull);
+      expect(data?.id, isA<String>());
       expect(data?.userMetadata['hello'], 'world');
     });
 
     test('Get user after updating', () async {
       final user = client.user();
-      expect(user?.id is String, true);
+      expect(user?.id, isA<String>());
       expect(user?.userMetadata['hello'], 'world');
     });
 
     test('signOut', () async {
       final res = await client.signOut();
-      expect(res.error, isNull);
+      expect(res.error?.message, isNull);
     });
 
     test('Get user after logging out', () async {
