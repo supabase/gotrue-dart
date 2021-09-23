@@ -92,9 +92,9 @@ void main(List<String> arguments) {
       final data = response.data;
       final error = response.error;
       expect(error, isNull);
-      expect(data?.accessToken is String, true);
-      expect(data?.refreshToken is String, true);
-      expect(data?.user?.id is String, true);
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user?.id, isA<String>());
     });
 
     test('signIn()', () async {
@@ -103,9 +103,9 @@ void main(List<String> arguments) {
       final error = response.error;
 
       expect(error, isNull);
-      expect(data.accessToken is String, true);
-      expect(data.refreshToken is String, true);
-      expect(data.user?.id is String, true);
+      expect(data.accessToken, isA<String>());
+      expect(data.refreshToken, isA<String>());
+      expect(data.user?.id, isA<String>());
 
       final payload = Jwt.parseJwt(data.accessToken);
       final persistSession = json.decode(data.persistSessionString);
@@ -115,7 +115,7 @@ void main(List<String> arguments) {
 
     test('Get user', () async {
       final user = client.user();
-      expect(user?.id is String, true);
+      expect(user?.id, isA<String>());
       expect(user?.appMetadata['provider'], 'email');
     });
 
@@ -125,13 +125,13 @@ void main(List<String> arguments) {
       final data = response.data;
       final error = response.error;
       expect(error, isNull);
-      expect(data?.id is String, true);
+      expect(data?.id, isA<String>());
       expect(data?.userMetadata['hello'], 'world');
     });
 
     test('Get user after updating', () async {
       final user = client.user();
-      expect(user?.id is String, true);
+      expect(user?.id, isA<String>());
       expect(user?.userMetadata['hello'], 'world');
     });
 
