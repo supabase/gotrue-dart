@@ -91,7 +91,7 @@ void main(List<String> arguments) {
       );
       final data = response.data;
       final error = response.error;
-      expect(error, isNull);
+      expect(error?.message, isNull);
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
@@ -102,7 +102,7 @@ void main(List<String> arguments) {
       final data = response.data!;
       final error = response.error;
 
-      expect(error, isNull);
+      expect(error?.message, isNull);
       expect(data.accessToken, isA<String>());
       expect(data.refreshToken, isA<String>());
       expect(data.user?.id, isA<String>());
@@ -124,7 +124,7 @@ void main(List<String> arguments) {
           await client.update(UserAttributes(data: {'hello': 'world'}));
       final data = response.data;
       final error = response.error;
-      expect(error, isNull);
+      expect(error?.message, isNull);
       expect(data?.id, isA<String>());
       expect(data?.userMetadata['hello'], 'world');
     });
@@ -137,7 +137,7 @@ void main(List<String> arguments) {
 
     test('signOut', () async {
       final res = await client.signOut();
-      expect(res.error, isNull);
+      expect(res.error?.message, isNull);
     });
 
     test('Get user after logging out', () async {
