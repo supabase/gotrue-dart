@@ -6,7 +6,7 @@ import 'package:gotrue/src/user_attributes.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
-void main(List<String> arguments) {
+void main() {
   final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9999';
