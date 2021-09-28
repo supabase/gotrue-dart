@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dotenv/dotenv.dart' show env;
 import 'package:gotrue/gotrue.dart';
-import 'package:gotrue/src/user_attributes.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
