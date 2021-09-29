@@ -1,12 +1,14 @@
 import 'dart:convert';
 
-import 'package:dotenv/dotenv.dart' show env;
+import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
 void main() {
   final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+
+  load(); // Load env variables
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9999';
   final annonToken = env['GOTRUE_TOKEN'] ?? '';
