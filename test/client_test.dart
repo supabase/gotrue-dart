@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:dotenv/dotenv.dart' show env;
+import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
@@ -8,8 +8,10 @@ import 'package:test/test.dart';
 void main() {
   final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
 
+  load(); // Load env variables from .env file
+
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9999';
-  final annonToken = env['GOTRUE_TOKEN'] ?? '';
+  final anonToken = env['GOTRUE_TOKEN'] ?? '';
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
@@ -20,8 +22,8 @@ void main() {
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
-          'Authorization': 'Bearer $annonToken',
-          'apikey': annonToken,
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
         },
       );
     });
@@ -140,8 +142,8 @@ void main() {
       final client = GoTrueClient(
         url: gotrueUrl,
         headers: {
-          'Authorization': 'Bearer $annonToken',
-          'apikey': annonToken,
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
         },
       );
 
@@ -155,8 +157,8 @@ void main() {
       final client = GoTrueClient(
         url: gotrueUrl,
         headers: {
-          'Authorization': 'Bearer $annonToken',
-          'apikey': annonToken,
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
           'X-Client-Info': 'supabase-dart/0.0.0'
         },
       );
