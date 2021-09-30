@@ -1,16 +1,19 @@
 import 'dart:convert';
 
+import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
-import 'package:gotrue/src/user_attributes.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
 void main() {
-  const gotrueUrl = 'http://localhost:9999';
-  const annonToken = '';
   final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-  final email = 'fake$timestamp@email.com';
-  const password = 'secret';
+
+  load(); // Load env variables from .env file
+
+  final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9999';
+  final anonToken = env['GOTRUE_TOKEN'] ?? '';
+  final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
+  final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   group('client', () {
     late GoTrueClient client;
@@ -19,8 +22,8 @@ void main() {
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
-          'Authorization': 'Bearer $annonToken',
-          'apikey': annonToken,
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
         },
       );
     });
@@ -46,23 +49,23 @@ void main() {
       );
       final data = response.data;
       final error = response.error;
-      expect(error, isNull);
-      expect(data?.accessToken is String, true);
-      expect(data?.refreshToken is String, true);
-      expect(data?.user?.id is String, true);
+      expect(error?.message, isNull);
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user?.id, isA<String>());
     });
 
     test('signIn()', () async {
       final response = await client.signIn(email: email, password: password);
-      final data = response.data!;
+      final data = response.data;
       final error = response.error;
 
-      expect(error, isNull);
-      expect(data.accessToken is String, true);
-      expect(data.refreshToken is String, true);
-      expect(data.user?.id is String, true);
+      expect(error?.message, isNull);
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user?.id, isA<String>());
 
-      final payload = Jwt.parseJwt(data.accessToken);
+      final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
       // ignore: avoid_dynamic_calls
       expect(payload['exp'], persistSession['expiresAt']);
@@ -70,7 +73,7 @@ void main() {
 
     test('Get user', () async {
       final user = client.user();
-      expect(user?.id is String, true);
+      expect(user?.id, isA<String>());
       expect(user?.appMetadata['provider'], 'email');
     });
 
@@ -79,20 +82,20 @@ void main() {
           await client.update(UserAttributes(data: {'hello': 'world'}));
       final data = response.data;
       final error = response.error;
-      expect(error, isNull);
-      expect(data?.id is String, true);
+      expect(error?.message, isNull);
+      expect(data?.id, isA<String>());
       expect(data?.userMetadata['hello'], 'world');
     });
 
     test('Get user after updating', () async {
       final user = client.user();
-      expect(user?.id is String, true);
+      expect(user?.id, isA<String>());
       expect(user?.userMetadata['hello'], 'world');
     });
 
     test('signOut', () async {
       final res = await client.signOut();
-      expect(res.error, isNull);
+      expect(res.error?.message, isNull);
     });
 
     test('Get user after logging out', () async {
@@ -117,8 +120,8 @@ void main() {
       final client = GoTrueClient(
         url: gotrueUrl,
         headers: {
-          'Authorization': 'Bearer $annonToken',
-          'apikey': annonToken,
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
         },
       );
 
@@ -132,8 +135,8 @@ void main() {
       final client = GoTrueClient(
         url: gotrueUrl,
         headers: {
-          'Authorization': 'Bearer $annonToken',
-          'apikey': annonToken,
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
           'X-Client-Info': 'supabase-dart/0.0.0'
         },
       );

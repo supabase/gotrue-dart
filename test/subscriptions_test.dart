@@ -1,5 +1,4 @@
 import 'package:gotrue/gotrue.dart';
-import 'package:gotrue/src/gotrue_response.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:test/test.dart';
 
