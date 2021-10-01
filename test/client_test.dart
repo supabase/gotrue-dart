@@ -92,10 +92,16 @@ void main() {
       final refreshToken = client.currentSession?.refreshToken ?? '';
       expect(refreshToken, isNotEmpty);
 
-      final newClient = GoTrueClient(url: gotrueUrl);
+      final newClient = GoTrueClient(
+        url: gotrueUrl,
+        headers: {
+          'apikey': anonToken,
+        },
+      );
 
+      expect(newClient.currentSession?.refreshToken ?? '', isEmpty);
       expect(newClient.currentSession?.accessToken ?? '', isEmpty);
-      newClient.setSession(refreshToken);
+      await newClient.setSession(refreshToken);
       expect(newClient.currentSession?.accessToken ?? '', isNotEmpty);
     });
 
