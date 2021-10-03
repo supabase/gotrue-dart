@@ -1,3 +1,8 @@
+## [0.2.0]
+
+- feat: `setAuth()` method for setting the session with a provided jwt
+- fix: improve client tests
+
 ## [0.1.1]
 
 - chore: add `X-Client-Info` header
