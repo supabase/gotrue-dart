@@ -77,6 +77,34 @@ void main() {
       expect(user?.appMetadata['provider'], 'email');
     });
 
+    test('Set auth', () async {
+      final jwt = client.currentSession?.accessToken ?? '';
+      expect(jwt, isNotEmpty);
+
+      final newClient = GoTrueClient(url: gotrueUrl, autoRefreshToken: false);
+
+      expect(newClient.currentSession?.accessToken, isNot(equals(jwt)));
+      newClient.setAuth(jwt);
+      expect(newClient.currentSession?.accessToken, equals(jwt));
+    });
+
+    test('Set session', () async {
+      final refreshToken = client.currentSession?.refreshToken ?? '';
+      expect(refreshToken, isNotEmpty);
+
+      final newClient = GoTrueClient(
+        url: gotrueUrl,
+        headers: {
+          'apikey': anonToken,
+        },
+      );
+
+      expect(newClient.currentSession?.refreshToken ?? '', isEmpty);
+      expect(newClient.currentSession?.accessToken ?? '', isEmpty);
+      await newClient.setSession(refreshToken);
+      expect(newClient.currentSession?.accessToken ?? '', isNotEmpty);
+    });
+
     test('Update user', () async {
       final response =
           await client.update(UserAttributes(data: {'hello': 'world'}));

@@ -54,4 +54,22 @@ class Session {
     final data = {'currentSession': toJson(), 'expiresAt': expiresAt};
     return json.encode(data);
   }
+
+  Session copyWith({
+    String? accessToken,
+    int? expiresIn,
+    String? refreshToken,
+    String? tokenType,
+    String? providerToken,
+    User? user,
+  }) {
+    return Session(
+      accessToken: accessToken ?? this.accessToken,
+      expiresIn: expiresIn ?? this.expiresIn,
+      refreshToken: refreshToken ?? this.refreshToken,
+      tokenType: tokenType ?? this.tokenType,
+      providerToken: providerToken ?? this.providerToken,
+      user: user ?? this.user,
+    );
+  }
 }
