@@ -1,4 +1,4 @@
-## [0.2.0]
+## [0.1.2]
 
 - feat: `setAuth()` method for setting the session with a provided jwt
 - fix: improve client tests
