@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:gotrue/gotrue.dart';
 
 import 'constants.dart';
-import 'gotrue_api.dart';
 import 'subscription.dart';
 import 'uuid.dart';
 
