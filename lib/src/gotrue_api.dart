@@ -1,9 +1,7 @@
 import 'package:gotrue/gotrue.dart';
 
-import 'cookie_options.dart';
 import 'fetch.dart';
 import 'fetch_options.dart';
-import 'gotrue_error.dart';
 
 class GoTrueApi {
   String url;
