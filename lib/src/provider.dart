@@ -7,6 +7,7 @@ enum Provider {
   github,
   gitlab,
   google,
+  twitch,
   twitter,
   slack,
   spotify
