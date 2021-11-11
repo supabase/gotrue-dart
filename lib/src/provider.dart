@@ -7,7 +7,10 @@ enum Provider {
   github,
   gitlab,
   google,
-  twitter
+  twitch,
+  twitter,
+  slack,
+  spotify
 }
 
 extension ProviderName on Provider {
