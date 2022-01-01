@@ -261,6 +261,7 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     currentUser = response.user;
+    currentSession = currentSession?.copyWith(user: response.user);
     _notifyAllSubscribers(AuthChangeEvent.userUpdated);
 
     return response;
