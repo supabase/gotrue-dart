@@ -1,7 +1,6 @@
 import 'package:gotrue/gotrue.dart';
-
-import 'fetch.dart';
-import 'fetch_options.dart';
+import 'package:gotrue/src/fetch.dart';
+import 'package:gotrue/src/fetch_options.dart';
 
 class GoTrueApi {
   String url;

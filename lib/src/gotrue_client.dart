@@ -2,10 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:gotrue/gotrue.dart';
-
-import 'constants.dart';
-import 'subscription.dart';
-import 'uuid.dart';
+import 'package:gotrue/src/constants.dart';
+import 'package:gotrue/src/subscription.dart';
+import 'package:gotrue/src/uuid.dart';
 
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
