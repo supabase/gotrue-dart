@@ -113,6 +113,7 @@ void main() {
       expect(error?.message, isNull);
       expect(data?.id, isA<String>());
       expect(data?.userMetadata['hello'], 'world');
+      expect(client.currentSession?.user?.userMetadata['hello'], 'world');
     });
 
     test('Get user after updating', () async {
