@@ -1,3 +1,8 @@
+## [0.1.3]
+
+- feat: add tokenRefreshed auth event
+- chore: export Subscription type
+
 ## [0.1.2]
 
 - feat: `setAuth()` method for setting the session with a provided jwt
