@@ -426,12 +426,14 @@ class GoTrueClient {
 
     final response = await api.refreshAccessToken(token);
     if (response.error != null) return response;
-
-    if (response.data?.accessToken != null) {
-      _saveSession(response.data!);
-      _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (response.data == null) {
+      final error = GotrueError('Invalid session data.');
+      return GotrueSessionResponse(error: error);
     }
+
+    _saveSession(response.data!);
+    _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
   }
