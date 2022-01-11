@@ -9,5 +9,6 @@ export 'src/gotrue_error.dart';
 export 'src/gotrue_response.dart';
 export 'src/provider.dart';
 export 'src/session.dart';
+export 'src/subscription.dart' show Subscription;
 export 'src/user.dart';
 export 'src/user_attributes.dart';
