@@ -429,6 +429,7 @@ class GoTrueClient {
 
     if (response.data?.accessToken != null) {
       _saveSession(response.data!);
+      _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
