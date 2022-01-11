@@ -1,7 +1,9 @@
 ## [0.1.3]
 
-- feat: add tokenRefreshed auth event
-- chore: export Subscription type
+- feat: add `tokenRefreshed` auth event
+- feat: add slack, spotify and twitch Auth providers
+- fix: update currentSession.user when GoTrueClient.update is called
+- chore: export missing types
 
 ## [0.1.2]
 
