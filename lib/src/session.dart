@@ -1,8 +1,7 @@
 import 'dart:convert';
 
+import 'package:gotrue/src/user.dart';
 import 'package:jwt_decode/jwt_decode.dart';
-
-import 'user.dart';
 
 class Session {
   final String accessToken;

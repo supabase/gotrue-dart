@@ -1,7 +1,7 @@
-import 'gotrue_error.dart';
-import 'session.dart';
-import 'subscription.dart';
-import 'user.dart';
+import 'package:gotrue/src/gotrue_error.dart';
+import 'package:gotrue/src/session.dart';
+import 'package:gotrue/src/subscription.dart';
+import 'package:gotrue/src/user.dart';
 
 class GotrueResponse {
   GotrueError? error;
