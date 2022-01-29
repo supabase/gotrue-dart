@@ -1,3 +1,7 @@
+## [0.1.4]
+
+- fix: trigger signedIn event on recoverSession
+
 ## [0.1.3]
 
 - feat: add `tokenRefreshed` auth event
