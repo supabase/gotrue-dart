@@ -330,6 +330,7 @@ class GoTrueClient {
         }
       } else {
         _saveSession(session);
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
