@@ -1,3 +1,7 @@
+## [0.1.5]
+
+- feat: add `toString` method to `GotrueError`class
+
 ## [0.1.4]
 
 - fix: trigger signedIn event on recoverSession
