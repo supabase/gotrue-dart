@@ -322,8 +322,10 @@ class GoTrueClient {
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
       if (expiresAt < timeNow) {
         if (autoRefreshToken && session.refreshToken != null) {
-          final response =
-              await _callRefreshToken(refreshToken: session.refreshToken);
+          final response = await _callRefreshToken(
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
+          );
           return response;
         } else {
           return GotrueSessionResponse(error: GotrueError('Session expired.'));
@@ -418,14 +420,16 @@ class GoTrueClient {
 
   Future<GotrueSessionResponse> _callRefreshToken({
     String? refreshToken,
+    String? accessToken,
   }) async {
     final token = refreshToken ?? currentSession?.refreshToken;
+    final jwt = accessToken ?? currentSession?.accessToken;
     if (token == null) {
       final error = GotrueError('No current session.');
       return GotrueSessionResponse(error: error);
     }
 
-    final response = await api.refreshAccessToken(token);
+    final response = await api.refreshAccessToken(token, jwt);
     if (response.error != null) return response;
     if (response.data == null) {
       final error = GotrueError('Invalid session data.');

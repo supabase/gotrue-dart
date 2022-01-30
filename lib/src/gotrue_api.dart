@@ -351,9 +351,12 @@ class GoTrueApi {
   }
 
   /// Generates a new JWT.
-  Future<GotrueSessionResponse> refreshAccessToken(String refreshToken) async {
+  Future<GotrueSessionResponse> refreshAccessToken(String refreshToken, [String? jwt]) async {
     try {
       final body = {'refresh_token': refreshToken};
+      if (jwt != null) {
+        headers['Authorization'] = 'Bearer $jwt';
+      }
       final options = FetchOptions(headers);
       final response = await fetch
           .post('$url/token?grant_type=refresh_token', body, options: options);
