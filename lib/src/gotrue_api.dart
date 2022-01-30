@@ -351,7 +351,10 @@ class GoTrueApi {
   }
 
   /// Generates a new JWT.
-  Future<GotrueSessionResponse> refreshAccessToken(String refreshToken, [String? jwt]) async {
+  Future<GotrueSessionResponse> refreshAccessToken(
+    String refreshToken, [
+    String? jwt,
+  ]) async {
     try {
       final body = {'refresh_token': refreshToken};
       if (jwt != null) {
