@@ -214,8 +214,16 @@ class GoTrueApi {
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else {
-        final session =
+        Session session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
+        if (session.user == null) {
+          final userResponse = await getUser(session.accessToken);
+          if (userResponse.user != null) {
+            session = session.copyWith(user: userResponse.user);
+          } else {
+            // print(userResponse.error);
+          }
+        }
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
