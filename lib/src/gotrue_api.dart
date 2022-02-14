@@ -216,12 +216,12 @@ class GoTrueApi {
       } else {
         Session session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
+        // if the user in the current session is null, we get the user based on
+        // the session's jwt token
         if (session.user == null) {
           final userResponse = await getUser(session.accessToken);
           if (userResponse.user != null) {
             session = session.copyWith(user: userResponse.user);
-          } else {
-            // print(userResponse.error);
           }
         }
         return GotrueSessionResponse(data: session);
