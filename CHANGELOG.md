@@ -1,3 +1,7 @@
+## [next]
+
+- fix: fetch the user, if missing, on `/verify` ([#29](https://github.com/supabase-community/gotrue-dart/issues/29))
+
 ## [0.1.5]
 
 - feat: add `toString` method to `GotrueError`class
