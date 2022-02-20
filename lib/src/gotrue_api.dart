@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/fetch_options.dart';
@@ -122,6 +124,66 @@ class GoTrueApi {
       final body = {'phone': phone, 'password': password};
       final fetchOptions = FetchOptions(headers);
       const queryString = '?grant_type=password';
+      final response = await fetch.post(
+        '$url/token$queryString',
+        body,
+        options: fetchOptions,
+      );
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Logs in an existing user using an id token from a provider.
+  ///
+  /// `idToken` is the user id token with nonce
+  ///
+  /// `nonce` is the unhashed nonce in id token
+  ///
+  /// `provider` is the id provider. Can be `apple`, `google`, `azure` or
+  /// `facebook`
+  Future<GotrueSessionResponse> signInWithToken(
+    String idToken,
+    String provider,
+  ) async {
+    assert(
+      ['apple', 'google', 'azure', 'facebook'].contains(provider),
+      'Only apple, google, azure and facebook is allowed',
+    );
+
+    /// Generates a cryptographically secure random nonce, to be included in a
+    /// credential request.
+    String generateNonce([int length = 32]) {
+      const charset =
+          '0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._';
+      final random = Random.secure();
+      return List.generate(
+          length, (_) => charset[random.nextInt(charset.length)]).join();
+    }
+
+    // /// Returns the sha256 hash of [input] in hex notation.
+    // String sha256ofString(String input) {
+    //   final bytes = utf8.encode(input);
+    //   final digest = sha256.convert(bytes);
+
+    //   return digest.toString();
+    // }
+
+    final nonce = generateNonce();
+    // TODO: id token with nonce as specified in https://github.com/supabase/gotrue/pull/189
+    final token = idToken;
+
+    try {
+      final body = {'id_token': token, 'nonce': nonce};
+      final fetchOptions = FetchOptions(headers);
+      const queryString = '?grant_type=id_token';
       final response = await fetch.post(
         '$url/token$queryString',
         body,
