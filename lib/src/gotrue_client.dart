@@ -430,9 +430,13 @@ class GoTrueClient {
     }
 
     final response = await api.refreshAccessToken(token, jwt);
-    if (response.error != null) return response;
+    if (response.error != null) {
+      await signOut();
+      return response;
+    }
     if (response.data == null) {
       final error = GotrueError('Invalid session data.');
+      await signOut();
       return GotrueSessionResponse(error: error);
     }
 
