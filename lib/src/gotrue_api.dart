@@ -17,7 +17,11 @@ class GoTrueApi {
     AuthOptions? options,
   }) async {
     try {
-      final body = {'email': email, 'password': password};
+      final body = {
+        'email': email,
+        'password': password,
+        'data': options?.userMetadata
+      };
       final fetchOptions = FetchOptions(headers);
       final urlParams = [];
       if (options?.redirectTo != null) {
