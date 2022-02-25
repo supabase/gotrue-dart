@@ -46,6 +46,7 @@ void main() {
         email,
         password,
         options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        userMetadata: {"Hello": "World"},
       );
       final data = response.data;
       final error = response.error;
@@ -53,6 +54,7 @@ void main() {
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
+      expect(data?.user?.userMetadata, {"Hello": "World"});
     });
 
     test('signIn()', () async {
