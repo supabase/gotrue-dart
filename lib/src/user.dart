@@ -56,6 +56,8 @@ class User {
         'email': email,
         'phone': phone,
         'created_at': createdAt,
+        // ignore: deprecated_member_use_from_same_package
+        'confirmed_at': confirmedAt,
         'email_confirmed_at': emailConfirmedAt,
         'phone_confirmed_at': phoneConfirmedAt,
         'last_sign_in_at': lastSignInAt,
