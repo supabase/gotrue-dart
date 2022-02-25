@@ -2,13 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:gotrue/gotrue.dart';
-
-import 'constants.dart';
-import 'cookie_options.dart';
-import 'gotrue_api.dart';
-import 'gotrue_error.dart';
-import 'subscription.dart';
-import 'uuid.dart';
+import 'package:gotrue/src/constants.dart';
+import 'package:gotrue/src/subscription.dart';
+import 'package:gotrue/src/uuid.dart';
 
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
@@ -264,6 +260,7 @@ class GoTrueClient {
     if (response.error != null) return response;
 
     currentUser = response.user;
+    currentSession = currentSession?.copyWith(user: response.user);
     _notifyAllSubscribers(AuthChangeEvent.userUpdated);
 
     return response;
@@ -325,14 +322,17 @@ class GoTrueClient {
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
       if (expiresAt < timeNow) {
         if (autoRefreshToken && session.refreshToken != null) {
-          final response =
-              await _callRefreshToken(refreshToken: session.refreshToken);
+          final response = await _callRefreshToken(
+            refreshToken: session.refreshToken,
+            accessToken: session.accessToken,
+          );
           return response;
         } else {
           return GotrueSessionResponse(error: GotrueError('Session expired.'));
         }
       } else {
         _saveSession(session);
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
@@ -420,20 +420,25 @@ class GoTrueClient {
 
   Future<GotrueSessionResponse> _callRefreshToken({
     String? refreshToken,
+    String? accessToken,
   }) async {
     final token = refreshToken ?? currentSession?.refreshToken;
+    final jwt = accessToken ?? currentSession?.accessToken;
     if (token == null) {
       final error = GotrueError('No current session.');
       return GotrueSessionResponse(error: error);
     }
 
-    final response = await api.refreshAccessToken(token);
+    final response = await api.refreshAccessToken(token, jwt);
     if (response.error != null) return response;
-
-    if (response.data?.accessToken != null) {
-      _saveSession(response.data!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (response.data == null) {
+      final error = GotrueError('Invalid session data.');
+      return GotrueSessionResponse(error: error);
     }
+
+    _saveSession(response.data!);
+    _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
   }

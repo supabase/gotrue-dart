@@ -1,9 +1,6 @@
 import 'package:gotrue/gotrue.dart';
-
-import 'cookie_options.dart';
-import 'fetch.dart';
-import 'fetch_options.dart';
-import 'gotrue_error.dart';
+import 'package:gotrue/src/fetch.dart';
+import 'package:gotrue/src/fetch_options.dart';
 
 class GoTrueApi {
   String url;
@@ -217,8 +214,16 @@ class GoTrueApi {
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else {
-        final session =
+        Session session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
+        // if the user in the current session is null, we get the user based on
+        // the session's jwt token
+        if (session.user == null) {
+          final userResponse = await getUser(session.accessToken);
+          if (userResponse.user != null) {
+            session = session.copyWith(user: userResponse.user);
+          }
+        }
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
@@ -354,9 +359,15 @@ class GoTrueApi {
   }
 
   /// Generates a new JWT.
-  Future<GotrueSessionResponse> refreshAccessToken(String refreshToken) async {
+  Future<GotrueSessionResponse> refreshAccessToken(
+    String refreshToken, [
+    String? jwt,
+  ]) async {
     try {
       final body = {'refresh_token': refreshToken};
+      if (jwt != null) {
+        headers['Authorization'] = 'Bearer $jwt';
+      }
       final options = FetchOptions(headers);
       final response = await fetch
           .post('$url/token?grant_type=refresh_token', body, options: options);
