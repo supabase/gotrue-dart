@@ -1,6 +1,7 @@
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/fetch_options.dart';
+import 'package:gotrue/src/opent_id_connect_credentials.dart';
 
 class GoTrueApi {
   String url;
@@ -122,6 +123,37 @@ class GoTrueApi {
       final body = {'phone': phone, 'password': password};
       final fetchOptions = FetchOptions(headers);
       const queryString = '?grant_type=password';
+      final response = await fetch.post(
+        '$url/token$queryString',
+        body,
+        options: fetchOptions,
+      );
+      if (response.error != null) {
+        return GotrueSessionResponse(error: response.error);
+      } else {
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
+        return GotrueSessionResponse(data: session);
+      }
+    } catch (e) {
+      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    }
+  }
+
+  /// Logs in an OpenID Connect user using their idToken.
+  Future<GotrueSessionResponse> signInWithOpenIDConnect(
+    OpenIDConnectCredentials oidc,
+  ) async {
+    try {
+      final body = {
+        'id_token': oidc.idToken,
+        'nonce': oidc.nonce,
+        'client_id': oidc.clientId,
+        "issuer": oidc.issuer,
+        'provider': oidc.provider?.name(),
+      };
+      final fetchOptions = FetchOptions(headers);
+      const queryString = '?grant_type=id_token';
       final response = await fetch.post(
         '$url/token$queryString',
         body,
