@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
+import 'package:gotrue/src/opent_id_connect_credentials.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
@@ -120,6 +121,12 @@ void main() {
       final user = client.user();
       expect(user?.id, isA<String>());
       expect(user?.userMetadata['hello'], 'world');
+    });
+
+    test('signIn with OpenIDConnect wrong id_token', () async {
+      final oidc = OpenIDConnectCredentials(idToken: "abcdf", nonce: "random value", provider: Provider.google);
+      final res = await client.signIn(oidc: oidc);
+      expect(res.error?.message, isNotNull);
     });
 
     test('signOut', () async {

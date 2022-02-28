@@ -376,7 +376,7 @@ class GoTrueClient {
     OpenIDConnectCredentials oidc,
   ) async {
     if ((oidc.clientId != null && oidc.issuer != null) || oidc.provider != null) {
-      final response = await api.signInWithOpenIDConnect(oidc.idToken, oidc.nonce, oidc.provider);
+      final response = await api.signInWithOpenIDConnect(oidc);
 
       if (response.error != null) return response;
 
