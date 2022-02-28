@@ -124,8 +124,11 @@ void main() {
     });
 
     test('signIn with OpenIDConnect wrong id_token', () async {
-      final oidc = OpenIDConnectCredentials(
-          idToken: "abcdf", nonce: "random value", provider: Provider.google);
+      const oidc = OpenIDConnectCredentials(
+        idToken: "abcdf",
+        nonce: "random value",
+        provider: Provider.google,
+      );
       final res = await client.signIn(oidc: oidc);
       expect(res.error?.message, isNotNull);
     });

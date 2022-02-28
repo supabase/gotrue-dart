@@ -387,7 +387,8 @@ class GoTrueClient {
       return response;
     }
     final error = GotrueError(
-        'You must provider an OpenID Connect clientID and issuer or provider.');
+      'You must provider an OpenID Connect clientID and issuer or provider.',
+    );
     return GotrueSessionResponse(error: error);
   }
 
