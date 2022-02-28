@@ -162,8 +162,9 @@ class GoTrueApi {
     String? issuer,
   ]) async {
     assert(
-      [Provider.apple, Provider.azure, Provider.facebook, Provider.google].contains(provider),
-      'Only apple, azure, facebook and google are allowed',
+    [Provider.apple, Provider.azure, Provider.facebook, Provider.google]
+        .contains(provider),
+    'Only apple, azure, facebook and google are allowed',
     );
 
     try {
@@ -172,7 +173,7 @@ class GoTrueApi {
         'nonce': nonce,
         'client_id': clientID,
         "issuer": issuer,
-            'provider': provider?.name(),
+        'provider': provider?.name(),
       };
       final fetchOptions = FetchOptions(headers);
       const queryString = '?grant_type=id_token';
