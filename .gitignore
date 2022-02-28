@@ -20,3 +20,4 @@ doc/api/
 # is commented out by default.
 .vscode/
 .env
+.idea
