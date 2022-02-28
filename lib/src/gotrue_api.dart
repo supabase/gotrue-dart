@@ -162,7 +162,8 @@ class GoTrueApi {
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else {
-        final session = Session.fromJson(response.rawData as Map<String, dynamic>);
+        final session =
+            Session.fromJson(response.rawData as Map<String, dynamic>);
         return GotrueSessionResponse(data: session);
       }
     } catch (e) {
