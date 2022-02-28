@@ -50,15 +50,22 @@ class GoTrueClient {
   }
 
   /// Creates a new user.
+  ///
+  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
   Future<GotrueSessionResponse> signUp(
     String email,
     String password, {
     AuthOptions? options,
+    Map<String, dynamic>? userMetadata,
   }) async {
     _removeSession();
 
-    final response =
-        await api.signUpWithEmail(email, password, options: options);
+    final response = await api.signUpWithEmail(
+      email,
+      password,
+      options: options,
+      userMetadata: userMetadata,
+    );
     if (response.error != null) return response;
 
     // ignore: deprecated_member_use_from_same_package
@@ -73,17 +80,21 @@ class GoTrueClient {
 
   /// Signs up a new user using their phone number and a password.
   ///
-  /// `phone` is the user's phone number WITH international prefix
+  /// [phone] is the user's phone number WITH international prefix
   ///
-  /// `password` is the password of the user
+  /// [password] is the password of the user
+  ///
+  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
   Future<GotrueSessionResponse> signUpWithPhone(
     String phone,
     String password, {
     AuthOptions? options,
+    Map<String, dynamic>? userMetadata,
   }) async {
     _removeSession();
 
-    final response = await api.signUpWithPhone(phone, password);
+    final response =
+        await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
     if (response.error != null) return response;
 
     if (response.data?.user?.phoneConfirmedAt != null) {
@@ -133,9 +144,9 @@ class GoTrueClient {
 
   /// Log in a user given a User supplied OTP received via mobile.
   ///
-  /// `phone` is the user's phone number WITH international prefix
+  /// [phone] is the user's phone number WITH international prefix
   ///
-  /// `token` is the token that user was sent to their mobile phone
+  /// [token] is the token that user was sent to their mobile phone
   Future<GotrueSessionResponse> verifyOTP(
     String phone,
     String token, {
