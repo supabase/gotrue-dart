@@ -1,5 +1,7 @@
 ## [next]
 
+## [0.1.6]
+
 - fix: fetch the user, if missing, on `/verify` ([#29](https://github.com/supabase-community/gotrue-dart/issues/29))
 - feat: add JWT headers when refreshing token  ([#53](https://github.com/supabase-community/gotrue-dart/pull/53))
 - feat: add `signInWithOpenIDConnect`  ([#61](https://github.com/supabase-community/gotrue-dart/pull/61))
