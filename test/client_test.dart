@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
+import 'package:gotrue/src/opent_id_connect_credentials.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
@@ -56,6 +57,7 @@ void main() {
         email,
         password,
         options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
+        userMetadata: {"Hello": "World"},
       );
       final data = response.data;
       final error = response.error;
@@ -63,6 +65,7 @@ void main() {
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
+      expect(data?.user?.userMetadata, {"Hello": "World"});
     });
 
     test('signUp() with autoConfirm off', () async {
@@ -144,6 +147,16 @@ void main() {
       final user = client.user();
       expect(user?.id, isA<String>());
       expect(user?.userMetadata['hello'], 'world');
+    });
+
+    test('signIn with OpenIDConnect wrong id_token', () async {
+      const oidc = OpenIDConnectCredentials(
+        idToken: "abcdf",
+        nonce: "random value",
+        provider: Provider.google,
+      );
+      final res = await client.signIn(oidc: oidc);
+      expect(res.error?.message, isNotNull);
     });
 
     test('signOut', () async {

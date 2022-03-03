@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
+import 'package:gotrue/src/opent_id_connect_credentials.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/uuid.dart';
 
@@ -49,15 +50,22 @@ class GoTrueClient {
   }
 
   /// Creates a new user.
+  ///
+  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
   Future<GotrueSessionResponse> signUp(
     String email,
     String password, {
     AuthOptions? options,
+    Map<String, dynamic>? userMetadata,
   }) async {
     _removeSession();
 
-    final response =
-        await api.signUpWithEmail(email, password, options: options);
+    final response = await api.signUpWithEmail(
+      email,
+      password,
+      options: options,
+      userMetadata: userMetadata,
+    );
     if (response.error != null) return response;
 
     // ignore: deprecated_member_use_from_same_package
@@ -72,17 +80,21 @@ class GoTrueClient {
 
   /// Signs up a new user using their phone number and a password.
   ///
-  /// `phone` is the user's phone number WITH international prefix
+  /// [phone] is the user's phone number WITH international prefix
   ///
-  /// `password` is the password of the user
+  /// [password] is the password of the user
+  ///
+  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
   Future<GotrueSessionResponse> signUpWithPhone(
     String phone,
     String password, {
     AuthOptions? options,
+    Map<String, dynamic>? userMetadata,
   }) async {
     _removeSession();
 
-    final response = await api.signUpWithPhone(phone, password);
+    final response =
+        await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
     if (response.error != null) return response;
 
     if (response.data?.user?.phoneConfirmedAt != null) {
@@ -99,39 +111,42 @@ class GoTrueClient {
     String? phone,
     String? password,
     Provider? provider,
+    OpenIDConnectCredentials? oidc,
     AuthOptions? options,
   }) async {
     _removeSession();
 
-    if (email != null) {
-      if (password == null) {
-        final response = await api.sendMagicLinkEmail(email, options: options);
-        return GotrueSessionResponse(error: response.error);
-      } else {
-        return _handleEmailSignIn(email, password, options: options);
-      }
-    } else if (phone != null) {
-      if (password == null) {
-        final response = await api.sendMobileOTP(phone);
-        return GotrueSessionResponse(error: response.error);
-      } else {
-        return _handlePhoneSignIn(phone, password);
-      }
-    } else if (provider != null) {
-      return _handleProviderSignIn(provider, options);
-    } else {
-      final error = GotrueError(
-        "You must provide either an email or a third-party provider.",
-      );
-      return GotrueSessionResponse(error: error);
+    if (email != null && password == null) {
+      final response = await api.sendMagicLinkEmail(email, options: options);
+      return GotrueSessionResponse(error: response.error);
     }
+    if (email != null && password != null) {
+      return _handleEmailSignIn(email, password, options: options);
+    }
+    if (phone != null && password == null) {
+      final response = await api.sendMobileOTP(phone);
+      return GotrueSessionResponse(error: response.error);
+    }
+    if (phone != null && password != null) {
+      return _handlePhoneSignIn(phone, password);
+    }
+    if (provider != null) {
+      return _handleProviderSignIn(provider, options);
+    }
+    if (oidc != null) {
+      return _handleOpenIDConnectSignIn(oidc);
+    }
+    final error = GotrueError(
+      "You must provide either an email, phone number, a third-party provider or OpenID Connect.",
+    );
+    return GotrueSessionResponse(error: error);
   }
 
   /// Log in a user given a User supplied OTP received via mobile.
   ///
-  /// `phone` is the user's phone number WITH international prefix
+  /// [phone] is the user's phone number WITH international prefix
   ///
-  /// `token` is the token that user was sent to their mobile phone
+  /// [token] is the token that user was sent to their mobile phone
   Future<GotrueSessionResponse> verifyOTP(
     String phone,
     String token, {
@@ -366,6 +381,26 @@ class GoTrueClient {
   ) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
+  }
+
+  Future<GotrueSessionResponse> _handleOpenIDConnectSignIn(
+    OpenIDConnectCredentials oidc,
+  ) async {
+    if ((oidc.clientId != null && oidc.issuer != null) ||
+        oidc.provider != null) {
+      final response = await api.signInWithOpenIDConnect(oidc);
+
+      if (response.error != null) return response;
+
+      _saveSession(response.data!);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+
+      return response;
+    }
+    final error = GotrueError(
+      'You must provider an OpenID Connect clientID and issuer or provider.',
+    );
+    return GotrueSessionResponse(error: error);
   }
 
   Future<GotrueSessionResponse> _handlePhoneSignIn(
