@@ -55,7 +55,7 @@ void main() {
       final response = await client.signUp(
         email,
         password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
       );
       final data = response.data;
       final error = response.error;
