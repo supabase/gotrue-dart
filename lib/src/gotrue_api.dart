@@ -36,7 +36,7 @@ class GoTrueApi {
       } else if (data['access_token'] == null) {
         // email validation required
         User? user;
-        if (data['user'] != null) {
+        if (data['id'] != null) {
           user = User.fromJson(data['user'] as Map<String, dynamic>);
         }
         return GotrueSessionResponse(user: user);
@@ -103,7 +103,7 @@ class GoTrueApi {
           null) {
         // email validation required
         User? user;
-        if (data['user'] != null) {
+        if (data['id'] != null) {
           user = User.fromJson(data['user'] as Map<String, dynamic>);
         }
         return GotrueSessionResponse(user: user);
