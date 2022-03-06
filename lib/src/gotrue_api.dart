@@ -38,12 +38,16 @@ class GoTrueApi {
         body,
         options: fetchOptions,
       );
+      final data = response.rawData as Map<String, dynamic>;
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
-      } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
-          null) {
+      } else if (data['access_token'] == null) {
         // email validation required
-        return GotrueSessionResponse();
+        User? user;
+        if (data['id'] != null) {
+          user = User.fromJson(data);
+        }
+        return GotrueSessionResponse(user: user);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
@@ -107,13 +111,17 @@ class GoTrueApi {
       };
       final response =
           await fetch.post('$url/signup', body, options: fetchOptions);
-
+      final data = response.rawData as Map<String, dynamic>;
       if (response.error != null) {
         return GotrueSessionResponse(error: response.error);
       } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
           null) {
         // email validation required
-        return GotrueSessionResponse();
+        User? user;
+        if (data['id'] != null) {
+          user = User.fromJson(data);
+        }
+        return GotrueSessionResponse(user: user);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);

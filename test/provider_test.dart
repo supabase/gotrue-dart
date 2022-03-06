@@ -2,7 +2,7 @@ import 'package:gotrue/gotrue.dart';
 import 'package:test/test.dart';
 
 void main() {
-  const gotrueUrl = 'http://localhost:9999';
+  const gotrueUrl = 'http://localhost:9998';
   const annonToken = '';
 
   late GoTrueClient client;

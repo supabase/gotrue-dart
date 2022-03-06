@@ -18,20 +18,18 @@ class GotrueJsonResponse extends GotrueResponse {
 
 class GotrueSessionResponse extends GotrueResponse {
   Session? data;
-
   String? provider;
   String? url;
-
-  User? get user {
-    return data?.user;
-  }
+  User? user;
 
   GotrueSessionResponse({
     this.data,
     this.provider,
     this.url,
+    User? user,
     GotrueError? error,
-  }) : super(error: error);
+  })  : user = user ?? data?.user,
+        super(error: error);
 }
 
 class GotrueUserResponse extends GotrueResponse {

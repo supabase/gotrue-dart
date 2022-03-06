@@ -11,17 +11,27 @@ void main() {
 
   load(); // Load env variables from .env file
 
-  final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9999';
+  final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
+  final gotrueUrlWithAutoConfirmOff =
+      env['GOTRUE_URL'] ?? 'http://localhost:9999';
   final anonToken = env['GOTRUE_TOKEN'] ?? '';
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   group('client', () {
     late GoTrueClient client;
+    late GoTrueClient clientWithAuthConfirmOff;
 
     setUpAll(() {
       client = GoTrueClient(
         url: gotrueUrl,
+        headers: {
+          'Authorization': 'Bearer $anonToken',
+          'apikey': anonToken,
+        },
+      );
+      clientWithAuthConfirmOff = GoTrueClient(
+        url: gotrueUrlWithAutoConfirmOff,
         headers: {
           'Authorization': 'Bearer $anonToken',
           'apikey': anonToken,
@@ -46,7 +56,7 @@ void main() {
       final response = await client.signUp(
         email,
         password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
         userMetadata: {"Hello": "World"},
       );
       final data = response.data;
@@ -56,6 +66,20 @@ void main() {
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
       expect(data?.user?.userMetadata, {"Hello": "World"});
+    });
+
+    test('signUp() with autoConfirm off', () async {
+      final response = await clientWithAuthConfirmOff.signUp(
+        email,
+        password,
+        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+      );
+      final user = response.user;
+      final data = response.data;
+      final error = response.error;
+      expect(error?.message, isNull);
+      expect(data, isNull);
+      expect(user?.id, isA<String>());
     });
 
     test('signIn()', () async {
