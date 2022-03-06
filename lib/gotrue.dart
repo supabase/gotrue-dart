@@ -7,6 +7,7 @@ export 'src/gotrue_api.dart';
 export 'src/gotrue_client.dart';
 export 'src/gotrue_error.dart';
 export 'src/gotrue_response.dart';
+export 'src/open_id_connect_credentials.dart';
 export 'src/provider.dart';
 export 'src/session.dart';
 export 'src/subscription.dart' show Subscription;
