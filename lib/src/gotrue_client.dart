@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
-import 'package:gotrue/src/open_id_connect_credentials.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/uuid.dart';
 
