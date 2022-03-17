@@ -1,6 +1,8 @@
-## [next]
+## [0.2.0]
 
 - BREAKING: `user` will be returned when signing up with auto confirm off ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))
+- feat: Slack and Shopify as login providers([43](https://github.com/supabase-community/gotrue-dart/pull/43))
+- fix: Adds missing keys - phone, phone_confirmed_at, emailed_confirmed_at to User.toJson()([43](https://github.com/supabase-community/gotrue-dart/pull/43))
 
 ## [0.1.6]
 
