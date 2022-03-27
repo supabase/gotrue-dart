@@ -1,3 +1,7 @@
+## [0.2.1]
+
+- fix: Add missing OpenIDConnectCredentials export
+
 ## [0.2.0]
 
 - BREAKING: `user` will be returned when signing up with auto confirm off ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))
