@@ -296,7 +296,7 @@ class GoTrueClient {
       final response = await api.signOut(accessToken);
       if (response.error != null) return response;
     }
-    return GotrueResponse();
+    return const GotrueResponse();
   }
 
   // Receive a notification every time an auth event happens.
