@@ -5,6 +5,7 @@ import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/uuid.dart';
+import 'package:http/http.dart';
 
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
@@ -27,6 +28,7 @@ class GoTrueClient {
     Map<String, String>? headers,
     bool? autoRefreshToken,
     CookieOptions? cookieOptions,
+    Client? httpClient,
   }) {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
@@ -35,7 +37,12 @@ class GoTrueClient {
       ...Constants.defaultHeaders,
       if (headers != null) ...headers,
     };
-    api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
+    api = GoTrueApi(
+      _url,
+      headers: _header,
+      cookieOptions: cookieOptions,
+      httpClient: httpClient,
+    );
   }
 
   /// Returns the user data, if there is a logged in user.
