@@ -1,3 +1,6 @@
+## [next]
+- fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
+
 ## [0.2.0]
 
 - BREAKING: `user` will be returned when signing up with auto confirm off ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))
