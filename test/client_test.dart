@@ -5,6 +5,8 @@ import 'package:gotrue/gotrue.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
+import 'custom_http_client.dart';
+
 void main() {
   final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
 
@@ -17,7 +19,7 @@ void main() {
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
-  group('client', () {
+  group('Client with default http client', () {
     late GoTrueClient client;
     late GoTrueClient clientWithAuthConfirmOff;
 
@@ -177,6 +179,22 @@ void main() {
       final error = res.error!;
       expect(error.message, isNotNull);
       expect(data, isNull);
+    });
+  });
+
+  group("Client with custom http client", () {
+    late GoTrueClient client;
+
+    setUpAll(() {
+      client = GoTrueClient(
+        url: gotrueUrl,
+        httpClient: CustomHttpClient(),
+      );
+    });
+
+    test('signIn()', () async {
+      final response = await client.signIn(email: email, password: password);
+      expect(response.statusCode, 420);
     });
   });
 
