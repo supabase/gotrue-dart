@@ -1,7 +1,7 @@
 import 'dart:convert';
 
+import 'package:gotrue/src/jwt_decode.dart';
 import 'package:gotrue/src/user.dart';
-import 'package:jwt_decode/jwt_decode.dart';
 
 class Session {
   final String accessToken;
@@ -42,7 +42,7 @@ class Session {
 
   int? get expiresAt {
     try {
-      final payload = Jwt.parseJwt(accessToken);
+      final payload = jwtDecode(accessToken);
       return payload['exp'] as int;
     } catch (_) {
       return null;

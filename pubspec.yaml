@@ -9,7 +9,6 @@ environment:
 
 dependencies:
   http: ^0.13.0
-  jwt_decode: ^0.3.1
 
 dev_dependencies:
   dotenv: ^3.0.0

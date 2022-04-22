@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
-import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
 import 'custom_http_client.dart';
@@ -93,9 +92,9 @@ void main() {
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
 
-      final payload = Jwt.parseJwt(data!.accessToken);
-      final persistSession = json.decode(data.persistSessionString);
-      // ignore: avoid_dynamic_calls
+      final payload = jwtDecode(data!.accessToken);
+      final persistSession =
+          json.decode(data.persistSessionString) as Map<String, dynamic>;
       expect(payload['exp'], persistSession['expiresAt']);
     });
 
