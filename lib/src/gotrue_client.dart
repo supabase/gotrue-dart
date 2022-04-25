@@ -434,13 +434,17 @@ class GoTrueClient {
       final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
         final timerDuration = Duration(seconds: nextDuration);
-        _refreshTokenTimer = Timer(timerDuration, () {
-          _callRefreshToken();
-        });
+        _setTokenRefreshTimer(timerDuration);
       } else {
         _callRefreshToken();
       }
     }
+  }
+
+  void _setTokenRefreshTimer(Duration timerDuration) {
+    _refreshTokenTimer = Timer(timerDuration, () {
+      _callRefreshToken();
+    });
   }
 
   void _removeSession() {
@@ -464,7 +468,12 @@ class GoTrueClient {
     }
 
     final response = await api.refreshAccessToken(token, jwt);
-    if (response.error != null) return response;
+    if (response.error != null) {
+      if (response.error!.statusCode == 'SocketException') {
+        _setTokenRefreshTimer(const Duration(seconds: 5));
+      }
+      return response;
+    }
     if (response.data == null) {
       final error = GotrueError('Invalid session data.');
       return GotrueSessionResponse(error: error);

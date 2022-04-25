@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:gotrue/src/fetch_options.dart';
 import 'package:gotrue/src/gotrue_error.dart';
@@ -25,6 +26,11 @@ class Fetch {
       } on FormatException catch (_) {
         return GotrueError(error.body);
       }
+    } else if (error is SocketException) {
+      return GotrueError(
+        error.toString(),
+        statusCode: error.runtimeType.toString(),
+      );
     } else {
       return GotrueError(error.toString());
     }
@@ -74,6 +80,8 @@ class Fetch {
       } else {
         throw response;
       }
+    } on SocketException catch (e) {
+      return GotrueResponse(error: handleError(e));
     } catch (e) {
       return GotrueResponse(error: handleError(e));
     } finally {
