@@ -38,7 +38,7 @@ class Fetch {
         errorRes = GotrueError(error.body);
       }
     } else if (error is SocketException) {
-      return GotrueError(
+      errorRes = GotrueError(
         error.toString(),
         statusCode: error.runtimeType.toString(),
       );
@@ -107,7 +107,7 @@ class Fetch {
         throw response;
       }
     } on SocketException catch (e) {
-      return GotrueResponse(error: handleError(e));
+      return handleError(e);
     } catch (e) {
       return handleError(e);
     }
