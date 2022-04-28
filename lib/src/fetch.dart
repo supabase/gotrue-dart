@@ -7,8 +7,6 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
 
-final Fetch fetch = Fetch();
-
 class Fetch {
   final Client? httpClient;
 
