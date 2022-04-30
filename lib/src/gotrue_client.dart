@@ -23,6 +23,8 @@ class GoTrueClient {
 
   Timer? _refreshTokenTimer;
 
+  int _refreshTokenRetryCount = 0;
+
   GoTrueClient({
     String? url,
     Map<String, String>? headers,
@@ -438,6 +440,7 @@ class GoTrueClient {
       final refreshDurationBeforeExpires = expiresIn > 60 ? 60 : 1;
       final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
+        _refreshTokenRetryCount = 0;
         final timerDuration = Duration(seconds: nextDuration);
         _setTokenRefreshTimer(timerDuration);
       } else {
@@ -448,9 +451,12 @@ class GoTrueClient {
 
   void _setTokenRefreshTimer(Duration timerDuration) {
     _refreshTokenTimer?.cancel();
-    _refreshTokenTimer = Timer(timerDuration, () {
-      _callRefreshToken();
-    });
+    _refreshTokenRetryCount++;
+    if (_refreshTokenRetryCount < 720) {
+      _refreshTokenTimer = Timer(timerDuration, () {
+        _callRefreshToken();
+      });
+    }
   }
 
   void _removeSession() {
