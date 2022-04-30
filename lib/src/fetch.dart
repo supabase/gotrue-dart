@@ -5,6 +5,7 @@ import 'package:gotrue/src/gotrue_error.dart';
 import 'package:gotrue/src/gotrue_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:universal_io/io.dart';
 
 class Fetch {
   final Client? httpClient;
@@ -34,6 +35,11 @@ class Fetch {
       } on FormatException catch (_) {
         errorRes = GotrueError(error.body);
       }
+    } else if (error is SocketException) {
+      errorRes = GotrueError(
+        error.toString(),
+        statusCode: error.runtimeType.toString(),
+      );
     } else {
       errorRes = GotrueError(error.toString());
     }
@@ -98,6 +104,8 @@ class Fetch {
       } else {
         throw response;
       }
+    } on SocketException catch (e) {
+      return handleError(e);
     } catch (e) {
       return handleError(e);
     }

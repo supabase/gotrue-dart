@@ -45,14 +45,14 @@ class GoTrueApi {
         body,
         options: fetchOptions,
       );
-      final data = response.rawData as Map<String, dynamic>;
+      final data = response.rawData as Map<String, dynamic>?;
       if (response.error != null) {
         return GotrueSessionResponse.fromResponse(response: response);
-      } else if (data['access_token'] == null) {
+      } else if (data?['access_token'] == null) {
         // email validation required
         User? user;
-        if (data['id'] != null) {
-          user = User.fromJson(data);
+        if (data?['id'] != null) {
+          user = User.fromJson(data!);
         }
         return GotrueSessionResponse.fromResponse(
           response: response,

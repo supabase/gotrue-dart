@@ -23,6 +23,8 @@ class GoTrueClient {
 
   Timer? _refreshTokenTimer;
 
+  int _refreshTokenRetryCount = 0;
+
   GoTrueClient({
     String? url,
     Map<String, String>? headers,
@@ -431,9 +433,7 @@ class GoTrueClient {
     final expiresAt = session.expiresAt;
 
     if (autoRefreshToken && expiresAt != null) {
-      if (_refreshTokenTimer != null) {
-        _refreshTokenTimer!.cancel();
-      }
+      _refreshTokenTimer?.cancel();
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
       final expiresIn = expiresAt - timeNow;
@@ -441,12 +441,20 @@ class GoTrueClient {
       final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
         final timerDuration = Duration(seconds: nextDuration);
-        _refreshTokenTimer = Timer(timerDuration, () {
-          _callRefreshToken();
-        });
+        _setTokenRefreshTimer(timerDuration);
       } else {
         _callRefreshToken();
       }
+    }
+  }
+
+  void _setTokenRefreshTimer(Duration timerDuration) {
+    _refreshTokenTimer?.cancel();
+    _refreshTokenRetryCount++;
+    if (_refreshTokenRetryCount < 720) {
+      _refreshTokenTimer = Timer(timerDuration, () {
+        _callRefreshToken();
+      });
     }
   }
 
@@ -471,11 +479,17 @@ class GoTrueClient {
     }
 
     final response = await api.refreshAccessToken(token, jwt);
-    if (response.error != null) return response;
+    if (response.error != null) {
+      if (response.error!.statusCode == 'SocketException') {
+        _setTokenRefreshTimer(const Duration(seconds: 5));
+      }
+      return response;
+    }
     if (response.data == null) {
       final error = GotrueError('Invalid session data.');
       return GotrueSessionResponse(error: error);
     }
+    _refreshTokenRetryCount = 0;
 
     _saveSession(response.data!);
     _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
