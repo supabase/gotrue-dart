@@ -440,7 +440,6 @@ class GoTrueClient {
       final refreshDurationBeforeExpires = expiresIn > 60 ? 60 : 1;
       final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
-        _refreshTokenRetryCount = 0;
         final timerDuration = Duration(seconds: nextDuration);
         _setTokenRefreshTimer(timerDuration);
       } else {
@@ -490,6 +489,7 @@ class GoTrueClient {
       final error = GotrueError('Invalid session data.');
       return GotrueSessionResponse(error: error);
     }
+    _refreshTokenRetryCount = 0;
 
     _saveSession(response.data!);
     _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
