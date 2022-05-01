@@ -48,10 +48,10 @@ class GoTrueClient {
     );
   }
 
-  /// Returns the user data, if there is a logged in user.
+  /// Returns the current logged in user, if any;
   User? get currentUser => _currentUser;
 
-  /// Returns the session data, if there is an active session.
+  /// Returns the current session, if any;
   Session? get currentSession => _currentSession;
 
   /// Creates a new user.
@@ -170,7 +170,8 @@ class GoTrueClient {
     return response;
   }
 
-  /// Force refreshes the session including the user data in case it was updated in a different session.
+  /// Force refreshes the session including the user data in case it was updated
+  /// in a different session.
   Future<GotrueSessionResponse> refreshSession() async {
     if (currentSession?.accessToken == null) {
       throw GotrueError('Not logged in.');
@@ -180,7 +181,7 @@ class GoTrueClient {
     return response;
   }
 
-  /// Sets the session data from refresh_token and returns current Session and Error
+  /// Sets the session data from refresh_token and returns the current session.
   Future<GotrueSessionResponse> setSession(String refreshToken) async {
     if (refreshToken.isEmpty) {
       throw GotrueError('No current session.');
@@ -280,7 +281,6 @@ class GoTrueClient {
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
     if (accessToken != null) {
       return api.signOut(accessToken);
-      // if (response.error != null) return response;
     }
     return const GotrueResponse();
   }
