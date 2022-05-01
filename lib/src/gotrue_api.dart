@@ -26,6 +26,7 @@ class GoTrueApi {
     String password, {
     AuthOptions? options,
     Map<String, dynamic>? userMetadata,
+    String? captchaToken,
   }) async {
     final urlParams = [];
 
@@ -41,6 +42,7 @@ class GoTrueApi {
         'email': email,
         'password': password,
         'data': userMetadata,
+        'gotrue_meta_security': {'hcaptcha_token': captchaToken},
       },
       options: FetchOptions(headers),
     );
@@ -100,12 +102,14 @@ class GoTrueApi {
     String phone,
     String password, {
     Map<String, dynamic>? userMetadata,
+    String? captchaToken,
   }) async {
     final fetchOptions = FetchOptions(headers);
     final body = {
       'phone': phone,
       'password': password,
       'data': userMetadata,
+      'gotrue_meta_security': {'hcaptcha_token': captchaToken},
     };
     final response =
         await _fetch.post('$url/signup', body, options: fetchOptions);
@@ -140,13 +144,11 @@ class GoTrueApi {
     String phone, [
     String? password,
   ]) async {
-    final body = {'phone': phone, 'password': password};
-    final fetchOptions = FetchOptions(headers);
     const queryString = '?grant_type=password';
     final response = await _fetch.post(
       '$url/token$queryString',
-      body,
-      options: fetchOptions,
+      {'phone': phone, 'password': password},
+      options: FetchOptions(headers),
     );
     final session = Session.fromJson(response.rawData as Map<String, dynamic>);
     return GotrueSessionResponse.fromResponse(
@@ -163,7 +165,7 @@ class GoTrueApi {
       'id_token': oidc.idToken,
       'nonce': oidc.nonce,
       'client_id': oidc.clientId,
-      "issuer": oidc.issuer,
+      'issuer': oidc.issuer,
       'provider': oidc.provider?.name(),
     };
     final fetchOptions = FetchOptions(headers);
@@ -184,8 +186,9 @@ class GoTrueApi {
   Future<GotrueJsonResponse> sendMagicLinkEmail(
     String email, {
     AuthOptions? options,
+    bool? shouldCreateUser,
+    String? captchaToken,
   }) async {
-    final body = {'email': email};
     final fetchOptions = FetchOptions(headers);
     final urlParams = [];
     if (options?.redirectTo != null) {
@@ -194,8 +197,12 @@ class GoTrueApi {
     }
     final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
     final response = await _fetch.post(
-      '$url/magiclink$queryString',
-      body,
+      '$url/otp$queryString',
+      {
+        'email': email,
+        'create_user': shouldCreateUser,
+        'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+      },
       options: fetchOptions,
     );
     return GotrueJsonResponse.fromResponse(
@@ -207,8 +214,16 @@ class GoTrueApi {
   /// Sends a mobile OTP via SMS. Will register the account if it doesn't already exist
   ///
   /// [phone] is the user's phone number WITH international prefix
-  Future<GotrueJsonResponse> sendMobileOTP(String phone) async {
-    final body = {'phone': phone};
+  Future<GotrueJsonResponse> sendMobileOTP(
+    String phone, {
+    bool? shouldCreateUser,
+    String? captchaToken,
+  }) async {
+    final body = {
+      'phone': phone,
+      'create_user': shouldCreateUser,
+      'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+    };
     final fetchOptions = FetchOptions(headers);
     final response = await _fetch.post('$url/otp', body, options: fetchOptions);
     return GotrueJsonResponse.fromResponse(
@@ -222,6 +237,7 @@ class GoTrueApi {
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [token] is the token that user was sent to their mobile phone
+  @Deprecated('Use verifyOTP instead')
   Future<GotrueSessionResponse> verifyMobileOTP(
     String phone,
     String token, {
@@ -280,8 +296,12 @@ class GoTrueApi {
   Future<GotrueJsonResponse> resetPasswordForEmail(
     String email, {
     AuthOptions? options,
+    String? captchaToken,
   }) async {
-    final body = {'email': email};
+    final body = {
+      'email': email,
+      'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+    };
     final fetchOptions = FetchOptions(headers);
     final urlParams = [];
     if (options?.redirectTo != null) {
@@ -362,15 +382,5 @@ class GoTrueApi {
       response: response,
       data: session,
     );
-  }
-
-  // TODO: not implemented yet
-  Never setAuthCookie() {
-    throw UnimplementedError();
-  }
-
-  // TODO: not implemented yet
-  Never getUserByCookie() {
-    throw UnimplementedError();
   }
 }

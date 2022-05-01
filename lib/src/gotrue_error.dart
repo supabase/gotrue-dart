@@ -1,4 +1,4 @@
-class GotrueError extends Error {
+class GotrueError {
   final String message;
 
   GotrueError(this.message);

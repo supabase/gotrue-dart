@@ -18,7 +18,7 @@ Future<bool> main(List<String> arguments) async {
     );
     print('Logged in, uid: ${login.data!.user!.id}');
   } on GotrueError catch (error) {
-    print('Error!');
+    print('Sign in Error: ${error.message}');
   }
 
   await client.signOut();
