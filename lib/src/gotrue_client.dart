@@ -72,14 +72,12 @@ class GoTrueClient {
       options: options,
       userMetadata: userMetadata,
     );
-    if (response.error != null) return response;
-
-    // ignore: deprecated_member_use_from_same_package
-    if (response.data?.user?.confirmedAt != null ||
-        response.data?.user?.emailConfirmedAt != null) {
-      _saveSession(response.data!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (response.data == null) {
+      throw GotrueError('An error occurred on sign up.');
     }
+
+    _saveSession(response.data!);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
   }
@@ -101,12 +99,12 @@ class GoTrueClient {
 
     final response =
         await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
-    if (response.error != null) return response;
-
-    if (response.data?.user?.phoneConfirmedAt != null) {
-      _saveSession(response.data!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (response.data == null) {
+      throw GotrueError('An error occurred on sign up.');
     }
+
+    _saveSession(response.data!);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
   }
@@ -124,14 +122,14 @@ class GoTrueClient {
 
     if (email != null && password == null) {
       final response = await api.sendMagicLinkEmail(email, options: options);
-      return GotrueSessionResponse(error: response.error);
+      return GotrueSessionResponse();
     }
     if (email != null && password != null) {
       return _handleEmailSignIn(email, password, options: options);
     }
     if (phone != null && password == null) {
       final response = await api.sendMobileOTP(phone);
-      return GotrueSessionResponse(error: response.error);
+      return GotrueSessionResponse();
     }
     if (phone != null && password != null) {
       return _handlePhoneSignIn(phone, password);
@@ -142,10 +140,9 @@ class GoTrueClient {
     if (oidc != null) {
       return _handleOpenIDConnectSignIn(oidc);
     }
-    final error = GotrueError(
-      "You must provide either an email, phone number, a third-party provider or OpenID Connect.",
+    throw GotrueError(
+      'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
     );
-    return GotrueSessionResponse(error: error);
   }
 
   /// Log in a user given a User supplied OTP received via mobile.
@@ -162,12 +159,14 @@ class GoTrueClient {
 
     final response = await api.verifyMobileOTP(phone, token, options: options);
 
-    if (response.error != null) return response;
-
-    if (response.data?.accessToken != null) {
-      _saveSession(response.data!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (response.data == null) {
+      throw GotrueError(
+        'An error occurred on token verification.',
+      );
     }
+
+    _saveSession(response.data!);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
   }
@@ -175,8 +174,7 @@ class GoTrueClient {
   /// Force refreshes the session including the user data in case it was updated in a different session.
   Future<GotrueSessionResponse> refreshSession() async {
     if (currentSession?.accessToken == null) {
-      final error = GotrueError('Not logged in.');
-      return GotrueSessionResponse(error: error);
+      throw GotrueError('Not logged in.');
     }
 
     final response = await _callRefreshToken();
@@ -186,8 +184,7 @@ class GoTrueClient {
   /// Sets the session data from refresh_token and returns current Session and Error
   Future<GotrueSessionResponse> setSession(String refreshToken) async {
     if (refreshToken.isEmpty) {
-      final error = GotrueError('No current session.');
-      return GotrueSessionResponse(error: error);
+      throw GotrueError('No current session.');
     }
     return _callRefreshToken(refreshToken: refreshToken);
   }
@@ -213,7 +210,7 @@ class GoTrueClient {
 
     final errorDescription = url.queryParameters['error_description'];
     if (errorDescription != null) {
-      return GotrueSessionResponse(error: GotrueError(errorDescription));
+      throw GotrueError(errorDescription);
     }
 
     final accessToken = url.queryParameters['access_token'];
@@ -223,30 +220,19 @@ class GoTrueClient {
     final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
-      return GotrueSessionResponse(
-        error: GotrueError('No access_token detected.'),
-      );
+      throw ArgumentError('No access_token detected.');
     }
     if (expiresIn == null) {
-      return GotrueSessionResponse(
-        error: GotrueError('No expires_in detected.'),
-      );
+      throw ArgumentError('No expires_in detected.');
     }
     if (refreshToken == null) {
-      return GotrueSessionResponse(
-        error: GotrueError('No refresh_token detected.'),
-      );
+      throw ArgumentError('No refresh_token detected.');
     }
     if (tokenType == null) {
-      return GotrueSessionResponse(
-        error: GotrueError('No token_type detected.'),
-      );
+      throw ArgumentError('No token_type detected.');
     }
 
     final response = await api.getUser(accessToken);
-    if (response.error != null) {
-      return GotrueSessionResponse(error: response.error);
-    }
 
     final session = Session(
       accessToken: accessToken,
@@ -272,13 +258,12 @@ class GoTrueClient {
   /// Updates user data, if there is a logged in user.
   Future<GotrueUserResponse> update(UserAttributes attributes) async {
     if (currentSession?.accessToken == null) {
-      final error = GotrueError('Not logged in.');
-      return GotrueUserResponse(error: error);
+      throw GotrueError('Not logged in.');
     }
 
     final response =
         await api.updateUser(currentSession!.accessToken, attributes);
-    if (response.error != null) return response;
+    // if (response.error != null) return response;
 
     currentUser = response.user;
     currentSession = currentSession?.copyWith(user: response.user);
@@ -293,8 +278,8 @@ class GoTrueClient {
     _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
     if (accessToken != null) {
-      final response = await api.signOut(accessToken);
-      if (response.error != null) return response;
+      return api.signOut(accessToken);
+      // if (response.error != null) return response;
     }
     return const GotrueResponse();
   }
@@ -319,45 +304,37 @@ class GoTrueClient {
   ///
   /// currentSession: session json object, expiresAt: timestamp in seconds
   Future<GotrueSessionResponse> recoverSession(String jsonStr) async {
-    try {
-      final persistedData = json.decode(jsonStr) as Map<String, dynamic>;
-      final currentSession =
-          persistedData['currentSession'] as Map<String, dynamic>?;
-      final expiresAt = persistedData['expiresAt'] as int?;
-      if (currentSession == null) {
-        return GotrueSessionResponse(
-          error: GotrueError('Missing currentSession.'),
-        );
-      }
-      if (expiresAt == null) {
-        return GotrueSessionResponse(error: GotrueError('Missing expiresAt.'));
-      }
+    final persistedData = json.decode(jsonStr) as Map<String, dynamic>;
+    final currentSession =
+        persistedData['currentSession'] as Map<String, dynamic>?;
+    final expiresAt = persistedData['expiresAt'] as int?;
+    if (currentSession == null) {
+      throw GotrueError('Missing currentSession.');
+    }
+    if (expiresAt == null) {
+      throw GotrueError('Missing expiresAt.');
+    }
 
-      final session = Session.fromJson(currentSession);
-      if (session.user == null) {
-        return GotrueSessionResponse(
-          error: GotrueError('Current session is missing data.'),
-        );
-      }
+    final session = Session.fromJson(currentSession);
+    if (session.user == null) {
+      throw GotrueError('Current session is missing data.');
+    }
 
-      final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-      if (expiresAt < timeNow) {
-        if (autoRefreshToken && session.refreshToken != null) {
-          final response = await _callRefreshToken(
-            refreshToken: session.refreshToken,
-            accessToken: session.accessToken,
-          );
-          return response;
-        } else {
-          return GotrueSessionResponse(error: GotrueError('Session expired.'));
-        }
+    final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+    if (expiresAt < timeNow) {
+      if (autoRefreshToken && session.refreshToken != null) {
+        final response = await _callRefreshToken(
+          refreshToken: session.refreshToken,
+          accessToken: session.accessToken,
+        );
+        return response;
       } else {
-        _saveSession(session);
-        _notifyAllSubscribers(AuthChangeEvent.signedIn);
-        return GotrueSessionResponse(data: session);
+        throw GotrueError('Session expired.');
       }
-    } catch (e) {
-      return GotrueSessionResponse(error: GotrueError(e.toString()));
+    } else {
+      _saveSession(session);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+      return GotrueSessionResponse(data: session);
     }
   }
 
@@ -368,7 +345,7 @@ class GoTrueClient {
   }) async {
     final response =
         await api.signInWithEmail(email, password, options: options);
-    if (response.error != null) return response;
+    // if (response.error != null) return response;
 
     // ignore: deprecated_member_use_from_same_package
     if (response.data?.user?.confirmedAt != null ||
@@ -396,17 +373,16 @@ class GoTrueClient {
         oidc.provider != null) {
       final response = await api.signInWithOpenIDConnect(oidc);
 
-      if (response.error != null) return response;
+      // if (response.error != null) return response;
 
       _saveSession(response.data!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
       return response;
     }
-    final error = GotrueError(
+    throw GotrueError(
       'You must provider an OpenID Connect clientID and issuer or provider.',
     );
-    return GotrueSessionResponse(error: error);
   }
 
   Future<GotrueSessionResponse> _handlePhoneSignIn(
@@ -415,7 +391,7 @@ class GoTrueClient {
   ]) async {
     final response = await api.signInWithPhone(phone, password);
 
-    if (response.error != null) return response;
+    // if (response.error != null) return response;
 
     if (response.data?.user?.phoneConfirmedAt != null) {
       _saveSession(response.data!);
@@ -466,15 +442,12 @@ class GoTrueClient {
     final token = refreshToken ?? currentSession?.refreshToken;
     final jwt = accessToken ?? currentSession?.accessToken;
     if (token == null) {
-      final error = GotrueError('No current session.');
-      return GotrueSessionResponse(error: error);
+      throw GotrueError('No current session.');
     }
 
     final response = await api.refreshAccessToken(token, jwt);
-    if (response.error != null) return response;
     if (response.data == null) {
-      final error = GotrueError('Invalid session data.');
-      return GotrueSessionResponse(error: error);
+      throw GotrueError('Invalid session data.');
     }
 
     _saveSession(response.data!);

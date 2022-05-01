@@ -1,10 +1,18 @@
-class GotrueError {
-  String message;
+class GotrueError extends Error {
+  final String message;
 
   GotrueError(this.message);
 
   @override
-  String toString() {
-    return 'GotrueError(message: $message)';
+  String toString() => 'GotrueError(message: $message)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is GotrueError && other.message == message;
   }
+
+  @override
+  int get hashCode => message.hashCode;
 }

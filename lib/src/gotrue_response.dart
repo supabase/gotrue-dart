@@ -1,14 +1,12 @@
-import 'package:gotrue/src/gotrue_error.dart';
 import 'package:gotrue/src/session.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/user.dart';
 
 class GotrueResponse {
-  final GotrueError? error;
   final dynamic rawData;
   final int? statusCode;
 
-  const GotrueResponse({this.rawData, this.error, this.statusCode});
+  const GotrueResponse({this.rawData, this.statusCode});
 }
 
 class GotrueJsonResponse extends GotrueResponse {
@@ -16,16 +14,13 @@ class GotrueJsonResponse extends GotrueResponse {
 
   const GotrueJsonResponse({
     this.data,
-    GotrueError? error,
     int? statusCode,
   }) : super(
-          error: error,
           statusCode: statusCode,
         );
 
   GotrueJsonResponse.fromResponse({required GotrueResponse response, this.data})
       : super(
-          error: response.error,
           statusCode: response.statusCode,
           rawData: response.rawData,
         );
@@ -42,11 +37,9 @@ class GotrueSessionResponse extends GotrueResponse {
     this.provider,
     this.url,
     User? user,
-    GotrueError? error,
     int? statusCode,
   })  : user = user ?? data?.user,
         super(
-          error: error,
           statusCode: statusCode,
         );
 
@@ -58,7 +51,6 @@ class GotrueSessionResponse extends GotrueResponse {
     User? user,
   })  : user = user ?? data?.user,
         super(
-          error: response.error,
           statusCode: response.statusCode,
         );
 }
@@ -72,16 +64,13 @@ class GotrueUserResponse extends GotrueResponse {
 
   const GotrueUserResponse({
     this.user,
-    GotrueError? error,
     int? statusCode,
   }) : super(
-          error: error,
           statusCode: statusCode,
         );
 
   GotrueUserResponse.fromResponse({required GotrueResponse response, this.user})
       : super(
-          error: response.error,
           statusCode: response.statusCode,
         );
 }
@@ -89,6 +78,5 @@ class GotrueUserResponse extends GotrueResponse {
 class GotrueSubscription extends GotrueResponse {
   final Subscription? data;
 
-  const GotrueSubscription({this.data, GotrueError? error})
-      : super(error: error);
+  const GotrueSubscription({this.data}) : super();
 }

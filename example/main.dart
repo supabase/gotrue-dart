@@ -11,14 +11,13 @@ Future<bool> main(List<String> arguments) async {
     },
   );
 
-  final login = await client.signIn(
-    email: 'email',
-    password: '12345',
-  );
-
-  if (login.error == null) {
+  try {
+    final login = await client.signIn(
+      email: 'email',
+      password: '12345',
+    );
     print('Logged in, uid: ${login.data!.user!.id}');
-  } else {
+  } on GotrueError catch (error) {
     print('Error!');
   }
 

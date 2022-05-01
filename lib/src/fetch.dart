@@ -15,57 +15,46 @@ class Fetch {
     return code >= 200 && code <= 299;
   }
 
-  GotrueResponse handleError(dynamic error) {
-    int? statusCode;
-    GotrueError errorRes;
-    if (error is http.Response) {
-      statusCode = error.statusCode;
+  GotrueError _handleError(http.Response error) {
+    late GotrueError errorRes;
+
+    try {
+      final parsedJson = json.decode(error.body) as Map<String, dynamic>;
+      final String message = (parsedJson['msg'] ??
+              parsedJson['message'] ??
+              parsedJson['error_description'] ??
+              parsedJson['error'] ??
+              error.body)
+          .toString();
+      errorRes = GotrueError(message);
+    } catch (_) {
+      errorRes = GotrueError(error.body);
     }
 
-    if (error is http.Response) {
-      try {
-        final parsedJson = json.decode(error.body) as Map<String, dynamic>;
-        final message = parsedJson['msg'] ??
-            parsedJson['message'] ??
-            parsedJson['error_description'] ??
-            parsedJson['error'] ??
-            json.encode(parsedJson);
-        errorRes = GotrueError(message as String);
-      } on FormatException catch (_) {
-        errorRes = GotrueError(error.body);
-      }
-    } else {
-      errorRes = GotrueError(error.toString());
-    }
-
-    return GotrueResponse(error: errorRes, statusCode: statusCode);
+    return errorRes;
   }
 
   Future<GotrueResponse> get(String url, {FetchOptions? options}) async {
-    try {
-      final headers = options?.headers ?? {};
-      final http.Response response = await (httpClient?.get ?? http.get)(
-        Uri.parse(url),
-        headers: headers,
-      );
-      if (isSuccessStatusCode(response.statusCode)) {
-        if (options?.noResolveJson == true) {
-          return GotrueResponse(
-            rawData: response.body,
-            statusCode: response.statusCode,
-          );
-        } else {
-          final jsonBody = json.decode(response.body);
-          return GotrueResponse(
-            rawData: jsonBody,
-            statusCode: response.statusCode,
-          );
-        }
+    final headers = options?.headers ?? {};
+    final http.Response response = await (httpClient?.get ?? http.get)(
+      Uri.parse(url),
+      headers: headers,
+    );
+    if (isSuccessStatusCode(response.statusCode)) {
+      if (options?.noResolveJson == true) {
+        return GotrueResponse(
+          rawData: response.body,
+          statusCode: response.statusCode,
+        );
       } else {
-        throw response;
+        final jsonBody = json.decode(response.body);
+        return GotrueResponse(
+          rawData: jsonBody,
+          statusCode: response.statusCode,
+        );
       }
-    } catch (e) {
-      return handleError(e);
+    } else {
+      throw _handleError(response);
     }
   }
 
@@ -74,32 +63,28 @@ class Fetch {
     dynamic body, {
     FetchOptions? options,
   }) async {
-    try {
-      final bodyStr = json.encode(body ?? {});
-      final headers = options?.headers ?? {};
-      final http.Response response = await (httpClient?.post ?? http.post)(
-        Uri.parse(url),
-        headers: headers,
-        body: bodyStr,
-      );
-      if (isSuccessStatusCode(response.statusCode)) {
-        if (options?.noResolveJson == true) {
-          return GotrueResponse(
-            rawData: response.body,
-            statusCode: response.statusCode,
-          );
-        } else {
-          final jsonBody = json.decode(response.body);
-          return GotrueResponse(
-            rawData: jsonBody,
-            statusCode: response.statusCode,
-          );
-        }
+    final bodyStr = json.encode(body ?? {});
+    final headers = options?.headers ?? {};
+    final http.Response response = await (httpClient?.post ?? http.post)(
+      Uri.parse(url),
+      headers: headers,
+      body: bodyStr,
+    );
+    if (isSuccessStatusCode(response.statusCode)) {
+      if (options?.noResolveJson == true) {
+        return GotrueResponse(
+          rawData: response.body,
+          statusCode: response.statusCode,
+        );
       } else {
-        throw response;
+        final jsonBody = json.decode(response.body);
+        return GotrueResponse(
+          rawData: jsonBody,
+          statusCode: response.statusCode,
+        );
       }
-    } catch (e) {
-      return handleError(e);
+    } else {
+      throw _handleError(response);
     }
   }
 
@@ -108,32 +93,28 @@ class Fetch {
     dynamic body, {
     FetchOptions? options,
   }) async {
-    try {
-      final bodyStr = json.encode(body ?? {});
-      final headers = options?.headers ?? {};
-      final http.Response response = await (httpClient?.put ?? http.put)(
-        Uri.parse(url),
-        headers: headers,
-        body: bodyStr,
-      );
-      if (isSuccessStatusCode(response.statusCode)) {
-        if (options?.noResolveJson == true) {
-          return GotrueResponse(
-            rawData: response.body,
-            statusCode: response.statusCode,
-          );
-        } else {
-          final jsonBody = json.decode(response.body);
-          return GotrueResponse(
-            rawData: jsonBody,
-            statusCode: response.statusCode,
-          );
-        }
+    final bodyStr = json.encode(body ?? {});
+    final headers = options?.headers ?? {};
+    final http.Response response = await (httpClient?.put ?? http.put)(
+      Uri.parse(url),
+      headers: headers,
+      body: bodyStr,
+    );
+    if (isSuccessStatusCode(response.statusCode)) {
+      if (options?.noResolveJson == true) {
+        return GotrueResponse(
+          rawData: response.body,
+          statusCode: response.statusCode,
+        );
       } else {
-        throw response;
+        final jsonBody = json.decode(response.body);
+        return GotrueResponse(
+          rawData: jsonBody,
+          statusCode: response.statusCode,
+        );
       }
-    } catch (e) {
-      return handleError(e);
+    } else {
+      throw _handleError(response);
     }
   }
 }
