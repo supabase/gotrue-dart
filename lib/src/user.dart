@@ -1,7 +1,7 @@
 class User {
   final String id;
   final Map<String, dynamic> appMetadata;
-  final Map<String, dynamic> userMetadata;
+  final Map<String, dynamic>? userMetadata;
   final String aud;
   final String? confirmationSentAt;
   final String? recoverySentAt;
@@ -43,7 +43,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) => User(
         id: json['id'] as String,
         appMetadata: json['app_metadata'] as Map<String, dynamic>,
-        userMetadata: json['user_metadata'] as Map<String, dynamic>,
+        userMetadata: json['user_metadata'] as Map<String, dynamic>?,
         aud: json['aud'] as String,
         confirmationSentAt: json['confirmation_sent_at'] as String?,
         recoverySentAt: json['recovery_sent_at'] as String?,

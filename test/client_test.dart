@@ -68,15 +68,15 @@ void main() {
     });
 
     test('signUp() with autoConfirm off', () async {
-      final response = await clientWithAuthConfirmOff.signUp(
-        email,
-        password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
-      );
-      final user = response.user;
-      final data = response.data;
-      expect(data, isNull);
-      expect(user?.id, isA<String>());
+      try {
+        await clientWithAuthConfirmOff.signUp(
+          email,
+          password,
+          options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        );
+      } catch (error) {
+        expect(error, isA<GotrueError>());
+      }
     });
 
     test('signIn()', () async {
@@ -134,15 +134,15 @@ void main() {
       );
       final data = response.data;
       expect(data?.id, isA<String>());
-      expect(data?.userMetadata['hello'], 'world');
-      expect(client.currentSession?.user?.userMetadata['hello'], 'world');
+      expect(data?.userMetadata?['hello'], 'world');
+      expect(client.currentSession?.user?.userMetadata?['hello'], 'world');
     });
 
     test('Get user after updating', () async {
       final user = client.currentUser;
       expect(user, isNotNull);
       expect(user?.id, isA<String>());
-      expect(user?.userMetadata['hello'], 'world');
+      expect(user?.userMetadata?['hello'], 'world');
     });
 
     test('signIn with OpenIDConnect wrong id_token', () async {
@@ -193,8 +193,12 @@ void main() {
     });
 
     test('signIn()', () async {
-      final response = await client.signIn(email: email, password: password);
-      expect(response.statusCode, 420);
+      try {
+        await client.signIn(email: email, password: password);
+      } catch (error) {
+        expect(error, isA<GotrueError>());
+        expect((error as GotrueError).statusCode, '420');
+      }
     });
   });
 

@@ -4,11 +4,11 @@ import 'package:gotrue/src/fetch_options.dart';
 import 'package:http/http.dart';
 
 class GoTrueApi {
-  String url;
-  Map<String, String> headers;
-  CookieOptions? cookieOptions;
+  final String url;
+  final Map<String, String> headers;
+  final CookieOptions? cookieOptions;
   final Client? _httpClient;
-  late final Fetch _fetch = Fetch(_httpClient);
+  late final GotrueFetch _fetch = GotrueFetch(_httpClient);
 
   GoTrueApi(
     this.url, {

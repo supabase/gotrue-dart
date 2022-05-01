@@ -85,10 +85,16 @@ void main() {
       final accessToken = session.accessToken;
       final url =
           'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken';
-      await client.getSessionFromUrl(Uri.parse(url));
+      await client.getSessionFromUrl(Uri.parse(url)).then(
+        (value) => value,
+        onError: (error) {
+          expect(error.message, 'No expires_in detected.');
+        },
+      );
       fail('Passed provider with missing param');
-    } on GotrueError catch (error) {
-      expect(error.message, 'No expires_in detected.');
+    } catch (error) {
+      expect(error, isA<GotrueError>());
+      expect((error as GotrueError).message, 'No expires_in detected.');
     }
   });
 

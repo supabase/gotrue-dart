@@ -221,16 +221,16 @@ class GoTrueClient {
     final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
-      throw ArgumentError('No access_token detected.');
+      throw GotrueError('No access_token detected.');
     }
     if (expiresIn == null) {
-      throw ArgumentError('No expires_in detected.');
+      throw GotrueError('No expires_in detected.');
     }
     if (refreshToken == null) {
-      throw ArgumentError('No refresh_token detected.');
+      throw GotrueError('No refresh_token detected.');
     }
     if (tokenType == null) {
-      throw ArgumentError('No token_type detected.');
+      throw GotrueError('No token_type detected.');
     }
 
     final response = await api.getUser(accessToken);

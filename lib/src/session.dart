@@ -35,14 +35,16 @@ class Session {
             : null,
       );
 
-  Map<String, dynamic> toJson() => {
-        'access_token': accessToken,
-        'expires_in': expiresIn,
-        'refresh_token': refreshToken,
-        'token_type': tokenType,
-        'provider_token': providerToken,
-        'user': user?.toJson(),
-      };
+  Map<String, dynamic> toJson() {
+    return {
+      'access_token': accessToken,
+      'expires_in': expiresIn,
+      'refresh_token': refreshToken,
+      'token_type': tokenType,
+      'provider_token': providerToken,
+      'user': user?.toJson(),
+    };
+  }
 
   /// A timestamp of when the token will expire. Returned when a login is
   /// confirmed.

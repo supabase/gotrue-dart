@@ -6,10 +6,10 @@ import 'package:gotrue/src/gotrue_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
-class Fetch {
+class GotrueFetch {
   final Client? httpClient;
 
-  Fetch([this.httpClient]);
+  const GotrueFetch([this.httpClient]);
 
   bool isSuccessStatusCode(int code) {
     return code >= 200 && code <= 299;
@@ -26,9 +26,9 @@ class Fetch {
               parsedJson['error'] ??
               error.body)
           .toString();
-      errorRes = GotrueError(message);
+      errorRes = GotrueError(message, statusCode: '${error.statusCode}');
     } catch (_) {
-      errorRes = GotrueError(error.body);
+      errorRes = GotrueError(error.body, statusCode: '${error.statusCode}');
     }
 
     return errorRes;

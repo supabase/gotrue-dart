@@ -16,7 +16,7 @@ enum AuthChangeEvent {
   signedOut,
   tokenRefreshed,
   userUpdated,
-  userDeleted
+  userDeleted,
 }
 
 extension AuthChangeEventName on AuthChangeEvent {
