@@ -13,10 +13,10 @@ class GoTrueClient {
   late GoTrueApi api;
 
   /// The currently logged in user or null.
-  User? currentUser;
+  User? _currentUser;
 
   /// The session object for the currently logged in user or null.
-  Session? currentSession;
+  Session? _currentSession;
 
   late bool autoRefreshToken;
   Map<String, Subscription> stateChangeEmitters = {};
@@ -46,14 +46,10 @@ class GoTrueClient {
   }
 
   /// Returns the user data, if there is a logged in user.
-  User? user() {
-    return currentUser;
-  }
+  User? get currentUser => _currentUser;
 
   /// Returns the session data, if there is an active session.
-  Session? session() {
-    return currentSession;
-  }
+  Session? get currentSession => _currentSession;
 
   /// Creates a new user.
   ///
@@ -190,9 +186,11 @@ class GoTrueClient {
   }
 
   /// Overrides the JWT on the current client. The JWT will then be sent in all subsequent network requests.
-  Session setAuth(String accessToken) =>
-      currentSession = currentSession?.copyWith(accessToken: accessToken) ??
-          Session(accessToken: accessToken, tokenType: 'bearer');
+  Session setAuth(String accessToken) {
+    return _currentSession =
+        _currentSession?.copyWith(accessToken: accessToken) ??
+            Session(accessToken: accessToken, tokenType: 'bearer');
+  }
 
   /// Gets the session data from a oauth2 callback URL
   Future<GotrueSessionResponse> getSessionFromUrl(
@@ -265,8 +263,8 @@ class GoTrueClient {
         await api.updateUser(currentSession!.accessToken, attributes);
     // if (response.error != null) return response;
 
-    currentUser = response.user;
-    currentSession = currentSession?.copyWith(user: response.user);
+    _currentUser = response.user;
+    _currentSession = currentSession?.copyWith(user: response.user);
     _notifyAllSubscribers(AuthChangeEvent.userUpdated);
 
     return response;
@@ -402,8 +400,8 @@ class GoTrueClient {
   }
 
   void _saveSession(Session session) {
-    currentSession = session;
-    currentUser = session.user;
+    _currentSession = session;
+    _currentUser = session.user;
     final expiresAt = session.expiresAt;
 
     if (autoRefreshToken && expiresAt != null) {
@@ -427,8 +425,8 @@ class GoTrueClient {
   }
 
   void _removeSession() {
-    currentSession = null;
-    currentUser = null;
+    _currentSession = null;
+    _currentUser = null;
 
     if (_refreshTokenTimer != null) {
       _refreshTokenTimer!.cancel();
@@ -440,10 +438,11 @@ class GoTrueClient {
     String? accessToken,
   }) async {
     final token = refreshToken ?? currentSession?.refreshToken;
-    final jwt = accessToken ?? currentSession?.accessToken;
     if (token == null) {
       throw GotrueError('No current session.');
     }
+
+    final jwt = accessToken ?? currentSession?.accessToken;
 
     final response = await api.refreshAccessToken(token, jwt);
     if (response.data == null) {

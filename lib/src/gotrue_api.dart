@@ -26,7 +26,6 @@ class GoTrueApi {
     String password, {
     AuthOptions? options,
     Map<String, dynamic>? userMetadata,
-    String? captchaToken,
   }) async {
     final urlParams = [];
 
@@ -42,7 +41,7 @@ class GoTrueApi {
         'email': email,
         'password': password,
         'data': userMetadata,
-        'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+        'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
       },
       options: FetchOptions(headers),
     );
@@ -101,15 +100,15 @@ class GoTrueApi {
   Future<GotrueSessionResponse> signUpWithPhone(
     String phone,
     String password, {
+    AuthOptions? options,
     Map<String, dynamic>? userMetadata,
-    String? captchaToken,
   }) async {
     final fetchOptions = FetchOptions(headers);
     final body = {
       'phone': phone,
       'password': password,
       'data': userMetadata,
-      'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+      'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
     };
     final response =
         await _fetch.post('$url/signup', body, options: fetchOptions);
@@ -187,7 +186,6 @@ class GoTrueApi {
     String email, {
     AuthOptions? options,
     bool? shouldCreateUser,
-    String? captchaToken,
   }) async {
     final fetchOptions = FetchOptions(headers);
     final urlParams = [];
@@ -201,7 +199,7 @@ class GoTrueApi {
       {
         'email': email,
         'create_user': shouldCreateUser,
-        'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+        'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
       },
       options: fetchOptions,
     );
@@ -216,13 +214,13 @@ class GoTrueApi {
   /// [phone] is the user's phone number WITH international prefix
   Future<GotrueJsonResponse> sendMobileOTP(
     String phone, {
+    AuthOptions? options,
     bool? shouldCreateUser,
-    String? captchaToken,
   }) async {
     final body = {
       'phone': phone,
       'create_user': shouldCreateUser,
-      'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+      'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
     };
     final fetchOptions = FetchOptions(headers);
     final response = await _fetch.post('$url/otp', body, options: fetchOptions);
@@ -237,7 +235,6 @@ class GoTrueApi {
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [token] is the token that user was sent to their mobile phone
-  @Deprecated('Use verifyOTP instead')
   Future<GotrueSessionResponse> verifyMobileOTP(
     String phone,
     String token, {
@@ -296,11 +293,10 @@ class GoTrueApi {
   Future<GotrueJsonResponse> resetPasswordForEmail(
     String email, {
     AuthOptions? options,
-    String? captchaToken,
   }) async {
     final body = {
       'email': email,
-      'gotrue_meta_security': {'hcaptcha_token': captchaToken},
+      'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
     };
     final fetchOptions = FetchOptions(headers);
     final urlParams = [];

@@ -25,10 +25,8 @@ void main() {
 
   test('signIn() with Provider', () async {
     final res = await client.signIn(provider: Provider.google);
-    final error = res.error;
     final url = res.url;
     final provider = res.provider;
-    expect(error, isNull);
     expect(url, '$gotrueUrl/authorize?provider=google');
     expect(provider, 'google');
   });
@@ -41,10 +39,8 @@ void main() {
         scopes: 'repo',
       ),
     );
-    final error = res.error;
     final url = res.url;
     final provider = res.provider;
-    expect(error, isNull);
     expect(
       url,
       '$gotrueUrl/authorize?provider=github&scopes=repo&redirect_to=redirectToURL',
@@ -85,19 +81,26 @@ void main() {
   });
 
   test('parse provider callback url with missing param error', () async {
-    final accessToken = session.accessToken;
-    final url =
-        'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken';
-    final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.error, isNotNull);
-    expect(res.error?.message, 'No expires_in detected.');
+    try {
+      final accessToken = session.accessToken;
+      final url =
+          'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken';
+      await client.getSessionFromUrl(Uri.parse(url));
+      fail('Passed provider with missing param');
+    } on GotrueError catch (error) {
+      expect(error.message, 'No expires_in detected.');
+    }
   });
 
   test('parse provider callback url with error', () async {
     const errorDesc = 'my_error_description';
-    const url =
-        'http://my-callback-url.com?page=welcome&foo=bar#error_description=$errorDesc';
-    final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.error?.message, errorDesc);
+    try {
+      const url =
+          'http://my-callback-url.com?page=welcome&foo=bar#error_description=$errorDesc';
+      await client.getSessionFromUrl(Uri.parse(url));
+      fail('Passed provider with error');
+    } on GotrueError catch (error) {
+      expect(error.message, errorDesc);
+    }
   });
 }
