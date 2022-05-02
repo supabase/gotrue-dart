@@ -4,23 +4,38 @@ import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/user.dart';
 
 class GotrueResponse {
-  GotrueError? error;
-  dynamic rawData;
+  final GotrueError? error;
+  final dynamic rawData;
+  final int? statusCode;
 
-  GotrueResponse({this.rawData, this.error});
+  const GotrueResponse({this.rawData, this.error, this.statusCode});
 }
 
 class GotrueJsonResponse extends GotrueResponse {
-  Map<String, dynamic>? data;
+  final Map<String, dynamic>? data;
 
-  GotrueJsonResponse({this.data, GotrueError? error}) : super(error: error);
+  const GotrueJsonResponse({
+    this.data,
+    GotrueError? error,
+    int? statusCode,
+  }) : super(
+          error: error,
+          statusCode: statusCode,
+        );
+
+  GotrueJsonResponse.fromResponse({required GotrueResponse response, this.data})
+      : super(
+          error: response.error,
+          statusCode: response.statusCode,
+          rawData: response.rawData,
+        );
 }
 
 class GotrueSessionResponse extends GotrueResponse {
-  Session? data;
-  String? provider;
-  String? url;
-  User? user;
+  final Session? data;
+  final String? provider;
+  final String? url;
+  final User? user;
 
   GotrueSessionResponse({
     this.data,
@@ -28,22 +43,52 @@ class GotrueSessionResponse extends GotrueResponse {
     this.url,
     User? user,
     GotrueError? error,
+    int? statusCode,
   })  : user = user ?? data?.user,
-        super(error: error);
+        super(
+          error: error,
+          statusCode: statusCode,
+        );
+
+  GotrueSessionResponse.fromResponse({
+    required GotrueResponse response,
+    this.data,
+    this.provider,
+    this.url,
+    User? user,
+  })  : user = user ?? data?.user,
+        super(
+          error: response.error,
+          statusCode: response.statusCode,
+        );
 }
 
 class GotrueUserResponse extends GotrueResponse {
-  User? user;
+  final User? user;
 
   User? get data {
     return user;
   }
 
-  GotrueUserResponse({this.user, GotrueError? error}) : super(error: error);
+  const GotrueUserResponse({
+    this.user,
+    GotrueError? error,
+    int? statusCode,
+  }) : super(
+          error: error,
+          statusCode: statusCode,
+        );
+
+  GotrueUserResponse.fromResponse({required GotrueResponse response, this.user})
+      : super(
+          error: response.error,
+          statusCode: response.statusCode,
+        );
 }
 
 class GotrueSubscription extends GotrueResponse {
-  Subscription? data;
+  final Subscription? data;
 
-  GotrueSubscription({this.data, GotrueError? error}) : super(error: error);
+  const GotrueSubscription({this.data, GotrueError? error})
+      : super(error: error);
 }

@@ -1,6 +1,12 @@
 ## [next]
 - fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
 
+## [0.2.1]
+
+- fix: Retry access token refresh when offline ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))
+- feat: Can add custom http client([#69](https://github.com/supabase-community/gotrue-dart/pull/69))
+- feat: Show statuscode in GotrueResponse([#69](https://github.com/supabase-community/gotrue-dart/pull/69))
+
 ## [0.2.0]
 
 - BREAKING: `user` will be returned when signing up with auto confirm off ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))

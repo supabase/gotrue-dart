@@ -1,14 +1,22 @@
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/fetch_options.dart';
+import 'package:http/http.dart';
 
 class GoTrueApi {
   String url;
   Map<String, String> headers;
   CookieOptions? cookieOptions;
+  final Client? _httpClient;
+  late final Fetch _fetch = Fetch(_httpClient);
 
-  GoTrueApi(this.url, {Map<String, String>? headers, this.cookieOptions})
-      : headers = headers ?? {};
+  GoTrueApi(
+    this.url, {
+    Map<String, String>? headers,
+    this.cookieOptions,
+    Client? httpClient,
+  })  : headers = headers ?? {},
+        _httpClient = httpClient;
 
   /// Creates a new user using their email address.
   ///
@@ -32,25 +40,31 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/signup$queryString',
         body,
         options: fetchOptions,
       );
-      final data = response.rawData as Map<String, dynamic>;
+      final data = response.rawData as Map<String, dynamic>?;
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
-      } else if (data['access_token'] == null) {
+        return GotrueSessionResponse.fromResponse(response: response);
+      } else if (data?['access_token'] == null) {
         // email validation required
         User? user;
-        if (data['id'] != null) {
-          user = User.fromJson(data);
+        if (data?['id'] != null) {
+          user = User.fromJson(data!);
         }
-        return GotrueSessionResponse(user: user);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          user: user,
+        );
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
@@ -72,17 +86,20 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = '?${urlParams.join('&')}';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/token$queryString',
         body,
         options: fetchOptions,
       );
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
+        return GotrueSessionResponse.fromResponse(response: response);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
@@ -109,10 +126,12 @@ class GoTrueApi {
         'data': userMetadata,
       };
       final response =
-          await fetch.post('$url/signup', body, options: fetchOptions);
+          await _fetch.post('$url/signup', body, options: fetchOptions);
       final data = response.rawData as Map<String, dynamic>;
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+        );
       } else if ((response.rawData as Map<String, dynamic>)['access_token'] ==
           null) {
         // email validation required
@@ -120,11 +139,17 @@ class GoTrueApi {
         if (data['id'] != null) {
           user = User.fromJson(data);
         }
-        return GotrueSessionResponse(user: user);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          user: user,
+        );
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
@@ -144,17 +169,20 @@ class GoTrueApi {
       final body = {'phone': phone, 'password': password};
       final fetchOptions = FetchOptions(headers);
       const queryString = '?grant_type=password';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/token$queryString',
         body,
         options: fetchOptions,
       );
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
+        return GotrueSessionResponse.fromResponse(response: response);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
@@ -175,17 +203,20 @@ class GoTrueApi {
       };
       final fetchOptions = FetchOptions(headers);
       const queryString = '?grant_type=id_token';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/token$queryString',
         body,
         options: fetchOptions,
       );
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
+        return GotrueSessionResponse.fromResponse(response: response);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
@@ -206,15 +237,16 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/magiclink$queryString',
         body,
         options: fetchOptions,
       );
       if (response.error != null) {
-        return GotrueJsonResponse(error: response.error);
+        return GotrueJsonResponse.fromResponse(response: response);
       } else {
-        return GotrueJsonResponse(
+        return GotrueJsonResponse.fromResponse(
+          response: response,
           data: response.rawData as Map<String, dynamic>?,
         );
       }
@@ -231,11 +263,12 @@ class GoTrueApi {
       final body = {'phone': phone};
       final fetchOptions = FetchOptions(headers);
       final response =
-          await fetch.post('$url/otp', body, options: fetchOptions);
+          await _fetch.post('$url/otp', body, options: fetchOptions);
       if (response.error != null) {
-        return GotrueJsonResponse(error: response.error);
+        return GotrueJsonResponse.fromResponse(response: response);
       } else {
-        return GotrueJsonResponse(
+        return GotrueJsonResponse.fromResponse(
+          response: response,
           data: response.rawData as Map<String, dynamic>?,
         );
       }
@@ -263,9 +296,9 @@ class GoTrueApi {
       };
       final fetchOptions = FetchOptions(headers);
       final response =
-          await fetch.post('$url/verify', body, options: fetchOptions);
+          await _fetch.post('$url/verify', body, options: fetchOptions);
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
+        return GotrueSessionResponse.fromResponse(response: response);
       } else {
         Session session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
@@ -277,7 +310,10 @@ class GoTrueApi {
             session = session.copyWith(user: userResponse.user);
           }
         }
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));
@@ -298,15 +334,16 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/invite$queryString',
         body,
         options: fetchOptions,
       );
       if (response.error != null) {
-        return GotrueJsonResponse(error: response.error);
+        return GotrueJsonResponse.fromResponse(response: response);
       } else {
-        return GotrueJsonResponse(
+        return GotrueJsonResponse.fromResponse(
+          response: response,
           data: response.rawData as Map<String, dynamic>?,
         );
       }
@@ -329,15 +366,16 @@ class GoTrueApi {
         urlParams.add('redirect_to=$encodedRedirectTo');
       }
       final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-      final response = await fetch.post(
+      final response = await _fetch.post(
         '$url/recover$queryString',
         body,
         options: fetchOptions,
       );
       if (response.error != null) {
-        return GotrueJsonResponse(error: response.error);
+        return GotrueJsonResponse.fromResponse(response: response);
       } else {
-        return GotrueJsonResponse(
+        return GotrueJsonResponse.fromResponse(
+          response: response,
           data: response.rawData as Map<String, dynamic>?,
         );
       }
@@ -352,7 +390,7 @@ class GoTrueApi {
       final headers = {...this.headers};
       headers['Authorization'] = 'Bearer $jwt';
       final options = FetchOptions(headers, noResolveJson: true);
-      final response = await fetch.post('$url/logout', {}, options: options);
+      final response = await _fetch.post('$url/logout', {}, options: options);
       return response;
     } catch (e) {
       return GotrueResponse(error: GotrueError(e.toString()));
@@ -377,12 +415,12 @@ class GoTrueApi {
       final headers = {...this.headers};
       headers['Authorization'] = 'Bearer $jwt';
       final options = FetchOptions(headers);
-      final response = await fetch.get('$url/user', options: options);
+      final response = await _fetch.get('$url/user', options: options);
       if (response.error != null) {
-        return GotrueUserResponse(error: response.error);
+        return GotrueUserResponse.fromResponse(response: response);
       } else {
         final user = User.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueUserResponse(user: user);
+        return GotrueUserResponse.fromResponse(response: response, user: user);
       }
     } catch (e) {
       return GotrueUserResponse(error: GotrueError(e.toString()));
@@ -399,12 +437,12 @@ class GoTrueApi {
       final headers = {...this.headers};
       headers['Authorization'] = 'Bearer $jwt';
       final options = FetchOptions(headers);
-      final response = await fetch.put('$url/user', body, options: options);
+      final response = await _fetch.put('$url/user', body, options: options);
       if (response.error != null) {
-        return GotrueUserResponse(error: response.error);
+        return GotrueUserResponse.fromResponse(response: response);
       } else {
         final user = User.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueUserResponse(user: user);
+        return GotrueUserResponse.fromResponse(response: response, user: user);
       }
     } catch (e) {
       return GotrueUserResponse(error: GotrueError(e.toString()));
@@ -422,14 +460,17 @@ class GoTrueApi {
         headers['Authorization'] = 'Bearer $jwt';
       }
       final options = FetchOptions(headers);
-      final response = await fetch
+      final response = await _fetch
           .post('$url/token?grant_type=refresh_token', body, options: options);
       if (response.error != null) {
-        return GotrueSessionResponse(error: response.error);
+        return GotrueSessionResponse.fromResponse(response: response);
       } else {
         final session =
             Session.fromJson(response.rawData as Map<String, dynamic>);
-        return GotrueSessionResponse(data: session);
+        return GotrueSessionResponse.fromResponse(
+          response: response,
+          data: session,
+        );
       }
     } catch (e) {
       return GotrueSessionResponse(error: GotrueError(e.toString()));

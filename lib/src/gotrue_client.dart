@@ -5,6 +5,7 @@ import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/uuid.dart';
+import 'package:http/http.dart';
 
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
@@ -22,11 +23,14 @@ class GoTrueClient {
 
   Timer? _refreshTokenTimer;
 
+  int _refreshTokenRetryCount = 0;
+
   GoTrueClient({
     String? url,
     Map<String, String>? headers,
     bool? autoRefreshToken,
     CookieOptions? cookieOptions,
+    Client? httpClient,
   }) {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
@@ -35,7 +39,12 @@ class GoTrueClient {
       ...Constants.defaultHeaders,
       if (headers != null) ...headers,
     };
-    api = GoTrueApi(_url, headers: _header, cookieOptions: cookieOptions);
+    api = GoTrueApi(
+      _url,
+      headers: _header,
+      cookieOptions: cookieOptions,
+      httpClient: httpClient,
+    );
   }
 
   /// Returns the user data, if there is a logged in user.
@@ -289,7 +298,7 @@ class GoTrueClient {
       final response = await api.signOut(accessToken);
       if (response.error != null) return response;
     }
-    return GotrueResponse();
+    return const GotrueResponse();
   }
 
   // Receive a notification every time an auth event happens.
@@ -424,9 +433,7 @@ class GoTrueClient {
     final expiresAt = session.expiresAt;
 
     if (autoRefreshToken && expiresAt != null) {
-      if (_refreshTokenTimer != null) {
-        _refreshTokenTimer!.cancel();
-      }
+      _refreshTokenTimer?.cancel();
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
       final expiresIn = expiresAt - timeNow;
@@ -434,12 +441,20 @@ class GoTrueClient {
       final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
         final timerDuration = Duration(seconds: nextDuration);
-        _refreshTokenTimer = Timer(timerDuration, () {
-          _callRefreshToken();
-        });
+        _setTokenRefreshTimer(timerDuration);
       } else {
         _callRefreshToken();
       }
+    }
+  }
+
+  void _setTokenRefreshTimer(Duration timerDuration) {
+    _refreshTokenTimer?.cancel();
+    _refreshTokenRetryCount++;
+    if (_refreshTokenRetryCount < 720) {
+      _refreshTokenTimer = Timer(timerDuration, () {
+        _callRefreshToken();
+      });
     }
   }
 
@@ -464,11 +479,17 @@ class GoTrueClient {
     }
 
     final response = await api.refreshAccessToken(token, jwt);
-    if (response.error != null) return response;
+    if (response.error != null) {
+      if (response.error!.statusCode == 'SocketException') {
+        _setTokenRefreshTimer(const Duration(seconds: 5));
+      }
+      return response;
+    }
     if (response.data == null) {
       final error = GotrueError('Invalid session data.');
       return GotrueSessionResponse(error: error);
     }
+    _refreshTokenRetryCount = 0;
 
     _saveSession(response.data!);
     _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
