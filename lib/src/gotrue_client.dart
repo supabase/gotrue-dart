@@ -506,6 +506,7 @@ class GoTrueClient {
     _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
     _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
+    _callRefreshTokenCompleter.complete(response);
     return _callRefreshTokenCompleter.future;
   }
 
