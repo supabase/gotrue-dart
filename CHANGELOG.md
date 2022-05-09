@@ -1,3 +1,6 @@
+## [next]
+- fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
+
 ## [0.2.1]
 
 - fix: Retry access token refresh when offline ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))

@@ -9,7 +9,7 @@ class OpenIDConnectCredentials {
   ///  before the initial grant is started.
   ///  You should check the OpenID Connect specification for details.
   ///  https://openid.net/developers/specs/
-  final String nonce;
+  final String? nonce;
 
   /// `provider` is the provider of the user.
   final Provider? provider;
@@ -22,7 +22,7 @@ class OpenIDConnectCredentials {
 
   const OpenIDConnectCredentials({
     required this.idToken,
-    required this.nonce,
+    this.nonce,
     this.provider,
     this.clientId,
     this.issuer,
