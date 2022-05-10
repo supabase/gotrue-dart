@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
@@ -498,7 +499,7 @@ class GoTrueClient {
     if (response.error != null) {
       if (response.error!.statusCode == 'SocketException') {
         _setTokenRefreshTimer(
-          const Duration(seconds: 5),
+          Constants.retryInterval * pow(2, _refreshTokenRetryCount),
           completer,
           refreshToken: refreshToken,
           accessToken: accessToken,
