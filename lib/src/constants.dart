@@ -8,7 +8,9 @@ class Constants {
   };
   static const int defaultExpiryMargin = 60 * 1000;
   static const String defaultStorageKey = 'supabase.auth.token';
+  static const expiryMargin = Duration(seconds: 10);
   static const int maxRetryCount = 10;
+  static const retryInterval = Duration(milliseconds: 200);
 }
 
 enum AuthChangeEvent {

@@ -346,7 +346,7 @@ class GoTrueClient {
       }
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-      if (expiresAt < timeNow) {
+      if (expiresAt < (timeNow - Constants.expiryMargin.inSeconds)) {
         if (autoRefreshToken && session.refreshToken != null) {
           return _callRefreshToken(
             refreshCompleter,
