@@ -1,4 +1,4 @@
-## [next]
+## [0.2.2]
 - fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
 
 ## [0.2.1]
