@@ -21,11 +21,11 @@ class GoTrueClient {
   late bool autoRefreshToken;
   Map<String, Subscription> stateChangeEmitters = {};
 
+  late Completer<GotrueSessionResponse> _callRefreshTokenCompleter;
+
   Timer? _refreshTokenTimer;
 
   int _refreshTokenRetryCount = 0;
-
-  late Completer<GotrueSessionResponse> _callRefreshTokenCompleter;
 
   GoTrueClient({
     String? url,
@@ -453,12 +453,16 @@ class GoTrueClient {
     }
   }
 
-  void _setTokenRefreshTimer(Duration timerDuration) {
+  void _setTokenRefreshTimer(
+    Duration timerDuration, {
+    String? refreshToken,
+    String? accessToken,
+  }) {
     _refreshTokenTimer?.cancel();
     _refreshTokenRetryCount++;
-    if (_refreshTokenRetryCount < 720) {
+    if (_refreshTokenRetryCount < Constants.maxRetryCount) {
       _refreshTokenTimer = Timer(timerDuration, () {
-        _callRefreshToken();
+        _callRefreshToken(refreshToken: refreshToken, accessToken: accessToken);
       });
     } else {
       final error = GotrueError('Access token refresh retry limit exceded.');
@@ -470,9 +474,7 @@ class GoTrueClient {
     currentSession = null;
     currentUser = null;
 
-    if (_refreshTokenTimer != null) {
-      _refreshTokenTimer!.cancel();
-    }
+    _refreshTokenTimer?.cancel();
   }
 
   Future<GotrueSessionResponse> _callRefreshToken({
@@ -490,7 +492,11 @@ class GoTrueClient {
     final response = await api.refreshAccessToken(token, jwt);
     if (response.error != null) {
       if (response.error!.statusCode == 'SocketException') {
-        _setTokenRefreshTimer(const Duration(seconds: 5));
+        _setTokenRefreshTimer(
+          const Duration(seconds: 5),
+          refreshToken: refreshToken,
+          accessToken: accessToken,
+        );
       }
       _callRefreshTokenCompleter.complete(response);
       return _callRefreshTokenCompleter.future;
@@ -500,7 +506,6 @@ class GoTrueClient {
       _callRefreshTokenCompleter.complete(GotrueSessionResponse(error: error));
       return _callRefreshTokenCompleter.future;
     }
-    _refreshTokenRetryCount = 0;
 
     _saveSession(response.data!);
     _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
