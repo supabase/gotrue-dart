@@ -7,7 +7,7 @@ enum Provider {
   github,
   gitlab,
   google,
-  keycloack,
+  keycloak,
   linkedin,
   notion,
   slack,

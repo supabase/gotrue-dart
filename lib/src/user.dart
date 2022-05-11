@@ -5,6 +5,8 @@ class User {
   final String aud;
   final String? confirmationSentAt;
   final String? recoverySentAt;
+  final String? emailChangeSentAt;
+  final String? newEmail;
   final String? invitedAt;
   final String? actionLink;
   final String? email;
@@ -26,6 +28,8 @@ class User {
     required this.aud,
     this.confirmationSentAt,
     this.recoverySentAt,
+    this.emailChangeSentAt,
+    this.newEmail,
     this.invitedAt,
     this.actionLink,
     this.email,
@@ -47,6 +51,8 @@ class User {
         aud: json['aud'] as String,
         confirmationSentAt: json['confirmation_sent_at'] as String?,
         recoverySentAt: json['recovery_sent_at'] as String?,
+        emailChangeSentAt: json['email_change_sent_at'] as String?,
+        newEmail: json['new_email'] as String?,
         invitedAt: json['invited_at'] as String?,
         actionLink: json['action_link'] as String?,
         email: json['email'] as String?,
