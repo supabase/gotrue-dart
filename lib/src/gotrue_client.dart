@@ -504,6 +504,7 @@ class GoTrueClient {
           refreshToken: refreshToken,
           accessToken: accessToken,
         );
+        return completer.future;
       }
       completer.complete(response);
       return completer.future;
