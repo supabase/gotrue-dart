@@ -1,5 +1,6 @@
 ## [0.2.2]
 - fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
+- fix: use completer in the retry logic to return value when token refresh is complete([#75](https://github.com/supabase-community/gotrue-dart/pull/75))
 
 ## [0.2.1]
 
