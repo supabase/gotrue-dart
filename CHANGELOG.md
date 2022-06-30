@@ -1,3 +1,6 @@
+## [0.2.2+1]
+- fix: fix: type casting of phone auth response([#79](https://github.com/supabase-community/gotrue-dart/pull/79))
+
 ## [0.2.2]
 - fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
 - fix: use completer in the retry logic to return value when token refresh is complete([#75](https://github.com/supabase-community/gotrue-dart/pull/75))
