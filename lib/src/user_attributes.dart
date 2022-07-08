@@ -5,7 +5,13 @@ class UserAttributes {
   String? emailChangeToken;
   dynamic data;
 
-  UserAttributes({this.email, this.phone, this.password, this.emailChangeToken, this.data,});
+  UserAttributes({
+    this.email,
+    this.phone,
+    this.password,
+    this.emailChangeToken,
+    this.data,
+  });
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> values = {};
