@@ -1,5 +1,8 @@
+## [0.2.3]
+- feat: Able to update phone number with `auth.update` method([#81](https://github.com/supabase-community/gotrue-dart/pull/81))
+
 ## [0.2.2+1]
-- fix: fix: type casting of phone auth response([#79](https://github.com/supabase-community/gotrue-dart/pull/79))
+- fix: type casting of phone auth response([#79](https://github.com/supabase-community/gotrue-dart/pull/79))
 
 ## [0.2.2]
 - fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
