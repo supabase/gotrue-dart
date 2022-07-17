@@ -1,6 +1,18 @@
-## [next]
+## [0.2.3]
+- feat: Able to update phone number with `auth.update` method([#81](https://github.com/supabase-community/gotrue-dart/pull/81))
+
+## [0.2.2+1]
+- fix: type casting of phone auth response([#79](https://github.com/supabase-community/gotrue-dart/pull/79))
+
+## [0.2.2]
+- fix: `OpenIDConnectCredentials`'s `nonce` parameter optional
+- fix: use completer in the retry logic to return value when token refresh is complete([#75](https://github.com/supabase-community/gotrue-dart/pull/75))
+
+## [0.2.1]
 
 - fix: Retry access token refresh when offline ([#63](https://github.com/supabase-community/gotrue-dart/pull/63))
+- feat: Can add custom http client([#69](https://github.com/supabase-community/gotrue-dart/pull/69))
+- feat: Show statuscode in GotrueResponse([#69](https://github.com/supabase-community/gotrue-dart/pull/69))
 
 ## [0.2.0]
 

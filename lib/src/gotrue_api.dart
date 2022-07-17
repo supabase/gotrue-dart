@@ -112,8 +112,8 @@ class GoTrueApi {
     };
     final response =
         await _fetch.post('$url/signup', body, options: fetchOptions);
-    final data = response.rawData as Map<String, dynamic>;
-    if (data['access_token'] == null) {
+    final data = response.rawData as Map<String, dynamic>?;
+    if (data != null && data['access_token'] == null) {
       // email validation required
       User? user;
       if (data['id'] != null) {
