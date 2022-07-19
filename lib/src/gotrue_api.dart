@@ -1,5 +1,4 @@
 import 'package:gotrue/gotrue.dart';
-import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/fetch_options.dart';
 import 'package:http/http.dart';
