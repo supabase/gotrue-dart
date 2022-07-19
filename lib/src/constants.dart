@@ -21,6 +21,13 @@ enum AuthChangeEvent {
   userUpdated
 }
 
+enum InviteType {
+  signup,
+  magiclink,
+  recovery,
+  invite,
+}
+
 extension AuthChangeEventName on AuthChangeEvent {
   String name() {
     return toString().split('.').last;
