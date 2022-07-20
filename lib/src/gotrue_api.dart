@@ -45,8 +45,8 @@ class GoTrueApi {
       },
       options: FetchOptions(headers),
     );
-    final data = response.rawData as Map<String, dynamic>;
-    if (data['access_token'] == null) {
+    final data = response.rawData as Map<String, dynamic>?;
+    if (data != null && data['access_token'] == null) {
       // email validation required
       User? user;
       if (data['id'] != null) {
