@@ -79,6 +79,18 @@ void main() {
       }
     });
 
+    test('signUp() with email should throw error if used twice', () async {
+      final localEmail = email;
+
+      await client.signUp(localEmail, password);
+
+      try {
+        await client.signUp(localEmail, password);
+      } catch (error) {
+        expect(error, isA<GotrueError>());
+      }
+    });
+
     test('signIn()', () async {
       final response = await client.signIn(email: email, password: password);
       final data = response.data;
