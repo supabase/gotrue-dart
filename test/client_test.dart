@@ -82,8 +82,6 @@ void main() {
     test('signUp() with email should throw error if used twice', () async {
       final localEmail = email;
 
-      await client.signUp(localEmail, password);
-
       try {
         await client.signUp(localEmail, password);
       } catch (error) {
