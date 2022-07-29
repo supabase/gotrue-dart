@@ -275,7 +275,7 @@ void main() {
         options: authOptions,
       );
 
-      expect(response.error, null);
+      expect(response.statusCode, 200);
       expect(response.data, isNotNull);
 
       final actionLink = response.data!['action_link'];
