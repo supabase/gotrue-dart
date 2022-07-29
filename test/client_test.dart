@@ -73,8 +73,6 @@ void main() {
         userMetadata: {"Hello": "World"},
       );
       final data = response.data;
-      final error = response.error;
-      expect(error?.message, isNull);
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
@@ -82,25 +80,21 @@ void main() {
     });
 
     test('signUp() with autoConfirm off', () async {
-      final response = await clientWithAuthConfirmOff.signUp(
-        email,
-        password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
-      );
-      final user = response.user;
-      final data = response.data;
-      final error = response.error;
-      expect(error?.message, isNull);
-      expect(data, isNull);
-      expect(user?.id, isA<String>());
+      try {
+        await clientWithAuthConfirmOff.signUp(
+          email,
+          password,
+          options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        );
+      } catch (error) {
+        expect(error, isA<GotrueError>());
+      }
     });
 
     test('signIn()', () async {
       final response = await client.signIn(email: email, password: password);
       final data = response.data;
-      final error = response.error;
 
-      expect(error?.message, isNull);
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
@@ -112,9 +106,10 @@ void main() {
     });
 
     test('Get user', () async {
-      final user = client.user();
-      expect(user?.id, isA<String>());
-      expect(user?.appMetadata['provider'], 'email');
+      final user = client.currentUser;
+      expect(user, isNotNull);
+      expect(user!.id, isA<String>());
+      expect(user.appMetadata['provider'], 'email');
     });
 
     test('Set auth', () async {
@@ -146,51 +141,56 @@ void main() {
     });
 
     test('Update user', () async {
-      final response =
-          await client.update(UserAttributes(data: {'hello': 'world'}));
+      final response = await client.update(
+        UserAttributes(data: {'hello': 'world'}),
+      );
       final data = response.data;
-      final error = response.error;
-      expect(error?.message, isNull);
       expect(data?.id, isA<String>());
-      expect(data?.userMetadata['hello'], 'world');
-      expect(client.currentSession?.user?.userMetadata['hello'], 'world');
+      expect(data?.userMetadata?['hello'], 'world');
+      expect(client.currentSession?.user?.userMetadata?['hello'], 'world');
     });
 
     test('Get user after updating', () async {
-      final user = client.user();
+      final user = client.currentUser;
+      expect(user, isNotNull);
       expect(user?.id, isA<String>());
-      expect(user?.userMetadata['hello'], 'world');
+      expect(user?.userMetadata?['hello'], 'world');
     });
 
     test('signIn with OpenIDConnect wrong id_token', () async {
-      const oidc = OpenIDConnectCredentials(
-        idToken: "abcdf",
-        nonce: "random value",
-        provider: Provider.google,
-      );
-      final res = await client.signIn(oidc: oidc);
-      expect(res.error?.message, isNotNull);
+      try {
+        const oidc = OpenIDConnectCredentials(
+          idToken: "abcdf",
+          nonce: "random value",
+          provider: Provider.google,
+        );
+        await client.signIn(oidc: oidc);
+        fail('Passed with wrong id token');
+      } on GotrueError catch (error) {
+        expect(error.message, isNotNull);
+      }
     });
 
     test('signOut', () async {
-      final res = await client.signOut();
-      expect(res.error?.message, isNull);
+      await client.signOut();
     });
 
     test('Get user after logging out', () async {
-      final user = client.user();
+      final user = client.currentUser;
       expect(user, isNull);
     });
 
     test('signIn() with the wrong password', () async {
-      final res = await client.signIn(
-        email: email,
-        password: '${password}2',
-      );
-      final data = res.data;
-      final error = res.error!;
-      expect(error.message, isNotNull);
-      expect(data, isNull);
+      try {
+        final res = await client.signIn(
+          email: email,
+          password: '${password}2',
+        );
+        final data = res.data;
+        expect(data, isNull);
+      } on GotrueError catch (error) {
+        expect(error.message, isNotNull);
+      }
     });
   });
 
@@ -205,8 +205,12 @@ void main() {
     });
 
     test('signIn()', () async {
-      final response = await client.signIn(email: email, password: password);
-      expect(response.statusCode, 420);
+      try {
+        await client.signIn(email: email, password: password);
+      } catch (error) {
+        expect(error, isA<GotrueError>());
+        expect((error as GotrueError).statusCode, '420');
+      }
     });
   });
 

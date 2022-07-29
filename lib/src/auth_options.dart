@@ -4,9 +4,11 @@ class AuthOptions {
 
   /// A space-separated list of scopes granted to the OAuth application.
   final String? scopes;
+  final String? captchaToken;
 
-  AuthOptions({
+  const AuthOptions({
     this.redirectTo,
     this.scopes,
+    this.captchaToken,
   });
 }

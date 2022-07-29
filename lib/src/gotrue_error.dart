@@ -1,14 +1,22 @@
 class GotrueError {
-  String message;
-  String? statusCode;
+  final String message;
+  final String? statusCode;
 
-  GotrueError(
-    this.message, {
-    this.statusCode,
-  });
+  GotrueError(this.message, {this.statusCode});
 
   @override
-  String toString() {
-    return 'GotrueError(message: $message, statusCode: $statusCode)';
+  String toString() =>
+      'GotrueError(message: $message, statusCode: $statusCode)';
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is GotrueError &&
+        other.message == message &&
+        other.statusCode == statusCode;
   }
+
+  @override
+  int get hashCode => message.hashCode ^ statusCode.hashCode;
 }
