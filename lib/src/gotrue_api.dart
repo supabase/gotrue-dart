@@ -289,6 +289,35 @@ class GoTrueApi {
     );
   }
 
+  /// Generates links to be sent via email or other.
+  Future<GotrueJsonResponse> generateLink(
+    String email,
+    InviteType type, {
+    AuthOptions? options,
+    String? password,
+    Map<String, dynamic>? userMetadata,
+  }) async {
+    final body = {
+      'email': email,
+      'type': type.name,
+      'data': userMetadata,
+      'redirect_to': options?.redirectTo,
+      'password': password,
+    };
+
+    final fetchOptions = FetchOptions(headers);
+
+    final response = await _fetch.post(
+      '$url/admin/generate_link',
+      body,
+      options: fetchOptions,
+    );
+    return GotrueJsonResponse.fromResponse(
+      response: response,
+      data: response.rawData as Map<String, dynamic>?,
+    );
+  }
+
   /// Sends a reset request to an email address.
   Future<GotrueJsonResponse> resetPasswordForEmail(
     String email, {

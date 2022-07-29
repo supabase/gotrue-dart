@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:math';
 
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
 import 'package:jwt_decode/jwt_decode.dart';
@@ -18,6 +20,16 @@ void main() {
   final anonToken = env['GOTRUE_TOKEN'] ?? '';
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
+
+  final serviceRoleToken = JWT(
+    {
+      'role': 'service_role',
+    },
+  ).sign(
+    SecretKey(
+      env['GOTRUE_JWT_SECRET'] ?? '37c304f8-51aa-419a-a1af-06154e63707a',
+    ),
+  );
 
   group('Client with default http client', () {
     late GoTrueClient client;
@@ -239,6 +251,53 @@ void main() {
       );
 
       expect(client.api.headers['X-Client-Info'], 'supabase-dart/0.0.0');
+    });
+  });
+
+  group('server api tests', () {
+    late final GoTrueClient serviceRoleApiClient;
+
+    final unregistredUserEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
+
+    setUpAll(() {
+      serviceRoleApiClient = GoTrueClient(
+        url: gotrueUrl,
+        headers: {
+          'Authorization': 'Bearer $serviceRoleToken',
+          'apikey': serviceRoleToken,
+        },
+      );
+    });
+
+    test(
+        'generateLink() supports signUp with generate confirmation signup link ',
+        () async {
+      final authOptions =
+          AuthOptions(redirectTo: 'http://localhost:9999/welcome');
+
+      const userMetadata = {'status': 'alpha'};
+
+      final response = await serviceRoleApiClient.api.generateLink(
+        unregistredUserEmail,
+        InviteType.signup,
+        password: password,
+        userMetadata: userMetadata,
+        options: authOptions,
+      );
+
+      expect(response.statusCode, 200);
+      expect(response.data, isNotNull);
+
+      final actionLink = response.data!['action_link'];
+      expect(actionLink is String, true);
+
+      final actionUri = Uri.tryParse(actionLink as String);
+      expect(actionUri, isNotNull);
+
+      expect(actionUri!.queryParameters['token'], isNotEmpty);
+      expect(actionUri.queryParameters['type'], isNotEmpty);
+      expect(actionUri.queryParameters['redirect_to'], authOptions.redirectTo);
+      expect(response.data!['user_metadata'], userMetadata);
     });
   });
 }
