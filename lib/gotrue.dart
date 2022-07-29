@@ -1,7 +1,7 @@
 library gotrue;
 
 export 'src/auth_options.dart';
-export 'src/constants.dart' show AuthChangeEvent;
+export 'src/constants.dart' show AuthChangeEvent, InviteType;
 export 'src/cookie_options.dart';
 export 'src/gotrue_api.dart';
 export 'src/gotrue_client.dart';
