@@ -1,5 +1,7 @@
 ## [1.0.0-dev.1]
 - chore: Update lints to v2.0.0
+- feat: Add `.generateLink()` method([#83](https://github.com/supabase-community/gotrue-dart/pull/83))
+- fix: Nullable type error if signInWithEmail is used twice([#84](https://github.com/supabase-community/gotrue-dart/pull/84))
 
 ## [0.2.3]
 - feat: Able to update phone number with `auth.update` method([#81](https://github.com/supabase-community/gotrue-dart/pull/81))

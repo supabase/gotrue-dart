@@ -13,10 +13,10 @@ dependencies:
   universal_io: ^2.0.4
 
 dev_dependencies:
+  dart_jsonwebtoken: ^2.4.1
   dotenv: ^3.0.0
   lints: ^2.0.0
   test: ^1.16.4
-  dart_jsonwebtoken: ^2.4.1
 
 false_secrets:
   - /infra/docker-compose.yml
