@@ -73,7 +73,7 @@ class GoTrueClient {
       userMetadata: userMetadata,
     );
     if (response.data == null) {
-      throw GotrueError('An error occurred on sign up.');
+      throw GoTrueException('An error occurred on sign up.');
     }
 
     _saveSession(response.data!);
@@ -100,7 +100,7 @@ class GoTrueClient {
     final response =
         await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
     if (response.data == null) {
-      throw GotrueError('An error occurred on sign up.');
+      throw GoTrueException('An error occurred on sign up.');
     }
 
     _saveSession(response.data!);
@@ -140,7 +140,7 @@ class GoTrueClient {
     if (oidc != null) {
       return _handleOpenIDConnectSignIn(oidc);
     }
-    throw GotrueError(
+    throw GoTrueException(
       'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
     );
   }
@@ -160,7 +160,7 @@ class GoTrueClient {
     final response = await api.verifyMobileOTP(phone, token, options: options);
 
     if (response.data == null) {
-      throw GotrueError(
+      throw GoTrueException(
         'An error occurred on token verification.',
       );
     }
@@ -176,7 +176,7 @@ class GoTrueClient {
   Future<GotrueSessionResponse> refreshSession() async {
     final refreshCompleter = Completer<GotrueSessionResponse>();
     if (currentSession?.accessToken == null) {
-      throw GotrueError('Not logged in.');
+      throw GoTrueException('Not logged in.');
     }
 
     final response = await _callRefreshToken(refreshCompleter);
@@ -187,7 +187,7 @@ class GoTrueClient {
   Future<GotrueSessionResponse> setSession(String refreshToken) async {
     final refreshCompleter = Completer<GotrueSessionResponse>();
     if (refreshToken.isEmpty) {
-      throw GotrueError('No current session.');
+      throw GoTrueException('No current session.');
     }
     return _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
   }
@@ -215,7 +215,7 @@ class GoTrueClient {
 
     final errorDescription = url.queryParameters['error_description'];
     if (errorDescription != null) {
-      throw GotrueError(errorDescription);
+      throw GoTrueException(errorDescription);
     }
 
     final accessToken = url.queryParameters['access_token'];
@@ -225,16 +225,16 @@ class GoTrueClient {
     final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
-      throw GotrueError('No access_token detected.');
+      throw GoTrueException('No access_token detected.');
     }
     if (expiresIn == null) {
-      throw GotrueError('No expires_in detected.');
+      throw GoTrueException('No expires_in detected.');
     }
     if (refreshToken == null) {
-      throw GotrueError('No refresh_token detected.');
+      throw GoTrueException('No refresh_token detected.');
     }
     if (tokenType == null) {
-      throw GotrueError('No token_type detected.');
+      throw GoTrueException('No token_type detected.');
     }
 
     final response = await api.getUser(accessToken);
@@ -263,7 +263,7 @@ class GoTrueClient {
   /// Updates user data, if there is a logged in user.
   Future<GotrueUserResponse> update(UserAttributes attributes) async {
     if (currentSession?.accessToken == null) {
-      throw GotrueError('Not logged in.');
+      throw GoTrueException('Not logged in.');
     }
 
     final response =
@@ -314,15 +314,15 @@ class GoTrueClient {
         persistedData['currentSession'] as Map<String, dynamic>?;
     final expiresAt = persistedData['expiresAt'] as int?;
     if (currentSession == null) {
-      throw GotrueError('Missing currentSession.');
+      throw GoTrueException('Missing currentSession.');
     }
     if (expiresAt == null) {
-      throw GotrueError('Missing expiresAt.');
+      throw GoTrueException('Missing expiresAt.');
     }
 
     final session = Session.fromJson(currentSession);
     if (session.user == null) {
-      throw GotrueError('Current session is missing data.');
+      throw GoTrueException('Current session is missing data.');
     }
 
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
@@ -335,7 +335,7 @@ class GoTrueClient {
         );
         return response;
       } else {
-        throw GotrueError('Session expired.');
+        throw GoTrueException('Session expired.');
       }
     } else {
       _saveSession(session);
@@ -386,7 +386,7 @@ class GoTrueClient {
 
       return response;
     }
-    throw GotrueError(
+    throw GoTrueException(
       'You must provider an OpenID Connect clientID and issuer or provider.',
     );
   }
@@ -446,7 +446,8 @@ class GoTrueClient {
         );
       });
     } else {
-      final error = GotrueError('Access token refresh retry limit exceded.');
+      final error =
+          GoTrueException('Access token refresh retry limit exceded.');
       completer.completeError(error, StackTrace.current);
     }
   }
@@ -465,7 +466,7 @@ class GoTrueClient {
   }) async {
     final token = refreshToken ?? currentSession?.refreshToken;
     if (token == null) {
-      final error = GotrueError('No current session.');
+      final error = GoTrueException('No current session.');
       completer.completeError(error, StackTrace.current);
       throw error;
     }
@@ -475,7 +476,7 @@ class GoTrueClient {
     try {
       final response = await api.refreshAccessToken(token, jwt);
       if (response.data == null) {
-        final error = GotrueError('Invalid session data.');
+        final error = GoTrueException('Invalid session data.');
         completer.completeError(error, StackTrace.current);
         throw error;
       }

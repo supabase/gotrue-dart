@@ -88,8 +88,8 @@ void main() {
       await client.getSessionFromUrl(Uri.parse(url));
       fail('Passed provider with missing param');
     } catch (error) {
-      expect(error, isA<GotrueError>());
-      expect((error as GotrueError).message, 'No expires_in detected.');
+      expect(error, isA<GoTrueException>());
+      expect((error as GoTrueException).message, 'No expires_in detected.');
     }
   });
 
@@ -100,7 +100,7 @@ void main() {
           'http://my-callback-url.com?page=welcome&foo=bar#error_description=$errorDesc';
       await client.getSessionFromUrl(Uri.parse(url));
       fail('Passed provider with error');
-    } on GotrueError catch (error) {
+    } on GoTrueException catch (error) {
       expect(error.message, errorDesc);
     }
   });
