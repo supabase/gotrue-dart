@@ -1,8 +1,8 @@
-class GoTrueException {
+class GoTrueException implements Exception {
   final String message;
   final String? statusCode;
 
-  GoTrueException(this.message, {this.statusCode});
+  const GoTrueException(this.message, {this.statusCode});
 
   @override
   String toString() =>
