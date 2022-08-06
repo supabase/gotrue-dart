@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:gotrue/src/fetch_options.dart';
-import 'package:gotrue/src/gotrue_error.dart';
+import 'package:gotrue/src/go_true_exception.dart';
 import 'package:gotrue/src/gotrue_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
@@ -15,8 +15,8 @@ class GotrueFetch {
     return code >= 200 && code <= 299;
   }
 
-  GotrueError _handleError(http.Response error) {
-    late GotrueError errorRes;
+  GoTrueException _handleError(http.Response error) {
+    late GoTrueException errorRes;
 
     try {
       final parsedJson = json.decode(error.body) as Map<String, dynamic>;
@@ -26,9 +26,9 @@ class GotrueFetch {
               parsedJson['error'] ??
               error.body)
           .toString();
-      errorRes = GotrueError(message, statusCode: '${error.statusCode}');
+      errorRes = GoTrueException(message, statusCode: '${error.statusCode}');
     } catch (_) {
-      errorRes = GotrueError(error.body, statusCode: '${error.statusCode}');
+      errorRes = GoTrueException(error.body, statusCode: '${error.statusCode}');
     }
 
     return errorRes;

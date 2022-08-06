@@ -1,3 +1,7 @@
+## [1.0.0-dev.2]
+
+- BREAKING: rename `GotrueError` to `GoTrueException`
+
 ## [1.0.0-dev.1]
 - chore: Update lints to v2.0.0
 - feat: Add `.generateLink()` method([#83](https://github.com/supabase-community/gotrue-dart/pull/83))
