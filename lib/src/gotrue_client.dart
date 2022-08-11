@@ -72,12 +72,11 @@ class GoTrueClient {
       options: options,
       userMetadata: userMetadata,
     );
-    if (response.data == null) {
-      throw GoTrueException('An error occurred on sign up.');
-    }
 
-    _saveSession(response.data!);
-    _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (response.data != null) {
+      _saveSession(response.data!);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
 
     return response;
   }
