@@ -52,6 +52,7 @@ class GotrueSessionResponse extends GotrueResponse {
   })  : user = user ?? session?.user,
         super(
           statusCode: response.statusCode,
+          rawData: response.rawData,
         );
 }
 
@@ -72,6 +73,7 @@ class GotrueUserResponse extends GotrueResponse {
   GotrueUserResponse.fromResponse({required GotrueResponse response, this.user})
       : super(
           statusCode: response.statusCode,
+          rawData: response.rawData,
         );
 }
 
