@@ -73,8 +73,8 @@ class GoTrueClient {
       userMetadata: userMetadata,
     );
 
-    if (response.data != null) {
-      _saveSession(response.data!);
+    if (response.session != null) {
+      _saveSession(response.session!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -98,11 +98,11 @@ class GoTrueClient {
 
     final response =
         await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
-    if (response.data == null) {
+    if (response.session == null) {
       throw GoTrueException('An error occurred on sign up.');
     }
 
-    _saveSession(response.data!);
+    _saveSession(response.session!);
     _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
@@ -158,13 +158,13 @@ class GoTrueClient {
 
     final response = await api.verifyMobileOTP(phone, token, options: options);
 
-    if (response.data == null) {
+    if (response.session == null) {
       throw GoTrueException(
         'An error occurred on token verification.',
       );
     }
 
-    _saveSession(response.data!);
+    _saveSession(response.session!);
     _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
     return response;
@@ -256,7 +256,7 @@ class GoTrueClient {
       }
     }
 
-    return GotrueSessionResponse(data: session);
+    return GotrueSessionResponse(session: session);
   }
 
   /// Updates user data, if there is a logged in user.
@@ -339,7 +339,7 @@ class GoTrueClient {
     } else {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
-      return GotrueSessionResponse(data: session);
+      return GotrueSessionResponse(session: session);
     }
   }
 
@@ -353,9 +353,9 @@ class GoTrueClient {
     // if (response.error != null) return response;
 
     // ignore: deprecated_member_use_from_same_package
-    if (response.data?.user?.confirmedAt != null ||
-        response.data?.user?.emailConfirmedAt != null) {
-      _saveSession(response.data!);
+    if (response.session?.user?.confirmedAt != null ||
+        response.session?.user?.emailConfirmedAt != null) {
+      _saveSession(response.session!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -380,7 +380,7 @@ class GoTrueClient {
 
       // if (response.error != null) return response;
 
-      _saveSession(response.data!);
+      _saveSession(response.session!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
       return response;
@@ -398,8 +398,8 @@ class GoTrueClient {
 
     // if (response.error != null) return response;
 
-    if (response.data?.user?.phoneConfirmedAt != null) {
-      _saveSession(response.data!);
+    if (response.session?.user?.phoneConfirmedAt != null) {
+      _saveSession(response.session!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
@@ -474,14 +474,14 @@ class GoTrueClient {
 
     try {
       final response = await api.refreshAccessToken(token, jwt);
-      if (response.data == null) {
+      if (response.session == null) {
         final error = GoTrueException('Invalid session data.');
         completer.completeError(error, StackTrace.current);
         throw error;
       }
       _refreshTokenRetryCount = 0;
 
-      _saveSession(response.data!);
+      _saveSession(response.session!);
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
