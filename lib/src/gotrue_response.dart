@@ -27,31 +27,32 @@ class GotrueJsonResponse extends GotrueResponse {
 }
 
 class GotrueSessionResponse extends GotrueResponse {
-  final Session? data;
+  final Session? session;
   final String? provider;
   final String? url;
   final User? user;
 
   GotrueSessionResponse({
-    this.data,
+    this.session,
     this.provider,
     this.url,
     User? user,
     int? statusCode,
-  })  : user = user ?? data?.user,
+  })  : user = user ?? session?.user,
         super(
           statusCode: statusCode,
         );
 
   GotrueSessionResponse.fromResponse({
     required GotrueResponse response,
-    this.data,
+    this.session,
     this.provider,
     this.url,
     User? user,
-  })  : user = user ?? data?.user,
+  })  : user = user ?? session?.user,
         super(
           statusCode: response.statusCode,
+          rawData: response.rawData,
         );
 }
 
@@ -72,6 +73,7 @@ class GotrueUserResponse extends GotrueResponse {
   GotrueUserResponse.fromResponse({required GotrueResponse response, this.user})
       : super(
           statusCode: response.statusCode,
+          rawData: response.rawData,
         );
 }
 

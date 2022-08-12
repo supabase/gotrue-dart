@@ -20,7 +20,7 @@ void main() {
     final email = 'fake2$timestamp@email.com';
     const password = 'secret';
     final res = await client.signUp(email, password);
-    session = res.data!;
+    session = res.session!;
   });
 
   test('signIn() with Provider', () async {
@@ -57,11 +57,11 @@ void main() {
     final url =
         'http://my-callback-url.com/welcome#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.data?.accessToken, accessToken);
-    expect(res.data?.expiresIn, expiresIn);
-    expect(res.data?.refreshToken, refreshToken);
-    expect(res.data?.tokenType, tokenType);
-    expect(res.data?.providerToken, providerToken);
+    expect(res.session?.accessToken, accessToken);
+    expect(res.session?.expiresIn, expiresIn);
+    expect(res.session?.refreshToken, refreshToken);
+    expect(res.session?.tokenType, tokenType);
+    expect(res.session?.providerToken, providerToken);
   });
 
   test('parse provider callback url with fragment and query', () async {
@@ -73,11 +73,11 @@ void main() {
     final url =
         'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.data?.accessToken, accessToken);
-    expect(res.data?.expiresIn, expiresIn);
-    expect(res.data?.refreshToken, refreshToken);
-    expect(res.data?.tokenType, tokenType);
-    expect(res.data?.providerToken, providerToken);
+    expect(res.session?.accessToken, accessToken);
+    expect(res.session?.expiresIn, expiresIn);
+    expect(res.session?.refreshToken, refreshToken);
+    expect(res.session?.tokenType, tokenType);
+    expect(res.session?.providerToken, providerToken);
   });
 
   test('parse provider callback url with missing param error', () async {

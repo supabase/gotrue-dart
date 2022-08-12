@@ -61,7 +61,7 @@ class GoTrueApi {
           Session.fromJson(response.rawData as Map<String, dynamic>);
       return GotrueSessionResponse.fromResponse(
         response: response,
-        data: session,
+        session: session,
       );
     }
   }
@@ -86,7 +86,7 @@ class GoTrueApi {
     final session = Session.fromJson(response.rawData as Map<String, dynamic>);
     return GotrueSessionResponse.fromResponse(
       response: response,
-      data: session,
+      session: session,
     );
   }
 
@@ -129,7 +129,7 @@ class GoTrueApi {
       );
       return GotrueSessionResponse.fromResponse(
         response: response,
-        data: session,
+        session: session,
       );
     }
   }
@@ -152,7 +152,7 @@ class GoTrueApi {
     final session = Session.fromJson(response.rawData as Map<String, dynamic>);
     return GotrueSessionResponse.fromResponse(
       response: response,
-      data: session,
+      session: session,
     );
   }
 
@@ -177,7 +177,7 @@ class GoTrueApi {
     final session = Session.fromJson(response.rawData as Map<String, dynamic>);
     return GotrueSessionResponse.fromResponse(
       response: response,
-      data: session,
+      session: session,
     );
   }
 
@@ -261,7 +261,7 @@ class GoTrueApi {
     }
     return GotrueSessionResponse.fromResponse(
       response: response,
-      data: session,
+      session: session,
     );
   }
 
@@ -405,7 +405,7 @@ class GoTrueApi {
     final session = Session.fromJson(response.rawData as Map<String, dynamic>);
     return GotrueSessionResponse.fromResponse(
       response: response,
-      data: session,
+      session: session,
     );
   }
 }

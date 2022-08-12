@@ -72,7 +72,7 @@ void main() {
         options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
         userMetadata: {"Hello": "World"},
       );
-      final data = response.data;
+      final data = response.session;
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user?.id, isA<String>());
@@ -80,15 +80,13 @@ void main() {
     });
 
     test('signUp() with autoConfirm off', () async {
-      try {
-        await clientWithAuthConfirmOff.signUp(
-          email,
-          password,
-          options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
-        );
-      } catch (error) {
-        expect(error, isA<GoTrueException>());
-      }
+      final response = await clientWithAuthConfirmOff.signUp(
+        email,
+        password,
+        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+      );
+      expect(response.user, isA<User>());
+      expect(response.session, isNull);
     });
 
     test('signUp() with email should throw error if used twice', () async {
@@ -103,7 +101,7 @@ void main() {
 
     test('signIn()', () async {
       final response = await client.signIn(email: email, password: password);
-      final data = response.data;
+      final data = response.session;
 
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
@@ -196,7 +194,7 @@ void main() {
           email: email,
           password: '${password}2',
         );
-        final data = res.data;
+        final data = res.session;
         expect(data, isNull);
       } on GoTrueException catch (error) {
         expect(error.message, isNotNull);
