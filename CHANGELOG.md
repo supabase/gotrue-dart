@@ -1,3 +1,8 @@
+## [1.0.0-dev.3]
+
+- BREAKING: `data` property of `GotrueSessionResponse` is renamed to `session`([#87](https://github.com/supabase-community/gotrue-dart/pull/87))
+- fix: bug where siningup with email verification throwed an exception([#87](https://github.com/supabase-community/gotrue-dart/pull/87))
+
 ## [1.0.0-dev.2]
 
 - BREAKING: rename `GotrueError` to `GoTrueException`
