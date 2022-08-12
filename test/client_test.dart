@@ -80,15 +80,13 @@ void main() {
     });
 
     test('signUp() with autoConfirm off', () async {
-      try {
-        await clientWithAuthConfirmOff.signUp(
-          email,
-          password,
-          options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
-        );
-      } catch (error) {
-        expect(error, isA<GoTrueException>());
-      }
+      final response = await clientWithAuthConfirmOff.signUp(
+        email,
+        password,
+        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+      );
+      expect(response.user, isA<User>());
+      expect(response.session, isNull);
     });
 
     test('signUp() with email should throw error if used twice', () async {
