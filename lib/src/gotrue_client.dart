@@ -57,53 +57,50 @@ class GoTrueClient {
 
   /// Creates a new user.
   ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
-  Future<GotrueSessionResponse> signUp(
-    String email,
-    String password, {
-    AuthOptions? options,
-    Map<String, dynamic>? userMetadata,
-  }) async {
-    _removeSession();
-
-    final response = await api.signUpWithEmail(
-      email,
-      password,
-      options: options,
-      userMetadata: userMetadata,
-    );
-
-    if (response.session != null) {
-      _saveSession(response.session!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
-    }
-
-    return response;
-  }
-
-  /// Signs up a new user using their phone number and a password.
+  /// [email] is the user's email address
   ///
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [password] is the password of the user
   ///
   /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
-  Future<GotrueSessionResponse> signUpWithPhone(
-    String phone,
-    String password, {
+  Future<GotrueSessionResponse> signUp({
+    String? email,
+    String? phone,
+    required String password,
     AuthOptions? options,
     Map<String, dynamic>? userMetadata,
   }) async {
+    assert((email != null && phone == null) || (email == null && phone != null),
+        'You must provide either an email or phone number');
+
     _removeSession();
 
-    final response =
-        await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
-    if (response.session == null) {
-      throw GoTrueException('An error occurred on sign up.');
+    late final GotrueSessionResponse response;
+
+    if (email != null) {
+      response = await api.signUpWithEmail(
+        email,
+        password,
+        options: options,
+        userMetadata: userMetadata,
+      );
+    } else if (phone != null) {
+      response = await api.signUpWithPhone(phone, password,
+          options: options, userMetadata: userMetadata);
+      if (response.session == null) {
+        throw GoTrueException('An error occurred on sign up.');
+      }
+    } else {
+      throw GoTrueException(
+          'You must provide either an email or phone number and a password');
     }
 
-    _saveSession(response.session!);
-    _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    final session = response.session;
+    if (session != null) {
+      _saveSession(session);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
 
     return response;
   }

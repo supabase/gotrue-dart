@@ -19,6 +19,7 @@ void main() {
       env['GOTRUE_URL'] ?? 'http://localhost:9999';
   final anonToken = env['GOTRUE_TOKEN'] ?? '';
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
+  final phone = env['GOTRUE_USER_PHONE'] ?? '+1 666-0000-0000';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   final serviceRoleToken = JWT(
@@ -67,8 +68,8 @@ void main() {
 
     test('signUp()', () async {
       final response = await client.signUp(
-        email,
-        password,
+        email: email,
+        password: password,
         options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
         userMetadata: {"Hello": "World"},
       );
@@ -81,8 +82,8 @@ void main() {
 
     test('signUp() with autoConfirm off', () async {
       final response = await clientWithAuthConfirmOff.signUp(
-        email,
-        password,
+        email: email,
+        password: password,
         options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
       );
       expect(response.user, isA<User>());
@@ -93,7 +94,17 @@ void main() {
       final localEmail = email;
 
       try {
-        await client.signUp(localEmail, password);
+        await client.signUp(email: localEmail, password: password);
+      } catch (error) {
+        expect(error, isA<GoTrueException>());
+      }
+    });
+
+    test('signUp with phone', () async {
+      try {
+        print(phone);
+        await client.signUp(phone: phone, password: password);
+        fail('signIn with phone did not throw');
       } catch (error) {
         expect(error, isA<GoTrueException>());
       }
