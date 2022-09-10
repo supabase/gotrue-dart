@@ -160,7 +160,7 @@ void main() {
     });
 
     test('Update user', () async {
-      final response = await client.update(
+      final response = await client.updateUser(
         UserAttributes(data: {'hello': 'world'}),
       );
       final data = response.data;

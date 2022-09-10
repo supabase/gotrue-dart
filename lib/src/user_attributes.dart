@@ -1,15 +1,22 @@
 class UserAttributes {
+  /// The user's email.
   String? email;
+
+  /// The user's phone.
   String? phone;
+
+  /// The user's password.
   String? password;
-  String? emailChangeToken;
+
+  /// A custom data object to store the user's metadata. This maps to the `auth.users.user_metadata` column.
+  ///
+  /// The `data` should be a JSON object that includes user-specific info, such as their first and last name.
   dynamic data;
 
   UserAttributes({
     this.email,
     this.phone,
     this.password,
-    this.emailChangeToken,
     this.data,
   });
 
@@ -18,9 +25,6 @@ class UserAttributes {
     if (email != null) values['email'] = email;
     if (phone != null) values['phone'] = phone;
     if (password != null) values['password'] = password;
-    if (emailChangeToken != null) {
-      values['email_change_token'] = emailChangeToken;
-    }
     if (data != null) values['data'] = data;
     return values;
   }

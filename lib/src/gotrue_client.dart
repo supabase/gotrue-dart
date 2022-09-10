@@ -63,7 +63,7 @@ class GoTrueClient {
   ///
   /// [password] is the password of the user
   ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
+  /// [userMetadata] sets [User.userMetadata] without an extra call to [updateUser]
   Future<GotrueSessionResponse> signUp({
     String? email,
     String? phone,
@@ -307,7 +307,7 @@ class GoTrueClient {
   }
 
   /// Updates user data, if there is a logged in user.
-  Future<GotrueUserResponse> update(UserAttributes attributes) async {
+  Future<GotrueUserResponse> updateUser(UserAttributes attributes) async {
     if (currentSession?.accessToken == null) {
       throw GoTrueException('Not logged in.');
     }
@@ -416,25 +416,6 @@ class GoTrueClient {
   ) {
     final url = api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
-  }
-
-  Future<GotrueSessionResponse> _handleOpenIDConnectSignIn(
-    OpenIDConnectCredentials oidc,
-  ) async {
-    if ((oidc.clientId != null && oidc.issuer != null) ||
-        oidc.provider != null) {
-      final response = await api.signInWithOpenIDConnect(oidc);
-
-      // if (response.error != null) return response;
-
-      _saveSession(response.session!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
-
-      return response;
-    }
-    throw GoTrueException(
-      'You must provider an OpenID Connect clientID and issuer or provider.',
-    );
   }
 
   Future<GotrueSessionResponse> _handlePhoneSignIn(
