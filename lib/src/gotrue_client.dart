@@ -105,36 +105,86 @@ class GoTrueClient {
     return response;
   }
 
-  /// Log in an existing user, or login via a third-party provider.
-  Future<GotrueSessionResponse> signIn({
+  /// Log in an existing user with an email and password or phone and password.
+  Future<GotrueSessionResponse> signInWithPassword({
     String? email,
     String? phone,
-    String? password,
+    required String password,
+    String? captchaToken,
+  }) async {
+    _removeSession();
+
+    if (email != null) {
+      return _handleEmailSignIn(email, password,
+          options: AuthOptions(captchaToken: captchaToken));
+    }
+    if (phone != null) {
+      return _handlePhoneSignIn(phone, password);
+    }
+    throw GoTrueException(
+      'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
+    );
+  }
+
+  /// Log in an existing user via a third-party provider.
+  Future<GotrueSessionResponse> signInWithOAuth({
     Provider? provider,
-    OpenIDConnectCredentials? oidc,
     AuthOptions? options,
   }) async {
     _removeSession();
 
-    if (email != null && password == null) {
-      await api.sendMagicLinkEmail(email, options: options);
-      return GotrueSessionResponse();
-    }
-    if (email != null && password != null) {
-      return _handleEmailSignIn(email, password, options: options);
-    }
-    if (phone != null && password == null) {
-      await api.sendMobileOTP(phone);
-      return GotrueSessionResponse();
-    }
-    if (phone != null && password != null) {
-      return _handlePhoneSignIn(phone, password);
-    }
     if (provider != null) {
       return _handleProviderSignIn(provider, options);
     }
-    if (oidc != null) {
-      return _handleOpenIDConnectSignIn(oidc);
+    throw GoTrueException(
+      'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
+    );
+  }
+
+  void some() {
+    signInWithOtp(email: '');
+  }
+
+  /// Log in a user using magiclink or a one-time password (OTP).
+  ///
+  /// If the `{{ .ConfirmationURL }}` variable is specified in the email template, a magiclink will be sent.
+  ///
+  /// If the `{{ .Token }}` variable is specified in the email template, an OTP will be sent.
+  ///
+  /// If you're using phone sign-ins, only an OTP will be sent. You won't be able to send a magiclink for phone sign-ins.
+  ///
+  /// If [shouldCreateUser] is set to false, this method will not create a new user. Defaults to true.
+  ///
+  /// [emailRedirectTo] can be used to specify the redirect URL embedded in the email link
+  Future<GotrueSessionResponse> signInWithOtp({
+    String? email,
+    String? phone,
+    String? emailRedirectTo,
+    bool? shouldCreateUser,
+    String? captchaToken,
+  }) async {
+    _removeSession();
+
+    if (email != null) {
+      await api.sendMagicLinkEmail(
+        email,
+        shouldCreateUser: shouldCreateUser,
+        options: AuthOptions(
+          redirectTo: emailRedirectTo,
+          captchaToken: captchaToken,
+        ),
+      );
+      return GotrueSessionResponse();
+    }
+    if (phone != null) {
+      await api.sendMobileOTP(
+        phone,
+        shouldCreateUser: shouldCreateUser,
+        options: AuthOptions(
+          captchaToken: captchaToken,
+        ),
+      );
+      return GotrueSessionResponse();
     }
     throw GoTrueException(
       'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
