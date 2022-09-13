@@ -47,7 +47,7 @@ class GotrueFetch {
           statusCode: response.statusCode,
         );
       } else {
-        final jsonBody = json.decode(response.body);
+        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
         return GotrueResponse(
           rawData: jsonBody,
           statusCode: response.statusCode,
@@ -77,7 +77,7 @@ class GotrueFetch {
           statusCode: response.statusCode,
         );
       } else {
-        final jsonBody = json.decode(response.body);
+        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
         return GotrueResponse(
           rawData: jsonBody,
           statusCode: response.statusCode,
@@ -107,7 +107,7 @@ class GotrueFetch {
           statusCode: response.statusCode,
         );
       } else {
-        final jsonBody = json.decode(response.body);
+        final jsonBody = json.decode(utf8.decode(response.bodyBytes));
         return GotrueResponse(
           rawData: jsonBody,
           statusCode: response.statusCode,
