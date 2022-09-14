@@ -150,7 +150,12 @@ void main() {
 
     test('Update user', () async {
       final response = await client.update(
-        UserAttributes(data: {'hello': 'world'}),
+        UserAttributes(data: {
+          'hello': 'world',
+          'japanese': '日本語',
+          'korean': '한국어',
+          'arabic': 'عربى',
+        }),
       );
       final data = response.data;
       expect(data?.id, isA<String>());
@@ -163,6 +168,9 @@ void main() {
       expect(user, isNotNull);
       expect(user?.id, isA<String>());
       expect(user?.userMetadata?['hello'], 'world');
+      expect(user?.userMetadata?['japanese'], '日本語');
+      expect(user?.userMetadata?['korean'], '한국어');
+      expect(user?.userMetadata?['arabic'], 'عربى');
     });
 
     test('signIn with OpenIDConnect wrong id_token', () async {
