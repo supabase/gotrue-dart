@@ -23,11 +23,11 @@ void main() {
   });
 
   test('Subscribe a listener', () async {
-    expect(client.stateChangeEmitters.keys.length, 1);
+    expect(client._stateChangeEmitters.keys.length, 1);
   });
 
   test('Unsubscribe a listener', () async {
     subscription.unsubscribe();
-    expect(client.stateChangeEmitters.keys.length, 0);
+    expect(client._stateChangeEmitters.keys.length, 0);
   });
 }

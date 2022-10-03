@@ -12,7 +12,7 @@ import 'package:universal_io/io.dart';
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
-  late GoTrueApi api;
+  late GoTrueApi _api;
 
   /// The currently logged in user or null.
   User? _currentUser;
@@ -21,7 +21,7 @@ class GoTrueClient {
   Session? _currentSession;
 
   late bool autoRefreshToken;
-  Map<String, Subscription> stateChangeEmitters = {};
+  final Map<String, Subscription> _stateChangeEmitters = {};
 
   Timer? _refreshTokenTimer;
 
@@ -41,7 +41,7 @@ class GoTrueClient {
       ...Constants.defaultHeaders,
       if (headers != null) ...headers,
     };
-    api = GoTrueApi(
+    _api = GoTrueApi(
       gotrueUrl,
       headers: gotrueHeader,
       cookieOptions: cookieOptions,
@@ -79,14 +79,14 @@ class GoTrueClient {
     late final GotrueSessionResponse response;
 
     if (email != null) {
-      response = await api.signUpWithEmail(
+      response = await _api.signUpWithEmail(
         email,
         password,
         options: options,
         userMetadata: userMetadata,
       );
     } else if (phone != null) {
-      response = await api.signUpWithPhone(phone, password,
+      response = await _api.signUpWithPhone(phone, password,
           options: options, userMetadata: userMetadata);
       if (response.session == null) {
         throw GoTrueException('An error occurred on sign up.');
@@ -166,7 +166,7 @@ class GoTrueClient {
     _removeSession();
 
     if (email != null) {
-      await api.sendMagicLinkEmail(
+      await _api.sendMagicLinkEmail(
         email,
         shouldCreateUser: shouldCreateUser,
         options: AuthOptions(
@@ -177,7 +177,7 @@ class GoTrueClient {
       return GotrueSessionResponse();
     }
     if (phone != null) {
-      await api.sendMobileOTP(
+      await _api.sendMobileOTP(
         phone,
         shouldCreateUser: shouldCreateUser,
         options: AuthOptions(
@@ -203,7 +203,7 @@ class GoTrueClient {
   }) async {
     _removeSession();
 
-    final response = await api.verifyMobileOTP(phone, token, options: options);
+    final response = await _api.verifyMobileOTP(phone, token, options: options);
 
     if (response.session == null) {
       throw GoTrueException(
@@ -226,6 +226,22 @@ class GoTrueClient {
     }
 
     final response = await _callRefreshToken(refreshCompleter);
+    return response;
+  }
+
+  /// Updates user data, if there is a logged in user.
+  Future<GotrueUserResponse> updateUser(UserAttributes attributes) async {
+    if (currentSession?.accessToken == null) {
+      throw GoTrueException('Not logged in.');
+    }
+
+    final response =
+        await _api.updateUser(currentSession!.accessToken, attributes);
+
+    _currentUser = response.user;
+    _currentSession = currentSession?.copyWith(user: response.user);
+    _notifyAllSubscribers(AuthChangeEvent.userUpdated);
+
     return response;
   }
 
@@ -283,7 +299,7 @@ class GoTrueClient {
       throw GoTrueException('No token_type detected.');
     }
 
-    final response = await api.getUser(accessToken);
+    final response = await _api.getUser(accessToken);
 
     final session = Session(
       accessToken: accessToken,
@@ -306,30 +322,13 @@ class GoTrueClient {
     return GotrueSessionResponse(session: session);
   }
 
-  /// Updates user data, if there is a logged in user.
-  Future<GotrueUserResponse> updateUser(UserAttributes attributes) async {
-    if (currentSession?.accessToken == null) {
-      throw GoTrueException('Not logged in.');
-    }
-
-    final response =
-        await api.updateUser(currentSession!.accessToken, attributes);
-    // if (response.error != null) return response;
-
-    _currentUser = response.user;
-    _currentSession = currentSession?.copyWith(user: response.user);
-    _notifyAllSubscribers(AuthChangeEvent.userUpdated);
-
-    return response;
-  }
-
   /// Signs out the current user, if there is a logged in user.
   Future<GotrueResponse> signOut() async {
     final accessToken = currentSession?.accessToken;
     _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
     if (accessToken != null) {
-      return api.signOut(accessToken);
+      return _api.signOut(accessToken);
     }
     return const GotrueResponse();
   }
@@ -342,11 +341,18 @@ class GoTrueClient {
       id: id,
       callback: callback,
       unsubscribe: () {
-        self.stateChangeEmitters.remove(id);
+        self._stateChangeEmitters.remove(id);
       },
     );
-    stateChangeEmitters[id] = subscription;
+    _stateChangeEmitters[id] = subscription;
     return GotrueSubscription(data: subscription);
+  }
+
+  Future<void> resetPasswordForEmail(
+    String email, {
+    AuthOptions? options,
+  }) {
+    return _api.resetPasswordForEmail(email, options: options);
   }
 
   /// Recover session from persisted session json string.
@@ -396,7 +402,7 @@ class GoTrueClient {
     AuthOptions? options,
   }) async {
     final response =
-        await api.signInWithEmail(email, password, options: options);
+        await _api.signInWithEmail(email, password, options: options);
     // if (response.error != null) return response;
 
     // ignore: deprecated_member_use_from_same_package
@@ -414,7 +420,7 @@ class GoTrueClient {
     Provider provider,
     AuthOptions? options,
   ) {
-    final url = api.getUrlForProvider(provider, options);
+    final url = _api.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
@@ -422,7 +428,7 @@ class GoTrueClient {
     String phone, [
     String? password,
   ]) async {
-    final response = await api.signInWithPhone(phone, password);
+    final response = await _api.signInWithPhone(phone, password);
 
     // if (response.error != null) return response;
 
@@ -501,7 +507,7 @@ class GoTrueClient {
     final jwt = accessToken ?? currentSession?.accessToken;
 
     try {
-      final response = await api.refreshAccessToken(token, jwt);
+      final response = await _api.refreshAccessToken(token, jwt);
       if (response.session == null) {
         final error = GoTrueException('Invalid session data.');
         completer.completeError(error, StackTrace.current);
@@ -530,6 +536,6 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
+    _stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
   }
 }

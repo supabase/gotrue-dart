@@ -244,7 +244,7 @@ void main() {
       );
 
       expect(
-        client.api.headers['X-Client-Info']!.split('/').first,
+        client._api.headers['X-Client-Info']!.split('/').first,
         'gotrue-dart',
       );
     });
@@ -259,7 +259,7 @@ void main() {
         },
       );
 
-      expect(client.api.headers['X-Client-Info'], 'supabase-dart/0.0.0');
+      expect(client._api.headers['X-Client-Info'], 'supabase-dart/0.0.0');
     });
   });
 
@@ -286,7 +286,7 @@ void main() {
 
       const userMetadata = {'status': 'alpha'};
 
-      final response = await serviceRoleApiClient.api.generateLink(
+      final response = await serviceRoleApiClient._api.generateLink(
         unregistredUserEmail,
         InviteType.signup,
         password: password,
