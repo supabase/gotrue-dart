@@ -3,68 +3,19 @@ import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/fetch_options.dart';
 import 'package:http/http.dart';
 
-class GoTrueApi {
+class GoTrueAdminApi {
   final String url;
   final Map<String, String> headers;
-  final CookieOptions? cookieOptions;
+
   final Client? _httpClient;
   late final GotrueFetch _fetch = GotrueFetch(_httpClient);
 
-  GoTrueApi(
+  GoTrueAdminApi(
     this.url, {
     Map<String, String>? headers,
-    this.cookieOptions,
     Client? httpClient,
   })  : headers = headers ?? {},
         _httpClient = httpClient;
-
-  /// Creates a new user using their email address.
-  ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [updateUser]
-  Future<GotrueSessionResponse> signUpWithEmail(
-    String email,
-    String password, {
-    AuthOptions? options,
-    Map<String, dynamic>? userMetadata,
-  }) async {
-    final urlParams = [];
-
-    if (options?.redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
-      urlParams.add('redirect_to=$encodedRedirectTo');
-    }
-
-    final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-    final response = await _fetch.post(
-      '$url/signup$queryString',
-      {
-        'email': email,
-        'password': password,
-        'data': userMetadata,
-        'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
-      },
-      options: FetchOptions(headers),
-    );
-    final data = response.rawData as Map<String, dynamic>?;
-    if (data != null && data['access_token'] == null) {
-      // email validation required
-      User? user;
-      if (data['id'] != null) {
-        user = User.fromJson(data);
-      }
-      return GotrueSessionResponse.fromResponse(
-        response: response,
-        user: user,
-      );
-    } else {
-      final session =
-          Session.fromJson(response.rawData as Map<String, dynamic>);
-      return GotrueSessionResponse.fromResponse(
-        response: response,
-        session: session,
-      );
-    }
-  }
 
   /// Logs in an existing user using their email address.
   Future<GotrueSessionResponse> signInWithEmail(
@@ -88,50 +39,6 @@ class GoTrueApi {
       response: response,
       session: session,
     );
-  }
-
-  /// Signs up a new user using their phone number and a password.
-  ///
-  /// [phone] is the user's phone number WITH international prefix
-  ///
-  /// [password] is the password of the user
-  ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [updateUser]
-  Future<GotrueSessionResponse> signUpWithPhone(
-    String phone,
-    String password, {
-    AuthOptions? options,
-    Map<String, dynamic>? userMetadata,
-  }) async {
-    final fetchOptions = FetchOptions(headers);
-    final body = {
-      'phone': phone,
-      'password': password,
-      'data': userMetadata,
-      'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
-    };
-    final response =
-        await _fetch.post('$url/signup', body, options: fetchOptions);
-    final data = response.rawData as Map<String, dynamic>?;
-    if (data != null && data['access_token'] == null) {
-      // phone number validation required
-      User? user;
-      if (data['id'] != null) {
-        user = User.fromJson(data);
-      }
-      return GotrueSessionResponse.fromResponse(
-        response: response,
-        user: user,
-      );
-    } else {
-      final session = Session.fromJson(
-        response.rawData as Map<String, dynamic>,
-      );
-      return GotrueSessionResponse.fromResponse(
-        response: response,
-        session: session,
-      );
-    }
   }
 
   /// Logs in an existing user using their phone number and password.

@@ -4,6 +4,8 @@ import 'dart:math';
 
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
+import 'package:gotrue/src/fetch.dart';
+import 'package:gotrue/src/fetch_options.dart';
 import 'package:gotrue/src/subscription.dart';
 import 'package:gotrue/src/uuid.dart';
 import 'package:http/http.dart';
@@ -12,13 +14,18 @@ import 'package:universal_io/io.dart';
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
-  late GoTrueApi _api;
+  late GoTrueAdminApi admin;
 
   /// The currently logged in user or null.
   User? _currentUser;
 
   /// The session object for the currently logged in user or null.
   Session? _currentSession;
+
+  final String _url;
+  final Map<String, String> _headers;
+  final Client? _httpClient;
+  late final GotrueFetch _fetch = GotrueFetch(_httpClient);
 
   late bool autoRefreshToken;
   final Map<String, Subscription> _stateChangeEmitters = {};
@@ -33,7 +40,9 @@ class GoTrueClient {
     bool? autoRefreshToken,
     CookieOptions? cookieOptions,
     Client? httpClient,
-  }) {
+  })  : _url = url ?? Constants.defaultGotrueUrl,
+        _headers = headers ?? {},
+        _httpClient = httpClient {
     this.autoRefreshToken = autoRefreshToken ?? true;
 
     final gotrueUrl = url ?? Constants.defaultGotrueUrl;
@@ -41,10 +50,9 @@ class GoTrueClient {
       ...Constants.defaultHeaders,
       if (headers != null) ...headers,
     };
-    _api = GoTrueApi(
+    admin = GoTrueAdminApi(
       gotrueUrl,
       headers: gotrueHeader,
-      cookieOptions: cookieOptions,
       httpClient: httpClient,
     );
   }
@@ -76,33 +84,75 @@ class GoTrueClient {
 
     _removeSession();
 
-    late final GotrueSessionResponse response;
+    late final GotrueResponse response;
 
     if (email != null) {
-      response = await _api.signUpWithEmail(
-        email,
-        password,
-        options: options,
-        userMetadata: userMetadata,
+      final urlParams = [];
+
+      if (options?.redirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+        urlParams.add('redirect_to=$encodedRedirectTo');
+      }
+
+      final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
+      response = await _fetch.post(
+        '$_url/signup$queryString',
+        {
+          'email': email,
+          'password': password,
+          'data': userMetadata,
+          'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
+        },
+        options: FetchOptions(_headers),
       );
     } else if (phone != null) {
-      response = await _api.signUpWithPhone(phone, password,
-          options: options, userMetadata: userMetadata);
-      if (response.session == null) {
-        throw GoTrueException('An error occurred on sign up.');
-      }
+      // response = await admin.signUpWithPhone(phone, password,
+      //     options: options, userMetadata: userMetadata);
+
+      final fetchOptions = FetchOptions(_headers);
+      final body = {
+        'phone': phone,
+        'password': password,
+        'data': userMetadata,
+        'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
+      };
+      response = await _fetch.post('$_url/signup', body, options: fetchOptions);
     } else {
       throw GoTrueException(
           'You must provide either an email or phone number and a password');
     }
 
-    final session = response.session;
+    final rawData = response.rawData as Map<String, dynamic>?;
+    late final GotrueSessionResponse data;
+    if (rawData == null) {
+      return GotrueSessionResponse();
+    }
+    if (rawData['access_token'] == null) {
+      // email validation required
+      User? user;
+      if (rawData['id'] != null) {
+        user = User.fromJson(rawData);
+      }
+      data = GotrueSessionResponse.fromResponse(
+        response: response,
+        user: user,
+      );
+    } else {
+      final session =
+          Session.fromJson(response.rawData as Map<String, dynamic>);
+      data = GotrueSessionResponse.fromResponse(
+        response: response,
+        session: session,
+      );
+    }
+
+    final session = data.session;
     if (session != null) {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
-    return response;
+    return data;
   }
 
   /// Log in an existing user with an email and password or phone and password.
@@ -166,7 +216,7 @@ class GoTrueClient {
     _removeSession();
 
     if (email != null) {
-      await _api.sendMagicLinkEmail(
+      await admin.sendMagicLinkEmail(
         email,
         shouldCreateUser: shouldCreateUser,
         options: AuthOptions(
@@ -177,7 +227,7 @@ class GoTrueClient {
       return GotrueSessionResponse();
     }
     if (phone != null) {
-      await _api.sendMobileOTP(
+      await admin.sendMobileOTP(
         phone,
         shouldCreateUser: shouldCreateUser,
         options: AuthOptions(
@@ -203,7 +253,8 @@ class GoTrueClient {
   }) async {
     _removeSession();
 
-    final response = await _api.verifyMobileOTP(phone, token, options: options);
+    final response =
+        await admin.verifyMobileOTP(phone, token, options: options);
 
     if (response.session == null) {
       throw GoTrueException(
@@ -236,7 +287,7 @@ class GoTrueClient {
     }
 
     final response =
-        await _api.updateUser(currentSession!.accessToken, attributes);
+        await admin.updateUser(currentSession!.accessToken, attributes);
 
     _currentUser = response.user;
     _currentSession = currentSession?.copyWith(user: response.user);
@@ -299,7 +350,7 @@ class GoTrueClient {
       throw GoTrueException('No token_type detected.');
     }
 
-    final response = await _api.getUser(accessToken);
+    final response = await admin.getUser(accessToken);
 
     final session = Session(
       accessToken: accessToken,
@@ -328,7 +379,7 @@ class GoTrueClient {
     _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
     if (accessToken != null) {
-      return _api.signOut(accessToken);
+      return admin.signOut(accessToken);
     }
     return const GotrueResponse();
   }
@@ -352,7 +403,7 @@ class GoTrueClient {
     String email, {
     AuthOptions? options,
   }) {
-    return _api.resetPasswordForEmail(email, options: options);
+    return admin.resetPasswordForEmail(email, options: options);
   }
 
   /// Recover session from persisted session json string.
@@ -402,7 +453,7 @@ class GoTrueClient {
     AuthOptions? options,
   }) async {
     final response =
-        await _api.signInWithEmail(email, password, options: options);
+        await admin.signInWithEmail(email, password, options: options);
     // if (response.error != null) return response;
 
     // ignore: deprecated_member_use_from_same_package
@@ -420,7 +471,7 @@ class GoTrueClient {
     Provider provider,
     AuthOptions? options,
   ) {
-    final url = _api.getUrlForProvider(provider, options);
+    final url = admin.getUrlForProvider(provider, options);
     return GotrueSessionResponse(provider: provider.name(), url: url);
   }
 
@@ -428,7 +479,7 @@ class GoTrueClient {
     String phone, [
     String? password,
   ]) async {
-    final response = await _api.signInWithPhone(phone, password);
+    final response = await admin.signInWithPhone(phone, password);
 
     // if (response.error != null) return response;
 
@@ -507,7 +558,7 @@ class GoTrueClient {
     final jwt = accessToken ?? currentSession?.accessToken;
 
     try {
-      final response = await _api.refreshAccessToken(token, jwt);
+      final response = await admin.refreshAccessToken(token, jwt);
       if (response.session == null) {
         final error = GoTrueException('Invalid session data.');
         completer.completeError(error, StackTrace.current);
