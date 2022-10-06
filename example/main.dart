@@ -17,7 +17,7 @@ Future<bool> main(List<String> arguments) async {
       password: '12345',
     );
     print('Logged in, uid: ${login.session!.user!.id}');
-  } on GoTrueException catch (error) {
+  } on AuthException catch (error) {
     print('Sign in Error: ${error.message}');
   }
 

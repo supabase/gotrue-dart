@@ -96,7 +96,7 @@ void main() {
       try {
         await client.signUp(email: localEmail, password: password);
       } catch (error) {
-        expect(error, isA<GoTrueException>());
+        expect(error, isA<AuthException>());
       }
     });
 
@@ -106,7 +106,7 @@ void main() {
         await client.signUp(phone: phone, password: password);
         fail('signIn with phone did not throw');
       } catch (error) {
-        expect(error, isA<GoTrueException>());
+        expect(error, isA<AuthException>());
       }
     });
 
@@ -185,7 +185,7 @@ void main() {
         );
         await client.signIn(oidc: oidc);
         fail('Passed with wrong id token');
-      } on GoTrueException catch (error) {
+      } on AuthException catch (error) {
         expect(error.message, isNotNull);
       }
     });
@@ -207,7 +207,7 @@ void main() {
         );
         final data = res.session;
         expect(data, isNull);
-      } on GoTrueException catch (error) {
+      } on AuthException catch (error) {
         expect(error.message, isNotNull);
       }
     });
@@ -227,8 +227,8 @@ void main() {
       try {
         await client.signIn(email: email, password: password);
       } catch (error) {
-        expect(error, isA<GoTrueException>());
-        expect((error as GoTrueException).statusCode, '420');
+        expect(error, isA<AuthException>());
+        expect((error as AuthException).statusCode, '420');
       }
     });
   });

@@ -1,10 +1,11 @@
 import 'dart:convert';
 
 import 'package:gotrue/src/fetch_options.dart';
-import 'package:gotrue/src/go_true_exception.dart';
-import 'package:gotrue/src/gotrue_response.dart';
+import 'package:gotrue/src/auth_exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+
+enum RequestMethodType { get, post, put, delete }
 
 class GotrueFetch {
   final Client? httpClient;
@@ -15,8 +16,8 @@ class GotrueFetch {
     return code >= 200 && code <= 299;
   }
 
-  GoTrueException _handleError(http.Response error) {
-    late GoTrueException errorRes;
+  AuthException _handleError(http.Response error) {
+    late AuthException errorRes;
 
     try {
       final parsedJson = json.decode(error.body) as Map<String, dynamic>;
@@ -26,95 +27,139 @@ class GotrueFetch {
               parsedJson['error'] ??
               error.body)
           .toString();
-      errorRes = GoTrueException(message, statusCode: '${error.statusCode}');
+      errorRes = AuthException(message, statusCode: '${error.statusCode}');
     } catch (_) {
-      errorRes = GoTrueException(error.body, statusCode: '${error.statusCode}');
+      errorRes = AuthException(error.body, statusCode: '${error.statusCode}');
     }
 
     return errorRes;
   }
 
-  Future<GotrueResponse> get(String url, {FetchOptions? options}) async {
+  Future<dynamic> request(
+    String url,
+    RequestMethodType method, {
+    Map<String, dynamic>? body,
+    GotrueRequestOptions? options,
+  }) async {
     final headers = options?.headers ?? {};
-    final http.Response response = await (httpClient?.get ?? http.get)(
-      Uri.parse(url),
-      headers: headers,
-    );
+    if (options?.jwt != null) {
+      headers['Authorization'] = 'Bearer ${options!.jwt}';
+    }
+
+    final qs = options?.query ?? {};
+    if (options?.redirectTo != null) {
+      qs['redirect_to'] = options!.redirectTo!;
+    }
+    Uri uri = Uri.parse(url);
+    uri = uri.replace(queryParameters: qs);
+    late final http.Response response;
+
+    final bodyStr = json.encode(options?.body ?? {});
+
+    if (method != RequestMethodType.get) {
+      headers['Content-Type'] = 'application/json';
+    }
+    switch (method) {
+      case RequestMethodType.get:
+        response = await (httpClient?.get ?? http.get)(
+          uri,
+          headers: headers,
+        );
+        break;
+      case RequestMethodType.post:
+        response = await (httpClient?.post ?? http.post)(
+          uri,
+          headers: headers,
+          body: bodyStr,
+        );
+        break;
+      case RequestMethodType.put:
+        response = await (httpClient?.put ?? http.put)(
+          uri,
+          headers: headers,
+          body: bodyStr,
+        );
+        break;
+      case RequestMethodType.delete:
+        response = await (httpClient?.delete ?? http.delete)(
+          uri,
+          headers: headers,
+          body: bodyStr,
+        );
+        break;
+    }
     if (isSuccessStatusCode(response.statusCode)) {
       if (options?.noResolveJson == true) {
-        return GotrueResponse(
-          rawData: response.body,
-          statusCode: response.statusCode,
-        );
+        return response.body;
       } else {
-        final jsonBody = json.decode(response.body);
-        return GotrueResponse(
-          rawData: jsonBody,
-          statusCode: response.statusCode,
-        );
+        return json.decode(response.body);
       }
     } else {
       throw _handleError(response);
     }
   }
 
-  Future<GotrueResponse> post(
-    String url,
-    dynamic body, {
-    FetchOptions? options,
-  }) async {
-    final bodyStr = json.encode(body ?? {});
-    final headers = options?.headers ?? {};
-    final http.Response response = await (httpClient?.post ?? http.post)(
-      Uri.parse(url),
-      headers: headers,
-      body: bodyStr,
-    );
-    if (isSuccessStatusCode(response.statusCode)) {
-      if (options?.noResolveJson == true) {
-        return GotrueResponse(
-          rawData: response.body,
-          statusCode: response.statusCode,
-        );
-      } else {
-        final jsonBody = json.decode(response.body);
-        return GotrueResponse(
-          rawData: jsonBody,
-          statusCode: response.statusCode,
-        );
-      }
-    } else {
-      throw _handleError(response);
-    }
-  }
+  // Future<dynamic> get(String url, {GotrueRequestOptions? options}) async {
+  //   final headers = options?.headers ?? {};
 
-  Future<GotrueResponse> put(
-    String url,
-    dynamic body, {
-    FetchOptions? options,
-  }) async {
-    final bodyStr = json.encode(body ?? {});
-    final headers = options?.headers ?? {};
-    final http.Response response = await (httpClient?.put ?? http.put)(
-      Uri.parse(url),
-      headers: headers,
-      body: bodyStr,
-    );
-    if (isSuccessStatusCode(response.statusCode)) {
-      if (options?.noResolveJson == true) {
-        return GotrueResponse(
-          rawData: response.body,
-          statusCode: response.statusCode,
-        );
-      } else {
-        final jsonBody = json.decode(response.body);
-        return GotrueResponse(
-          rawData: jsonBody,
-          statusCode: response.statusCode,
-        );
-      }
-    } else {
-      throw _handleError(response);
-    }
-  }
+  //   final http.Response response = await (httpClient?.get ?? http.get)(
+  //     Uri.parse(url),
+  //     headers: headers,
+  //   );
+  //   if (isSuccessStatusCode(response.statusCode)) {
+  //     if (options?.noResolveJson == true) {
+  //       return response.body;
+  //     } else {
+  //       return json.decode(response.body);
+  //     }
+  //   } else {
+  //     throw _handleError(response);
+  //   }
+  // }
+
+  // Future<dynamic> post(
+  //   String url,
+  //   dynamic body, {
+  //   GotrueRequestOptions? options,
+  // }) async {
+  //   final bodyStr = json.encode(body ?? {});
+  //   final headers = options?.headers ?? {};
+  //   final http.Response response = await (httpClient?.post ?? http.post)(
+  //     Uri.parse(url),
+  //     headers: headers,
+  //     body: bodyStr,
+  //   );
+  //   if (isSuccessStatusCode(response.statusCode)) {
+  //     if (options?.noResolveJson == true) {
+  //       return response.body;
+  //     } else {
+  //       return json.decode(response.body);
+  //     }
+  //   } else {
+  //     throw _handleError(response);
+  //   }
+  // }
+
+  // Future<dynamic> put(
+  //   String url,
+  //   dynamic body, {
+  //   GotrueRequestOptions? options,
+  // }) async {
+  //   final bodyStr = json.encode(body ?? {});
+  //   final headers = options?.headers ?? {};
+  //   final http.Response response = await (httpClient?.put ?? http.put)(
+  //     Uri.parse(url),
+  //     headers: headers,
+  //     body: bodyStr,
+  //   );
+  //   if (isSuccessStatusCode(response.statusCode)) {
+  //     if (options?.noResolveJson == true) {
+  //       return response.body;
+  //     } else {
+  //       return json.decode(response.body);
+  //     }
+  //   } else {
+  //     throw _handleError(response);
+  //   }
+  // }
 }

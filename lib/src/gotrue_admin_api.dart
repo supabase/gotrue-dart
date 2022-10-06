@@ -18,27 +18,27 @@ class GoTrueAdminApi {
         _httpClient = httpClient;
 
   /// Logs in an existing user using their email address.
-  Future<GotrueSessionResponse> signInWithEmail(
+  Future<AuthResponse> signInWithEmail(
     String email,
     String password, {
     AuthOptions? options,
   }) async {
-    final urlParams = ['grant_type=password'];
+    final urlParams = {'grant_type': 'password'};
     if (options?.redirectTo != null) {
       final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
-      urlParams.add('redirect_to=$encodedRedirectTo');
+      urlParams['redirect_to'] = encodedRedirectTo;
     }
-    final queryString = '?${urlParams.join('&')}';
-    final response = await _fetch.post(
-      '$url/token$queryString',
-      {'email': email, 'password': password},
-      options: FetchOptions(headers),
+
+    final response = await _fetch.request(
+      '$url/token',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: headers,
+        body: {'email': email, 'password': password},
+        query: urlParams,
+      ),
     );
-    final session = Session.fromJson(response.rawData as Map<String, dynamic>);
-    return GotrueSessionResponse.fromResponse(
-      response: response,
-      session: session,
-    );
+    return AuthResponse.fromJson(response);
   }
 
   /// Logs in an existing user using their phone number and password.
@@ -46,25 +46,24 @@ class GoTrueAdminApi {
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [password] is the password of the user
-  Future<GotrueSessionResponse> signInWithPhone(
+  Future<AuthResponse> signInWithPhone(
     String phone, [
     String? password,
   ]) async {
-    const queryString = '?grant_type=password';
-    final response = await _fetch.post(
-      '$url/token$queryString',
-      {'phone': phone, 'password': password},
-      options: FetchOptions(headers),
+    final response = await _fetch.request(
+      '$url/token',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: headers,
+        body: {'phone': phone, 'password': password},
+        query: {'grant_type': 'password'},
+      ),
     );
-    final session = Session.fromJson(response.rawData as Map<String, dynamic>);
-    return GotrueSessionResponse.fromResponse(
-      response: response,
-      session: session,
-    );
+    return AuthResponse.fromJson(response);
   }
 
   /// Logs in an OpenID Connect user using their idToken.
-  Future<GotrueSessionResponse> signInWithOpenIDConnect(
+  Future<AuthResponse> signInWithOpenIDConnect(
     OpenIDConnectCredentials oidc,
   ) async {
     final body = {
@@ -74,67 +73,15 @@ class GoTrueAdminApi {
       'issuer': oidc.issuer,
       'provider': oidc.provider?.name(),
     };
-    final fetchOptions = FetchOptions(headers);
-    const queryString = '?grant_type=id_token';
-    final response = await _fetch.post(
-      '$url/token$queryString',
-      body,
+    final fetchOptions = GotrueRequestOptions(
+        headers: headers, body: body, query: {'grant_type': 'id_token'});
+
+    final response = await _fetch.request(
+      '$url/token',
+      RequestMethodType.post,
       options: fetchOptions,
     );
-    final session = Session.fromJson(response.rawData as Map<String, dynamic>);
-    return GotrueSessionResponse.fromResponse(
-      response: response,
-      session: session,
-    );
-  }
-
-  /// Sends a magic login link to an email address.
-  Future<GotrueJsonResponse> sendMagicLinkEmail(
-    String email, {
-    AuthOptions? options,
-    bool? shouldCreateUser,
-  }) async {
-    final fetchOptions = FetchOptions(headers);
-    final urlParams = [];
-    if (options?.redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
-      urlParams.add('redirect_to=$encodedRedirectTo');
-    }
-    final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-    final response = await _fetch.post(
-      '$url/otp$queryString',
-      {
-        'email': email,
-        'create_user': shouldCreateUser,
-        'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
-      },
-      options: fetchOptions,
-    );
-    return GotrueJsonResponse.fromResponse(
-      response: response,
-      data: response.rawData as Map<String, dynamic>?,
-    );
-  }
-
-  /// Sends a mobile OTP via SMS. Will register the account if it doesn't already exist
-  ///
-  /// [phone] is the user's phone number WITH international prefix
-  Future<GotrueJsonResponse> sendMobileOTP(
-    String phone, {
-    AuthOptions? options,
-    bool? shouldCreateUser,
-  }) async {
-    final body = {
-      'phone': phone,
-      'create_user': shouldCreateUser,
-      'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
-    };
-    final fetchOptions = FetchOptions(headers);
-    final response = await _fetch.post('$url/otp', body, options: fetchOptions);
-    return GotrueJsonResponse.fromResponse(
-      response: response,
-      data: response.rawData as Map<String, dynamic>?,
-    );
+    return AuthResponse.fromJson(response);
   }
 
   /// Send User supplied Mobile OTP to be verified
@@ -142,7 +89,7 @@ class GoTrueAdminApi {
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [token] is the token that user was sent to their mobile phone
-  Future<GotrueSessionResponse> verifyMobileOTP(
+  Future<AuthResponse> verifyMobileOTP(
     String phone,
     String token, {
     AuthOptions? options,
@@ -153,23 +100,18 @@ class GoTrueAdminApi {
       'type': 'sms',
       'redirect_to': options?.redirectTo,
     };
-    final fetchOptions = FetchOptions(headers);
-    final response =
-        await _fetch.post('$url/verify', body, options: fetchOptions);
-    Session session =
-        Session.fromJson(response.rawData as Map<String, dynamic>);
+    final fetchOptions = GotrueRequestOptions(headers: headers, body: body);
+    final response = await _fetch.request('$url/verify', RequestMethodType.post,
+        options: fetchOptions);
+    final authResponse = AuthResponse.fromJson(response);
+    Session session = authResponse.session!;
     // if the user in the current session is null, we get the user based on
     // the session's jwt token
     if (session.user == null) {
       final userResponse = await getUser(session.accessToken);
-      if (userResponse.user != null) {
-        session = session.copyWith(user: userResponse.user);
-      }
+      session = session.copyWith(user: userResponse.user);
     }
-    return GotrueSessionResponse.fromResponse(
-      response: response,
-      session: session,
-    );
+    return authResponse;
   }
 
   /// Sends an invite link to an email address.
@@ -178,16 +120,20 @@ class GoTrueAdminApi {
     AuthOptions? options,
   }) async {
     final body = {'email': email};
-    final fetchOptions = FetchOptions(headers);
-    final urlParams = [];
+    final urlParams = <String, String>{};
     if (options?.redirectTo != null) {
       final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
-      urlParams.add('redirect_to=$encodedRedirectTo');
+      urlParams['redirect_to'] = encodedRedirectTo;
     }
-    final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-    final response = await _fetch.post(
-      '$url/invite$queryString',
-      body,
+    final fetchOptions = GotrueRequestOptions(
+      headers: headers,
+      body: body,
+      query: urlParams,
+    );
+
+    final response = await _fetch.request(
+      '$url/invite',
+      RequestMethodType.post,
       options: fetchOptions,
     );
     return GotrueJsonResponse.fromResponse(
@@ -212,11 +158,11 @@ class GoTrueAdminApi {
       'password': password,
     };
 
-    final fetchOptions = FetchOptions(headers);
+    final fetchOptions = GotrueRequestOptions(headers: headers, body: body);
 
-    final response = await _fetch.post(
+    final response = await _fetch.request(
       '$url/admin/generate_link',
-      body,
+      RequestMethodType.post,
       options: fetchOptions,
     );
     return GotrueJsonResponse.fromResponse(
@@ -234,16 +180,17 @@ class GoTrueAdminApi {
       'email': email,
       'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
     };
-    final fetchOptions = FetchOptions(headers);
-    final urlParams = [];
+    final urlParams = <String, String>{};
     if (options?.redirectTo != null) {
       final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
-      urlParams.add('redirect_to=$encodedRedirectTo');
+      urlParams['redirect_to'] = encodedRedirectTo;
     }
-    final queryString = urlParams.isNotEmpty ? '?${urlParams.join('&')}' : '';
-    final response = await _fetch.post(
-      '$url/recover$queryString',
-      body,
+
+    final fetchOptions =
+        GotrueRequestOptions(headers: headers, body: body, query: urlParams);
+    final response = await _fetch.request(
+      '$url/recover',
+      RequestMethodType.post,
       options: fetchOptions,
     );
     return GotrueJsonResponse.fromResponse(
@@ -256,8 +203,9 @@ class GoTrueAdminApi {
   Future<GotrueResponse> signOut(String jwt) async {
     final headers = {...this.headers};
     headers['Authorization'] = 'Bearer $jwt';
-    final options = FetchOptions(headers, noResolveJson: true);
-    final response = await _fetch.post('$url/logout', {}, options: options);
+    final options = GotrueRequestOptions(headers: headers, noResolveJson: true);
+    final response = await _fetch.request('$url/logout', RequestMethodType.post,
+        options: options);
     return response;
   }
 
@@ -274,31 +222,33 @@ class GoTrueAdminApi {
   }
 
   /// Gets the user details.
-  Future<GotrueUserResponse> getUser(String jwt) async {
+  Future<UserResponse> getUser(String jwt) async {
     final headers = {...this.headers};
     headers['Authorization'] = 'Bearer $jwt';
-    final options = FetchOptions(headers);
-    final response = await _fetch.get('$url/user', options: options);
+    final options = GotrueRequestOptions(headers: headers);
+    final response = await _fetch.request('$url/user', RequestMethodType.get,
+        options: options);
     final user = User.fromJson(response.rawData as Map<String, dynamic>);
-    return GotrueUserResponse.fromResponse(response: response, user: user);
+    return UserResponse(user);
   }
 
   /// Updates the user data.
-  Future<GotrueUserResponse> updateUser(
+  Future<UserResponse> updateUser(
     String jwt,
     UserAttributes attributes,
   ) async {
     final body = attributes.toJson();
     final headers = {...this.headers};
     headers['Authorization'] = 'Bearer $jwt';
-    final options = FetchOptions(headers);
-    final response = await _fetch.put('$url/user', body, options: options);
+    final options = GotrueRequestOptions(headers: headers, body: body);
+    final response = await _fetch.request('$url/user', RequestMethodType.put,
+        options: options);
     final user = User.fromJson(response.rawData as Map<String, dynamic>);
-    return GotrueUserResponse.fromResponse(response: response, user: user);
+    return UserResponse(user);
   }
 
   /// Generates a new JWT.
-  Future<GotrueSessionResponse> refreshAccessToken(
+  Future<AuthResponse> refreshAccessToken(
     String refreshToken, [
     String? jwt,
   ]) async {
@@ -306,13 +256,10 @@ class GoTrueAdminApi {
     if (jwt != null) {
       headers['Authorization'] = 'Bearer $jwt';
     }
-    final options = FetchOptions(headers);
-    final response = await _fetch
-        .post('$url/token?grant_type=refresh_token', body, options: options);
-    final session = Session.fromJson(response.rawData as Map<String, dynamic>);
-    return GotrueSessionResponse.fromResponse(
-      response: response,
-      session: session,
-    );
+    final options = GotrueRequestOptions(
+        headers: headers, body: body, query: {'grant_type': 'refresh_token'});
+    final response = await _fetch.request('$url/token', RequestMethodType.post,
+        options: options);
+    return AuthResponse.fromJson(response);
   }
 }

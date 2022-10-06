@@ -4,6 +4,23 @@ class FetchOptions {
 
   const FetchOptions(
     Map<String, String>? headers, {
-    this.noResolveJson = false,
-  }) : headers = headers ?? const {};
+    bool? noResolveJson,
+  })  : headers = headers ?? const {},
+        noResolveJson = noResolveJson ?? false;
+}
+
+class GotrueRequestOptions extends FetchOptions {
+  final String? jwt;
+  final String? redirectTo;
+  final Map<String, dynamic>? body;
+  final Map<String, String>? query;
+
+  GotrueRequestOptions({
+    this.jwt,
+    this.redirectTo,
+    this.body,
+    this.query,
+    required Map<String, String> headers,
+    bool? noResolveJson,
+  }) : super(headers, noResolveJson: noResolveJson);
 }
