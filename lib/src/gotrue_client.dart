@@ -5,9 +5,9 @@ import 'dart:math';
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
-import 'package:gotrue/src/fetch_options.dart';
-import 'package:gotrue/src/subscription.dart';
-import 'package:gotrue/src/types.dart';
+import 'package:gotrue/src/types/fetch_options.dart';
+import 'package:gotrue/src/types/subscription.dart';
+
 import 'package:gotrue/src/uuid.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
@@ -147,25 +147,41 @@ class GoTrueClient {
   }) async {
     _removeSession();
 
-    late final AuthResponse response;
+    late final Map<String, dynamic> response;
 
     if (email != null) {
-      response = await admin.signInWithEmail(email, password,
-          options: AuthOptions(captchaToken: captchaToken));
+      response = await _fetch.request(
+        '$_url/token',
+        RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: _headers,
+          body: {'email': email, 'password': password},
+          query: {'grant_type': 'password'},
+        ),
+      );
     } else if (phone != null) {
-      response = await admin.signInWithPhone(phone, password);
+      response = await _fetch.request(
+        '$_url/token',
+        RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: _headers,
+          body: {'phone': phone, 'password': password},
+          query: {'grant_type': 'password'},
+        ),
+      );
     } else {
       throw AuthException(
         'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
       );
     }
 
-    if (response.session != null) {
-      _saveSession(response.session!);
+    final authResponse = AuthResponse.fromJson(response);
+
+    if (authResponse.session != null) {
+      _saveSession(authResponse.session!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
-
-    return response;
+    return authResponse;
   }
 
   /// Log in an existing user via a third-party provider.

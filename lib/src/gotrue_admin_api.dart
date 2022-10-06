@@ -1,7 +1,6 @@
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/fetch.dart';
-import 'package:gotrue/src/fetch_options.dart';
-import 'package:gotrue/src/types.dart';
+import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 
 class GoTrueAdminApi {
@@ -17,51 +16,6 @@ class GoTrueAdminApi {
     Client? httpClient,
   })  : headers = headers ?? {},
         _httpClient = httpClient;
-
-  /// Logs in an existing user using their email address.
-  Future<AuthResponse> signInWithEmail(
-    String email,
-    String password, {
-    AuthOptions? options,
-  }) async {
-    final urlParams = {'grant_type': 'password'};
-    if (options?.redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
-      urlParams['redirect_to'] = encodedRedirectTo;
-    }
-
-    final response = await _fetch.request(
-      '$url/token',
-      RequestMethodType.post,
-      options: GotrueRequestOptions(
-        headers: headers,
-        body: {'email': email, 'password': password},
-        query: urlParams,
-      ),
-    );
-    return AuthResponse.fromJson(response);
-  }
-
-  /// Logs in an existing user using their phone number and password.
-  ///
-  /// [phone] is the user's phone number WITH international prefix
-  ///
-  /// [password] is the password of the user
-  Future<AuthResponse> signInWithPhone(
-    String phone, [
-    String? password,
-  ]) async {
-    final response = await _fetch.request(
-      '$url/token',
-      RequestMethodType.post,
-      options: GotrueRequestOptions(
-        headers: headers,
-        body: {'phone': phone, 'password': password},
-        query: {'grant_type': 'password'},
-      ),
-    );
-    return AuthResponse.fromJson(response);
-  }
 
   /// Logs in an OpenID Connect user using their idToken.
   Future<AuthResponse> signInWithOpenIDConnect(

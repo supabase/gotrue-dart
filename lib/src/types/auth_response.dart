@@ -1,23 +1,41 @@
-import 'package:gotrue/src/subscription.dart';
-import 'package:gotrue/src/user.dart';
+import 'package:gotrue/src/types/provider.dart';
+import 'package:gotrue/src/types/session.dart';
+import 'package:gotrue/src/types/subscription.dart';
+import 'package:gotrue/src/types/user.dart';
 
-enum OtpType {
-  sms,
-  phoneChange,
-  signup,
-  invite,
-  magiclink,
-  recovery,
-  emailChange
+/// Response which might or might not contain session and/or user
+class AuthResponse {
+  final Session? session;
+  final User? user;
+
+  AuthResponse({
+    this.session,
+    this.user,
+  });
+
+  /// Instanciates an `AuthResponse` object from json response.
+  AuthResponse.fromJson(Map<String, dynamic> json)
+      : session = Session.fromJson(json),
+        user = User.fromJson(json) ?? Session.fromJson(json)?.user;
 }
 
-extension ToSnakeCase on Enum {
-  String get snakeCase {
-    RegExp exp = RegExp(r'(?<=[a-z])[A-Z]');
-    return name
-        .replaceAllMapped(exp, (Match m) => ('_${m.group(0)}'))
-        .toLowerCase();
-  }
+/// Response of OAuth signin
+class OAuthResponse {
+  final Provider provider;
+  final String? url;
+
+  /// Instanciates an `OAuthResponse` object from json response.
+  OAuthResponse({
+    required this.provider,
+    this.url,
+  });
+}
+
+/// Response that contains a user
+class UserResponse {
+  final User? user;
+
+  UserResponse.fromJson(Map<String, dynamic> json) : user = User.fromJson(json);
 }
 
 class AuthSubscription {
@@ -77,5 +95,14 @@ enum GenerateLinkType {
       }
     }
     throw Exception('GenerateLinkType of $val was not found');
+  }
+}
+
+extension ToSnakeCase on Enum {
+  String get snakeCase {
+    RegExp exp = RegExp(r'(?<=[a-z])[A-Z]');
+    return name
+        .replaceAllMapped(exp, (Match m) => ('_${m.group(0)}'))
+        .toLowerCase();
   }
 }

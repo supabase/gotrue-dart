@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:gotrue/src/fetch_options.dart';
-import 'package:gotrue/src/auth_exception.dart';
+import 'package:gotrue/src/types/fetch_options.dart';
+import 'package:gotrue/src/types/auth_exception.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 

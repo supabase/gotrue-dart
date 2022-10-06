@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:gotrue/src/user.dart';
+import 'package:gotrue/src/types/user.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 
 class Session {

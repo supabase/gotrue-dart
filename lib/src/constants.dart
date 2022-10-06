@@ -29,6 +29,16 @@ enum InviteType {
   invite,
 }
 
+enum OtpType {
+  sms,
+  phoneChange,
+  signup,
+  invite,
+  magiclink,
+  recovery,
+  emailChange
+}
+
 extension AuthChangeEventName on AuthChangeEvent {
   String name() {
     return toString().split('.').last;

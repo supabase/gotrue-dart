@@ -1,5 +1,5 @@
 import 'package:gotrue/src/constants.dart';
-import 'package:gotrue/src/session.dart';
+import 'package:gotrue/src/types/session.dart';
 
 typedef Unsubscriber = void Function();
 typedef Callback = void Function(AuthChangeEvent event, Session? session);
