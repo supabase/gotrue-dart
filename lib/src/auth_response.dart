@@ -34,7 +34,7 @@ class OAuthResponse {
 class UserResponse {
   final User? user;
 
-  UserResponse(this.user);
+  UserResponse.fromJson(Map<String, dynamic> json) : user = User.fromJson(json);
 }
 
 // class GotrueResponse {
@@ -102,8 +102,3 @@ class UserResponse {
 //         );
 // }
 
-// class GotrueSubscription extends GotrueResponse {
-//   final Subscription? data;
-
-//   const GotrueSubscription({this.data}) : super();
-// }

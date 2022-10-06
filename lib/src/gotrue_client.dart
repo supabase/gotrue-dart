@@ -386,18 +386,17 @@ class GoTrueClient {
   }
 
   /// Signs out the current user, if there is a logged in user.
-  Future<GotrueResponse> signOut() async {
+  Future<void> signOut() async {
     final accessToken = currentSession?.accessToken;
     _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
     if (accessToken != null) {
       return admin.signOut(accessToken);
     }
-    return const GotrueResponse();
   }
 
   // Receive a notification every time an auth event happens.
-  GotrueSubscription onAuthStateChange(Callback callback) {
+  AuthSubscription onAuthStateChange(Callback callback) {
     final id = uuid.generateV4();
     final GoTrueClient self = this;
     final subscription = Subscription(
@@ -408,7 +407,7 @@ class GoTrueClient {
       },
     );
     _stateChangeEmitters[id] = subscription;
-    return GotrueSubscription(data: subscription);
+    return AuthSubscription(data: subscription);
   }
 
   Future<void> resetPasswordForEmail(
@@ -436,7 +435,7 @@ class GoTrueClient {
     }
 
     final session = Session.fromJson(currentSession);
-    if (session.user == null) {
+    if (session == null || session.user == null) {
       throw AuthException('Current session is missing data.');
     }
 
@@ -455,7 +454,7 @@ class GoTrueClient {
     } else {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
-      return GotrueSessionResponse(session: session);
+      return AuthResponse(session: session);
     }
   }
 

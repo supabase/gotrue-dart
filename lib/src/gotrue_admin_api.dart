@@ -1,6 +1,7 @@
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/fetch_options.dart';
+import 'package:gotrue/src/types.dart';
 import 'package:http/http.dart';
 
 class GoTrueAdminApi {
@@ -115,7 +116,7 @@ class GoTrueAdminApi {
   }
 
   /// Sends an invite link to an email address.
-  Future<GotrueJsonResponse> inviteUserByEmail(
+  Future<UserResponse> inviteUserByEmail(
     String email, {
     AuthOptions? options,
   }) async {
@@ -136,14 +137,11 @@ class GoTrueAdminApi {
       RequestMethodType.post,
       options: fetchOptions,
     );
-    return GotrueJsonResponse.fromResponse(
-      response: response,
-      data: response.rawData as Map<String, dynamic>?,
-    );
+    return UserResponse.fromJson(response);
   }
 
   /// Generates links to be sent via email or other.
-  Future<GotrueJsonResponse> generateLink(
+  Future<GenerateLinkResponse> generateLink(
     String email,
     InviteType type, {
     AuthOptions? options,
@@ -165,14 +163,11 @@ class GoTrueAdminApi {
       RequestMethodType.post,
       options: fetchOptions,
     );
-    return GotrueJsonResponse.fromResponse(
-      response: response,
-      data: response.rawData as Map<String, dynamic>?,
-    );
+    return GenerateLinkResponse.fromJson(response);
   }
 
   /// Sends a reset request to an email address.
-  Future<GotrueJsonResponse> resetPasswordForEmail(
+  Future<void> resetPasswordForEmail(
     String email, {
     AuthOptions? options,
   }) async {
@@ -188,25 +183,23 @@ class GoTrueAdminApi {
 
     final fetchOptions =
         GotrueRequestOptions(headers: headers, body: body, query: urlParams);
-    final response = await _fetch.request(
+    await _fetch.request(
       '$url/recover',
       RequestMethodType.post,
       options: fetchOptions,
     );
-    return GotrueJsonResponse.fromResponse(
-      response: response,
-      data: response.rawData as Map<String, dynamic>?,
-    );
   }
 
   /// Removes a logged-in session.
-  Future<GotrueResponse> signOut(String jwt) async {
+  Future<void> signOut(String jwt) async {
     final headers = {...this.headers};
     headers['Authorization'] = 'Bearer $jwt';
     final options = GotrueRequestOptions(headers: headers, noResolveJson: true);
-    final response = await _fetch.request('$url/logout', RequestMethodType.post,
-        options: options);
-    return response;
+    await _fetch.request(
+      '$url/logout',
+      RequestMethodType.post,
+      options: options,
+    );
   }
 
   String getUrlForProvider(Provider provider, AuthOptions? options) {
@@ -228,8 +221,7 @@ class GoTrueAdminApi {
     final options = GotrueRequestOptions(headers: headers);
     final response = await _fetch.request('$url/user', RequestMethodType.get,
         options: options);
-    final user = User.fromJson(response.rawData as Map<String, dynamic>);
-    return UserResponse(user);
+    return UserResponse.fromJson(response);
   }
 
   /// Updates the user data.
@@ -243,8 +235,7 @@ class GoTrueAdminApi {
     final options = GotrueRequestOptions(headers: headers, body: body);
     final response = await _fetch.request('$url/user', RequestMethodType.put,
         options: options);
-    final user = User.fromJson(response.rawData as Map<String, dynamic>);
-    return UserResponse(user);
+    return UserResponse.fromJson(response);
   }
 
   /// Generates a new JWT.
