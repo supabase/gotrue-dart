@@ -10,8 +10,8 @@ class AuthResponse {
 
   AuthResponse({
     this.session,
-    this.user,
-  });
+    User? user,
+  }) : user = user ?? session?.user;
 
   /// Instanciates an `AuthResponse` object from json response.
   AuthResponse.fromJson(Map<String, dynamic> json)
@@ -42,6 +42,16 @@ class AuthSubscription {
   final Subscription? data;
 
   const AuthSubscription({this.data}) : super();
+}
+
+class AuthSessionUrlResponse {
+  final Session session;
+  final String? redirectType;
+
+  AuthSessionUrlResponse({
+    required this.session,
+    required this.redirectType,
+  });
 }
 
 class GenerateLinkResponse {

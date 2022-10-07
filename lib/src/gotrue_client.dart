@@ -104,7 +104,7 @@ class GoTrueClient {
             'email': email,
             'password': password,
             'data': userMetadata,
-            'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
+            'gotrue_meta_security': {'captcha_token': options?.captchaToken},
           },
           query: urlParams,
         ),
@@ -117,7 +117,7 @@ class GoTrueClient {
         'phone': phone,
         'password': password,
         'data': userMetadata,
-        'gotrue_meta_security': {'hcaptcha_token': options?.captchaToken},
+        'gotrue_meta_security': {'captcha_token': options?.captchaToken},
       };
       final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
       response = await _fetch.request('$_url/signup', RequestMethodType.post,
@@ -310,15 +310,23 @@ class GoTrueClient {
 
   /// Updates user data, if there is a logged in user.
   Future<UserResponse> updateUser(UserAttributes attributes) async {
-    if (currentSession?.accessToken == null) {
+    final accessToken = currentSession?.accessToken;
+    if (accessToken == null) {
       throw AuthException('Not logged in.');
     }
 
-    final response =
-        await admin.updateUser(currentSession!.accessToken, attributes);
+    final body = attributes.toJson();
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      body: body,
+      jwt: accessToken,
+    );
+    final response = await _fetch.request('$_url/user', RequestMethodType.put,
+        options: options);
+    final userResponse = UserResponse.fromJson(response);
 
-    _currentUser = response.user;
-    _currentSession = currentSession?.copyWith(user: response.user);
+    _currentUser = userResponse.user;
+    _currentSession = currentSession?.copyWith(user: userResponse.user);
     _notifyAllSubscribers(AuthChangeEvent.userUpdated);
 
     return response;
@@ -341,7 +349,7 @@ class GoTrueClient {
   }
 
   /// Gets the session data from a oauth2 callback URL
-  Future<AuthResponse> getSessionFromUrl(
+  Future<AuthSessionUrlResponse> getSessionFromUrl(
     Uri originUrl, {
     bool storeSession = true,
   }) async {
@@ -378,27 +386,37 @@ class GoTrueClient {
       throw AuthException('No token_type detected.');
     }
 
-    final response = await admin.getUser(accessToken);
+    // final response = await admin.getUser(accessToken);
+    final headers = {..._headers};
+    headers['Authorization'] = 'Bearer $accessToken';
+    final options = GotrueRequestOptions(headers: headers);
+    final response = await _fetch.request('$url/user', RequestMethodType.get,
+        options: options);
+    final user = UserResponse.fromJson(response).user;
+    if (user == null) {
+      throw AuthException('No user found. ');
+    }
 
     final session = Session(
+      providerToken: providerToken,
       accessToken: accessToken,
       expiresIn: int.parse(expiresIn),
       refreshToken: refreshToken,
       tokenType: tokenType,
-      providerToken: providerToken,
-      user: response.user,
+      user: user,
     );
+
+    final redirectType = url.queryParameters['type'];
 
     if (storeSession == true) {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
-      final type = url.queryParameters['type'];
-      if (type == 'recovery') {
+      if (redirectType == 'recovery') {
         _notifyAllSubscribers(AuthChangeEvent.passwordRecovery);
       }
     }
 
-    return AuthResponse(session: session);
+    return AuthSessionUrlResponse(session: session, redirectType: redirectType);
   }
 
   /// Signs out the current user, if there is a logged in user.
@@ -426,11 +444,29 @@ class GoTrueClient {
     return AuthSubscription(data: subscription);
   }
 
+  /// Sends a reset request to an email address.
   Future<void> resetPasswordForEmail(
     String email, {
-    AuthOptions? options,
-  }) {
-    return admin.resetPasswordForEmail(email, options: options);
+    String? redirectTo,
+    String? captchaToken,
+  }) async {
+    final body = {
+      'email': email,
+      'gotrue_meta_security': {'captcha_token': captchaToken},
+    };
+    final urlParams = <String, String>{};
+    if (redirectTo != null) {
+      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
+      urlParams['redirect_to'] = encodedRedirectTo;
+    }
+
+    final fetchOptions =
+        GotrueRequestOptions(headers: _headers, body: body, query: urlParams);
+    await _fetch.request(
+      '$_url/recover',
+      RequestMethodType.post,
+      options: fetchOptions,
+    );
   }
 
   /// Recover session from persisted session json string.
@@ -479,7 +515,17 @@ class GoTrueClient {
     Provider provider,
     AuthOptions? options,
   ) {
-    final url = admin.getUrlForProvider(provider, options);
+    // final url = admin.getUrlForProvider(provider, options);
+    final urlParams = {'provider': provider.name};
+    if (options?.scopes != null) {
+      urlParams['scopes'] = options!.scopes!;
+    }
+    if (options?.redirectTo != null) {
+      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+      urlParams['redirect_to'] = encodedRedirectTo;
+    }
+    final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
+
     return OAuthResponse(provider: provider, url: url);
   }
 
@@ -534,6 +580,7 @@ class GoTrueClient {
     _refreshTokenTimer?.cancel();
   }
 
+  /// Generates a new JWT.
   Future<AuthResponse> _callRefreshToken(
     Completer<AuthResponse> completer, {
     String? refreshToken,
@@ -549,19 +596,30 @@ class GoTrueClient {
     final jwt = accessToken ?? currentSession?.accessToken;
 
     try {
-      final response = await admin.refreshAccessToken(token, jwt);
-      if (response.session == null) {
+      final body = {'refresh_token': refreshToken};
+      if (jwt != null) {
+        _headers['Authorization'] = 'Bearer $jwt';
+      }
+      final options = GotrueRequestOptions(
+          headers: _headers,
+          body: body,
+          query: {'grant_type': 'refresh_token'});
+      final response = await _fetch
+          .request('$_url/token', RequestMethodType.post, options: options);
+      final authResponse = AuthResponse.fromJson(response);
+
+      if (authResponse.session == null) {
         final error = AuthException('Invalid session data.');
         completer.completeError(error, StackTrace.current);
         throw error;
       }
       _refreshTokenRetryCount = 0;
 
-      _saveSession(response.session!);
+      _saveSession(authResponse.session!);
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
-      completer.complete(response);
+      completer.complete(authResponse);
       return completer.future;
     } on SocketException {
       _setTokenRefreshTimer(

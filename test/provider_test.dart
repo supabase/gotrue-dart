@@ -25,7 +25,7 @@ void main() {
 
   test('signIn() with Provider', () async {
     final res = await client.signIn(provider: Provider.google);
-    final url = res.url;
+    final url = res._url;
     final provider = res.provider;
     expect(url, '$gotrueUrl/authorize?provider=google');
     expect(provider, 'google');
@@ -39,7 +39,7 @@ void main() {
         scopes: 'repo',
       ),
     );
-    final url = res.url;
+    final url = res._url;
     final provider = res.provider;
     expect(
       url,
@@ -57,11 +57,11 @@ void main() {
     final url =
         'http://my-callback-url.com/welcome#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.session?.accessToken, accessToken);
-    expect(res.session?.expiresIn, expiresIn);
-    expect(res.session?.refreshToken, refreshToken);
-    expect(res.session?.tokenType, tokenType);
-    expect(res.session?.providerToken, providerToken);
+    expect(res.session.accessToken, accessToken);
+    expect(res.session.expiresIn, expiresIn);
+    expect(res.session.refreshToken, refreshToken);
+    expect(res.session.tokenType, tokenType);
+    expect(res.session.providerToken, providerToken);
   });
 
   test('parse provider callback url with fragment and query', () async {
@@ -73,11 +73,11 @@ void main() {
     final url =
         'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.session?.accessToken, accessToken);
-    expect(res.session?.expiresIn, expiresIn);
-    expect(res.session?.refreshToken, refreshToken);
-    expect(res.session?.tokenType, tokenType);
-    expect(res.session?.providerToken, providerToken);
+    expect(res.session.accessToken, accessToken);
+    expect(res.session.expiresIn, expiresIn);
+    expect(res.session.refreshToken, refreshToken);
+    expect(res.session.tokenType, tokenType);
+    expect(res.session.providerToken, providerToken);
   });
 
   test('parse provider callback url with missing param error', () async {

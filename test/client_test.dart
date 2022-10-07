@@ -244,7 +244,7 @@ void main() {
       );
 
       expect(
-        client._api.headers['X-Client-Info']!.split('/').first,
+        client._api._headers['X-Client-Info']!.split('/').first,
         'gotrue-dart',
       );
     });
@@ -259,7 +259,7 @@ void main() {
         },
       );
 
-      expect(client._api.headers['X-Client-Info'], 'supabase-dart/0.0.0');
+      expect(client._api._headers['X-Client-Info'], 'supabase-dart/0.0.0');
     });
   });
 
