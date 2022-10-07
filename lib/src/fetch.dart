@@ -89,10 +89,13 @@ class GotrueFetch {
         );
         break;
     }
+
     if (isSuccessStatusCode(response.statusCode)) {
       if (options?.noResolveJson == true) {
         return response.body;
-      } else {}
+      } else {
+        return json.decode(utf8.decode(response.bodyBytes));
+      }
     } else {
       throw _handleError(response);
     }

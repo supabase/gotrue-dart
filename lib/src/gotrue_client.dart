@@ -108,11 +108,8 @@ class GoTrueClient {
           },
           query: urlParams,
         ),
-      ) as Map<String, dynamic>;
+      );
     } else if (phone != null) {
-      // response = await admin.signUpWithPhone(phone, password,
-      //     options: options, userMetadata: userMetadata);
-
       final body = {
         'phone': phone,
         'password': password,
