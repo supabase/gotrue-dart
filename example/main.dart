@@ -12,7 +12,7 @@ Future<bool> main(List<String> arguments) async {
   );
 
   try {
-    final login = await client.signIn(
+    final login = await client.signInWithPassword(
       email: 'email',
       password: '12345',
     );
