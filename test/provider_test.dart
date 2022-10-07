@@ -28,7 +28,7 @@ void main() {
     final url = res.url;
     final provider = res.provider;
     expect(url, '$gotrueUrl/authorize?provider=google');
-    expect(provider, 'google');
+    expect(provider, Provider.google);
   });
 
   test('signIn() with Provider and options', () async {
@@ -45,7 +45,7 @@ void main() {
       url,
       '$gotrueUrl/authorize?provider=github&scopes=repo&redirect_to=redirectToURL',
     );
-    expect(provider, 'github');
+    expect(provider, Provider.github);
   });
 
   test('parse provider callback url with fragment', () async {
@@ -54,6 +54,7 @@ void main() {
     const refreshToken = 'my_refresh_token';
     const tokenType = 'my_token_type';
     const providerToken = 'my_provider_token_with_fragment';
+
     final url =
         'http://my-callback-url.com/welcome#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));

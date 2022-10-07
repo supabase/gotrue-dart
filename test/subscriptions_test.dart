@@ -1,7 +1,7 @@
 // import 'package:gotrue/gotrue.dart';
 // import 'package:test/test.dart';
 
-// void main() {
+void main() {
 //   const gotrueUrl = 'http://localhost:9998';
 //   const annonToken = '';
 
@@ -30,4 +30,4 @@
 //     subscription.unsubscribe();
 //     expect(client._stateChangeEmitters.keys.length, 0);
 //   });
-// }
+}

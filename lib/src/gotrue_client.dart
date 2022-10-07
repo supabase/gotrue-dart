@@ -383,11 +383,10 @@ class GoTrueClient {
       throw AuthException('No token_type detected.');
     }
 
-    // final response = await admin.getUser(accessToken);
     final headers = {..._headers};
     headers['Authorization'] = 'Bearer $accessToken';
     final options = GotrueRequestOptions(headers: headers);
-    final response = await _fetch.request('$url/user', RequestMethodType.get,
+    final response = await _fetch.request('$_url/user', RequestMethodType.get,
         options: options);
     final user = UserResponse.fromJson(response).user;
     if (user == null) {
