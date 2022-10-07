@@ -28,8 +28,7 @@ void main() {
     },
   ).sign(
     SecretKey(
-      env['GOTRUE_JWT_SECRET'] ?? '37c304f8-51aa-419a-a1af-06154e63707a',
-    ),
+        env['GOTRUE_JWT_SECRET'] ?? '37c304f8-51aa-419a-a1af-06154e63707a'),
   );
 
   group('Client with default http client', () {

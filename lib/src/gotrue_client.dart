@@ -326,7 +326,7 @@ class GoTrueClient {
     _currentSession = currentSession?.copyWith(user: userResponse.user);
     _notifyAllSubscribers(AuthChangeEvent.userUpdated);
 
-    return response;
+    return userResponse;
   }
 
   /// Sets the session data from refresh_token and returns the current session.
