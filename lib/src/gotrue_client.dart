@@ -28,8 +28,8 @@ class GoTrueClient {
   final Client? _httpClient;
   late final GotrueFetch _fetch = GotrueFetch(_httpClient);
 
-  late bool autoRefreshToken;
-  final Map<String, Subscription> _stateChangeEmitters = {};
+  late bool _autoRefreshToken;
+  final Map<String, AuthSubscription> _stateChangeEmitters = {};
 
   Timer? _refreshTokenTimer;
 
@@ -44,7 +44,7 @@ class GoTrueClient {
   })  : _url = url ?? Constants.defaultGotrueUrl,
         _headers = headers ?? {},
         _httpClient = httpClient {
-    this.autoRefreshToken = autoRefreshToken ?? true;
+    _autoRefreshToken = autoRefreshToken ?? true;
 
     final gotrueUrl = url ?? Constants.defaultGotrueUrl;
     final gotrueHeader = {
@@ -430,10 +430,10 @@ class GoTrueClient {
   }
 
   // Receive a notification every time an auth event happens.
-  AuthSubscription onAuthStateChange(Callback callback) {
+  AuthSubscriptionResponse onAuthStateChange(Callback callback) {
     final id = uuid.generateV4();
     final GoTrueClient self = this;
-    final subscription = Subscription(
+    final subscription = AuthSubscription(
       id: id,
       callback: callback,
       unsubscribe: () {
@@ -441,7 +441,7 @@ class GoTrueClient {
       },
     );
     _stateChangeEmitters[id] = subscription;
-    return AuthSubscription(data: subscription);
+    return AuthSubscriptionResponse(data: subscription);
   }
 
   /// Sends a reset request to an email address.
@@ -493,7 +493,7 @@ class GoTrueClient {
 
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     if (expiresAt < (timeNow - Constants.expiryMargin.inSeconds)) {
-      if (autoRefreshToken && session.refreshToken != null) {
+      if (_autoRefreshToken && session.refreshToken != null) {
         final response = await _callRefreshToken(
           refreshCompleter,
           refreshToken: session.refreshToken,
@@ -535,7 +535,7 @@ class GoTrueClient {
     _currentUser = session.user;
     final expiresAt = session.expiresAt;
 
-    if (autoRefreshToken && expiresAt != null) {
+    if (_autoRefreshToken && expiresAt != null) {
       _refreshTokenTimer?.cancel();
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();

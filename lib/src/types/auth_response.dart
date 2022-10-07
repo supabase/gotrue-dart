@@ -1,7 +1,4 @@
-import 'package:gotrue/src/types/provider.dart';
-import 'package:gotrue/src/types/session.dart';
-import 'package:gotrue/src/types/subscription.dart';
-import 'package:gotrue/src/types/user.dart';
+import 'package:gotrue/gotrue.dart';
 
 /// Response which might or might not contain session and/or user
 class AuthResponse {
@@ -38,10 +35,10 @@ class UserResponse {
   UserResponse.fromJson(Map<String, dynamic> json) : user = User.fromJson(json);
 }
 
-class AuthSubscription {
-  final Subscription? data;
+class AuthSubscriptionResponse {
+  final AuthSubscription? data;
 
-  const AuthSubscription({this.data}) : super();
+  const AuthSubscriptionResponse({this.data}) : super();
 }
 
 class AuthSessionUrlResponse {

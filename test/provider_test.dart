@@ -24,22 +24,22 @@ void main() {
   });
 
   test('signIn() with Provider', () async {
-    final res = await client.signIn(provider: Provider.google);
-    final url = res._url;
+    final res = await client.signInWithOAuth(provider: Provider.google);
+    final url = res.url;
     final provider = res.provider;
     expect(url, '$gotrueUrl/authorize?provider=google');
     expect(provider, 'google');
   });
 
   test('signIn() with Provider and options', () async {
-    final res = await client.signIn(
+    final res = await client.signInWithOAuth(
       provider: Provider.github,
       options: AuthOptions(
         redirectTo: 'redirectToURL',
         scopes: 'repo',
       ),
     );
-    final url = res._url;
+    final url = res.url;
     final provider = res.provider;
     expect(
       url,

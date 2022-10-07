@@ -10,6 +10,6 @@ export 'src/types/auth_response.dart';
 export 'src/types/open_id_connect_credentials.dart';
 export 'src/types/provider.dart';
 export 'src/types/session.dart';
-export 'src/types/subscription.dart' show Subscription;
+export 'src/types/subscription.dart' show AuthSubscription;
 export 'src/types/user.dart';
 export 'src/types/user_attributes.dart';
