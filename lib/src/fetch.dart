@@ -65,6 +65,7 @@ class GotrueFetch {
           uri,
           headers: headers,
         );
+
         break;
       case RequestMethodType.post:
         response = await (httpClient?.post ?? http.post)(
@@ -91,9 +92,7 @@ class GotrueFetch {
     if (isSuccessStatusCode(response.statusCode)) {
       if (options?.noResolveJson == true) {
         return response.body;
-      } else {
-        return json.decode(response.body);
-      }
+      } else {}
     } else {
       throw _handleError(response);
     }

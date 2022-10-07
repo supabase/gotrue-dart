@@ -1,3 +1,7 @@
+## [1.0.0-dev.4]
+
+- fix: encoding issue with some languages([#89](https://github.com/supabase-community/gotrue-dart/pull/89))
+
 ## [1.0.0-dev.3]
 
 - BREAKING: `data` property of `GotrueSessionResponse` is renamed to `session`([#87](https://github.com/supabase-community/gotrue-dart/pull/87))
