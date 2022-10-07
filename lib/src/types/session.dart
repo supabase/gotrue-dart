@@ -13,7 +13,7 @@ class Session {
 
   final String? refreshToken;
   final String tokenType;
-  final User? user;
+  final User user;
 
   const Session({
     required this.accessToken,
@@ -21,7 +21,7 @@ class Session {
     this.refreshToken,
     required this.tokenType,
     this.providerToken,
-    this.user,
+    required this.user,
   });
 
   /// Returns a `Session` object from a map of json
@@ -36,9 +36,7 @@ class Session {
       refreshToken: json['refresh_token'] as String?,
       tokenType: json['token_type'] as String,
       providerToken: json['provider_token'] as String?,
-      user: json['user'] != null
-          ? User.fromJson(json['user'] as Map<String, dynamic>)
-          : null,
+      user: User.fromJson(json['user'] as Map<String, dynamic>)!,
     );
   }
 
@@ -49,7 +47,7 @@ class Session {
       'refresh_token': refreshToken,
       'token_type': tokenType,
       'provider_token': providerToken,
-      'user': user?.toJson(),
+      'user': user.toJson(),
     };
   }
 

@@ -75,8 +75,8 @@ void main() {
       final data = response.session;
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
-      expect(data?.user?.id, isA<String>());
-      expect(data?.user?.userMetadata, {"Hello": "World"});
+      expect(data?.user.id, isA<String>());
+      expect(data?.user.userMetadata, {"Hello": "World"});
     });
 
     test('signUp() with autoConfirm off', () async {
@@ -116,7 +116,7 @@ void main() {
 
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
-      expect(data?.user?.id, isA<String>());
+      expect(data?.user.id, isA<String>());
 
       final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
@@ -129,17 +129,6 @@ void main() {
       expect(user, isNotNull);
       expect(user!.id, isA<String>());
       expect(user.appMetadata['provider'], 'email');
-    });
-
-    test('Set auth', () async {
-      final jwt = client.currentSession?.accessToken ?? '';
-      expect(jwt, isNotEmpty);
-
-      final newClient = GoTrueClient(url: gotrueUrl, autoRefreshToken: false);
-
-      expect(newClient.currentSession?.accessToken, isNot(equals(jwt)));
-      newClient.setAuth(jwt);
-      expect(newClient.currentSession?.accessToken, equals(jwt));
     });
 
     test('Set session', () async {
@@ -171,7 +160,7 @@ void main() {
       final user = response.user;
       expect(user?.id, isA<String>());
       expect(user?.userMetadata?['hello'], 'world');
-      expect(client.currentSession?.user?.userMetadata?['hello'], 'world');
+      expect(client.currentSession?.user.userMetadata?['hello'], 'world');
     });
 
     test('Get user after updating', () async {

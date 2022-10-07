@@ -338,13 +338,6 @@ class GoTrueClient {
     return _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
   }
 
-  /// Overrides the JWT on the current client. The JWT will then be sent in all subsequent network requests.
-  Session setAuth(String accessToken) {
-    return _currentSession =
-        _currentSession?.copyWith(accessToken: accessToken) ??
-            Session(accessToken: accessToken, tokenType: 'bearer');
-  }
-
   /// Gets the session data from a oauth2 callback URL
   Future<AuthSessionUrlResponse> getSessionFromUrl(
     Uri originUrl, {
@@ -483,7 +476,7 @@ class GoTrueClient {
     }
 
     final session = Session.fromJson(currentSession);
-    if (session == null || session.user == null) {
+    if (session == null) {
       throw AuthException('Current session is missing data.');
     }
 

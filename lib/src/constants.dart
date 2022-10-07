@@ -38,9 +38,3 @@ enum OtpType {
   recovery,
   emailChange
 }
-
-extension AuthChangeEventName on AuthChangeEvent {
-  String name() {
-    return toString().split('.').last;
-  }
-}
