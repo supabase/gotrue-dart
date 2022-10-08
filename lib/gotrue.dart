@@ -2,7 +2,6 @@ library gotrue;
 
 export 'src/types/auth_options.dart';
 export 'src/constants.dart' show AuthChangeEvent, InviteType, OtpType;
-export 'src/types/cookie_options.dart';
 export 'src/types/auth_exception.dart';
 export 'src/gotrue_admin_api.dart';
 export 'src/gotrue_client.dart';
