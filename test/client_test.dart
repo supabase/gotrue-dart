@@ -89,7 +89,7 @@ void main() {
       /// auth subsctiption callback has been called once with the signup above
       expect(subscriptionCallbackCalledCount, 1);
 
-      /// unsubscribe to prevent further callback
+      /// unsubscribe to prevent further calling the callback
       res.data!.unsubscribe();
     });
 
@@ -149,6 +149,18 @@ void main() {
       final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
       expect(payload['exp'], persistSession['expiresAt']);
+    });
+
+    test('signInWithOtp with email', () async {
+      final response = await client.signInWithOtp(email: email);
+      expect(response.session, isNull);
+      expect(response.user, isNull);
+    });
+
+    test('signInWithOtp with phone', () async {
+      final response = await client.signInWithOtp(phone: phone);
+      expect(response.session, isNull);
+      expect(response.user, isNull);
     });
 
     test('Get user', () async {
