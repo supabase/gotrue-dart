@@ -34,6 +34,9 @@ void main() {
   group('Client with default http client', () {
     late GoTrueClient client;
     late GoTrueClient clientWithAuthConfirmOff;
+    late AuthSubscriptionResponse res;
+    late AuthSubscription subscription;
+    int subscriptionCallbackCalledCount = 0;
 
     setUpAll(() {
       client = GoTrueClient(
@@ -50,6 +53,10 @@ void main() {
           'apikey': anonToken,
         },
       );
+      res = client.onAuthStateChange((event, session) {
+        subscriptionCallbackCalledCount++;
+      });
+      subscription = res.data!;
     });
 
     test('basic json parsing', () async {
@@ -65,7 +72,7 @@ void main() {
       );
     });
 
-    test('signUp()', () async {
+    test('signUp() with email', () async {
       final response = await client.signUp(
         email: email,
         password: password,
@@ -77,6 +84,14 @@ void main() {
       expect(data?.refreshToken, isA<String>());
       expect(data?.user.id, isA<String>());
       expect(data?.user.userMetadata, {"Hello": "World"});
+    });
+
+    test('Subscribe a listener', () async {
+      /// auth subsctiption callback has been called once with the signup above
+      expect(subscriptionCallbackCalledCount, 1);
+
+      /// unsubscribe to prevent further callback
+      res.data!.unsubscribe();
     });
 
     test('signUp() with autoConfirm off', () async {
@@ -109,7 +124,7 @@ void main() {
       }
     });
 
-    test('signIn()', () async {
+    test('signInWithPassword() with email', () async {
       final response =
           await client.signInWithPassword(email: email, password: password);
       final data = response.session;
@@ -120,7 +135,20 @@ void main() {
 
       final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
-      // ignore: avoid_dynamic_calls
+      expect(payload['exp'], persistSession['expiresAt']);
+    });
+
+    test('signInWithPassword() with phone', () async {
+      final response =
+          await client.signInWithPassword(phone: phone, password: password);
+      final data = response.session;
+
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user.id, isA<String>());
+
+      final payload = Jwt.parseJwt(data!.accessToken);
+      final persistSession = json.decode(data.persistSessionString);
       expect(payload['exp'], persistSession['expiresAt']);
     });
 
@@ -184,15 +212,19 @@ void main() {
 
     test('signIn() with the wrong password', () async {
       try {
-        final res = await client.signInWithPassword(
+        await client.signInWithPassword(
           email: email,
           password: 'wrong_$password',
         );
-        final data = res.session;
-        expect(data, isNull);
+        fail('signInWithPassword did not throw');
       } on AuthException catch (error) {
         expect(error.message, isNotNull);
       }
+    });
+
+    test('Unsubscribe a listener works', () {
+      /// Because we unsubscribed on subscription test, the callback should not longer be called.
+      expect(subscriptionCallbackCalledCount, 1);
     });
   });
 
@@ -214,36 +246,6 @@ void main() {
         expect((error as AuthException).statusCode, '420');
       }
     });
-  });
-
-  group('header', () {
-    // test('X-Client-Info is set', () {
-    //   final client = GoTrueClient(
-    //     url: gotrueUrl,
-    //     headers: {
-    //       'Authorization': 'Bearer $anonToken',
-    //       'apikey': anonToken,
-    //     },
-    //   );
-
-    //   expect(
-    //     client._headers['X-Client-Info']!.split('/').first,
-    //     'gotrue-dart',
-    //   );
-    // });
-
-    // test('X-Client-Info can be overridden', () {
-    //   final client = GoTrueClient(
-    //     url: gotrueUrl,
-    //     headers: {
-    //       'Authorization': 'Bearer $anonToken',
-    //       'apikey': anonToken,
-    //       'X-Client-Info': 'supabase-dart/0.0.0'
-    //     },
-    //   );
-
-    //   expect(client._headers['X-Client-Info'], 'supabase-dart/0.0.0');
-    // });
   });
 
   group('server api tests', () {
@@ -287,7 +289,6 @@ void main() {
       expect(actionUri!.queryParameters['token'], isNotEmpty);
       expect(actionUri.queryParameters['type'], isNotEmpty);
       expect(actionUri.queryParameters['redirect_to'], authOptions.redirectTo);
-      // expect(response.data!['user_metadata'], userMetadata);
     });
   });
 }

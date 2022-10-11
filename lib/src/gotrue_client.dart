@@ -39,7 +39,6 @@ class GoTrueClient {
     String? url,
     Map<String, String>? headers,
     bool? autoRefreshToken,
-    CookieOptions? cookieOptions,
     Client? httpClient,
   })  : _url = url ?? Constants.defaultGotrueUrl,
         _headers = headers ?? {},
