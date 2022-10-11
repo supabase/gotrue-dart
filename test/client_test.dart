@@ -35,7 +35,7 @@ void main() {
     late GoTrueClient client;
     late GoTrueClient clientWithAuthConfirmOff;
     late AuthSubscriptionResponse res;
-    late AuthSubscription subscription;
+
     int subscriptionCallbackCalledCount = 0;
 
     setUpAll(() {
@@ -56,7 +56,6 @@ void main() {
       res = client.onAuthStateChange((event, session) {
         subscriptionCallbackCalledCount++;
       });
-      subscription = res.data!;
     });
 
     test('basic json parsing', () async {
