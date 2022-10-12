@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:math';
 
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
 import 'package:jwt_decode/jwt_decode.dart';
@@ -21,15 +19,6 @@ void main() {
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
   final phone = env['GOTRUE_USER_PHONE'] ?? '+1 666-0000-0000';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
-
-  final serviceRoleToken = JWT(
-    {
-      'role': 'service_role',
-    },
-  ).sign(
-    SecretKey(
-        env['GOTRUE_JWT_SECRET'] ?? '37c304f8-51aa-419a-a1af-06154e63707a'),
-  );
 
   group('Client with default http client', () {
     late GoTrueClient client;
@@ -273,48 +262,6 @@ void main() {
         expect(error, isA<AuthException>());
         expect((error as AuthException).statusCode, '420');
       }
-    });
-  });
-
-  group('server api tests', () {
-    late final GoTrueClient serviceRoleApiClient;
-
-    final unregistredUserEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
-
-    setUpAll(() {
-      serviceRoleApiClient = GoTrueClient(
-        url: gotrueUrl,
-        headers: {
-          'Authorization': 'Bearer $serviceRoleToken',
-          'apikey': serviceRoleToken,
-        },
-      );
-    });
-
-    test(
-        'generateLink() supports signUp with generate confirmation signup link ',
-        () async {
-      const userMetadata = {'status': 'alpha'};
-
-      final response = await serviceRoleApiClient.admin.generateLink(
-        type: InviteType.signup,
-        email: unregistredUserEmail,
-        password: password,
-        data: userMetadata,
-        redirectTo: 'http://localhost:9999/welcome',
-      );
-
-      expect(response.user, isNotNull);
-
-      final actionLink = response.properties.actionLink;
-
-      final actionUri = Uri.tryParse(actionLink);
-      expect(actionUri, isNotNull);
-
-      expect(actionUri!.queryParameters['token'], isNotEmpty);
-      expect(actionUri.queryParameters['type'], isNotEmpty);
-      expect(actionUri.queryParameters['redirect_to'],
-          'http://localhost:9999/welcome');
     });
   });
 }
