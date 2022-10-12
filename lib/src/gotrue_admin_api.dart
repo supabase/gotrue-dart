@@ -32,12 +32,13 @@ class GoTrueAdminApi {
   /// Sends an invite link to an email address.
   Future<UserResponse> inviteUserByEmail(
     String email, {
-    AuthOptions? options,
+    String? redirectTo,
+    Map<String, dynamic>? data,
   }) async {
     final body = {'email': email};
     final urlParams = <String, String>{};
-    if (options?.redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+    if (redirectTo != null) {
+      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
       urlParams['redirect_to'] = encodedRedirectTo;
     }
     final fetchOptions = GotrueRequestOptions(
@@ -55,19 +56,19 @@ class GoTrueAdminApi {
   }
 
   /// Generates links to be sent via email or other.
-  Future<GenerateLinkResponse> generateLink(
-    String email,
-    InviteType type, {
-    AuthOptions? options,
+  Future<GenerateLinkResponse> generateLink({
+    required GenerateLinkType type,
+    required String email,
     String? password,
-    Map<String, dynamic>? userMetadata,
+    Map<String, dynamic>? data,
+    String? redirectTo,
   }) async {
     final body = {
       'email': email,
-      'type': type.name,
-      'data': userMetadata,
-      'redirect_to': options?.redirectTo,
-      'password': password,
+      'type': type.snakeCase,
+      if (data != null) 'data': data,
+      if (redirectTo != null) 'redirect_to': redirectTo,
+      if (password != null) 'password': password,
     };
 
     final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
@@ -92,9 +93,9 @@ class GoTrueAdminApi {
   }
 
   /// Updates the user data.
-  Future<UserResponse> updateUserById({
-    required String uid,
-    required UserAttributes attributes,
+  Future<UserResponse> updateUserById(
+    String uid, {
+    required AdminUserAttributes attributes,
   }) async {
     final body = attributes.toJson();
     final options = GotrueRequestOptions(headers: _headers, body: body);

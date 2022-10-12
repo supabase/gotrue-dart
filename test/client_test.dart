@@ -75,8 +75,8 @@ void main() {
       final response = await client.signUp(
         email: email,
         password: password,
-        options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
-        userMetadata: {"Hello": "World"},
+        emailRedirectTo: 'https://localhost:9998/welcome',
+        data: {"Hello": "World"},
       );
       final data = response.session;
       expect(data?.accessToken, isA<String>());
@@ -97,7 +97,7 @@ void main() {
       final response = await clientWithAuthConfirmOff.signUp(
         email: email,
         password: password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        emailRedirectTo: 'https://localhost:9999/welcome',
       );
       expect(response.user, isA<User>());
       expect(response.session, isNull);
@@ -107,7 +107,6 @@ void main() {
       final response = await clientWithAuthConfirmOff.signUp(
         phone: phone,
         password: password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
       );
       expect(response.user, isA<User>());
       expect(response.session, isNull);
@@ -117,7 +116,6 @@ void main() {
       final response = await clientWithAuthConfirmOff.signUp(
         phone: phone,
         password: password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
       );
       expect(response.user, isA<User>());
       expect(response.session, isNull);
@@ -135,7 +133,6 @@ void main() {
 
     test('signUp with phone', () async {
       try {
-        print(phone);
         await client.signUp(phone: phone, password: password);
         fail('signIn with phone did not throw');
       } catch (error) {
@@ -297,17 +294,14 @@ void main() {
     test(
         'generateLink() supports signUp with generate confirmation signup link ',
         () async {
-      final authOptions =
-          AuthOptions(redirectTo: 'http://localhost:9999/welcome');
-
       const userMetadata = {'status': 'alpha'};
 
       final response = await serviceRoleApiClient.admin.generateLink(
-        unregistredUserEmail,
-        InviteType.signup,
+        type: InviteType.signup,
+        email: unregistredUserEmail,
         password: password,
-        userMetadata: userMetadata,
-        options: authOptions,
+        data: userMetadata,
+        redirectTo: 'http://localhost:9999/welcome',
       );
 
       expect(response.user, isNotNull);
@@ -319,7 +313,8 @@ void main() {
 
       expect(actionUri!.queryParameters['token'], isNotEmpty);
       expect(actionUri.queryParameters['type'], isNotEmpty);
-      expect(actionUri.queryParameters['redirect_to'], authOptions.redirectTo);
+      expect(actionUri.queryParameters['redirect_to'],
+          'http://localhost:9999/welcome');
     });
   });
 }

@@ -34,10 +34,8 @@ void main() {
   test('signIn() with Provider and options', () async {
     final res = await client.signInWithOAuth(
       provider: Provider.github,
-      options: AuthOptions(
-        redirectTo: 'redirectToURL',
-        scopes: 'repo',
-      ),
+      redirectTo: 'redirectToURL',
+      scopes: 'repo',
     );
     final url = res.url;
     final provider = res.provider;

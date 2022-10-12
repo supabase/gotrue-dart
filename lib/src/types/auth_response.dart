@@ -87,24 +87,6 @@ class GenerateLinkProperties {
             GenerateLinkType.fromString(json['verification_type']);
 }
 
-enum GenerateLinkType {
-  signup,
-  invite,
-  magiclink,
-  recovery,
-  emailChangeCurrent,
-  emailChangeNew;
-
-  static GenerateLinkType fromString(String val) {
-    for (final type in GenerateLinkType.values) {
-      if (type.snakeCase == val) {
-        return type;
-      }
-    }
-    throw Exception('GenerateLinkType of $val was not found');
-  }
-}
-
 extension ToSnakeCase on Enum {
   String get snakeCase {
     RegExp exp = RegExp(r'(?<=[a-z])[A-Z]');

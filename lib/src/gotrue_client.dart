@@ -71,13 +71,14 @@ class GoTrueClient {
   ///
   /// [password] is the password of the user
   ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [updateUser]
+  /// [data] sets [User.userMetadata] without an extra call to [updateUser]
   Future<AuthResponse> signUp({
     String? email,
     String? phone,
     required String password,
-    AuthOptions? options,
-    Map<String, dynamic>? userMetadata,
+    String? emailRedirectTo,
+    Map<String, dynamic>? data,
+    String? captchaToken,
   }) async {
     assert((email != null && phone == null) || (email == null && phone != null),
         'You must provide either an email or phone number');
@@ -89,8 +90,8 @@ class GoTrueClient {
     if (email != null) {
       final urlParams = <String, String>{};
 
-      if (options?.redirectTo != null) {
-        final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+      if (emailRedirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(emailRedirectTo);
         urlParams['redirect_to'] = encodedRedirectTo;
       }
 
@@ -102,8 +103,8 @@ class GoTrueClient {
           body: {
             'email': email,
             'password': password,
-            'data': userMetadata,
-            'gotrue_meta_security': {'captcha_token': options?.captchaToken},
+            'data': data,
+            'gotrue_meta_security': {'captcha_token': captchaToken},
           },
           query: urlParams,
         ),
@@ -112,8 +113,8 @@ class GoTrueClient {
       final body = {
         'phone': phone,
         'password': password,
-        'data': userMetadata,
-        'gotrue_meta_security': {'captcha_token': options?.captchaToken},
+        'data': data,
+        'gotrue_meta_security': {'captcha_token': captchaToken},
       };
       final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
       response = await _fetch.request('$_url/signup', RequestMethodType.post,
@@ -123,15 +124,15 @@ class GoTrueClient {
           'You must provide either an email or phone number and a password');
     }
 
-    final data = AuthResponse.fromJson(response);
+    final authResponse = AuthResponse.fromJson(response);
 
-    final session = data.session;
+    final session = authResponse.session;
     if (session != null) {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
 
-    return data;
+    return authResponse;
   }
 
   /// Log in an existing user with an email and password or phone and password.
@@ -183,10 +184,13 @@ class GoTrueClient {
   /// Log in an existing user via a third-party provider.
   Future<OAuthResponse> signInWithOAuth({
     required Provider provider,
-    AuthOptions? options,
+    String? redirectTo,
+    String? scopes,
+    Map<String, String>? queryParams,
   }) async {
     _removeSession();
-    return _handleProviderSignIn(provider, options);
+    return _handleProviderSignIn(provider,
+        redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
   }
 
   /// Log in a user using magiclink or a one-time password (OTP).
@@ -500,17 +504,22 @@ class GoTrueClient {
 
   /// return provider url only
   OAuthResponse _handleProviderSignIn(
-    Provider provider,
-    AuthOptions? options,
-  ) {
+    Provider provider, {
+    required String? scopes,
+    required String? redirectTo,
+    required Map<String, String>? queryParams,
+  }) {
     // final url = admin.getUrlForProvider(provider, options);
     final urlParams = {'provider': provider.name};
-    if (options?.scopes != null) {
-      urlParams['scopes'] = options!.scopes!;
+    if (scopes != null) {
+      urlParams['scopes'] = scopes;
     }
-    if (options?.redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(options!.redirectTo!);
+    if (redirectTo != null) {
+      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
       urlParams['redirect_to'] = encodedRedirectTo;
+    }
+    if (queryParams != null) {
+      urlParams.addAll(queryParams);
     }
     final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
 
