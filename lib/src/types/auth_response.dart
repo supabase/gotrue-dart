@@ -45,7 +45,7 @@ class AuthSessionUrlResponse {
   final Session session;
   final String? redirectType;
 
-  AuthSessionUrlResponse({
+  const AuthSessionUrlResponse({
     required this.session,
     required this.redirectType,
   });
