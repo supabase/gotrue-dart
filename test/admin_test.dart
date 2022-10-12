@@ -6,14 +6,10 @@ import 'package:gotrue/gotrue.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-
   load(); // Load env variables from .env file
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
-  final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
   final unregistredUserEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
-  final phone = env['GOTRUE_USER_PHONE'] ?? '+1 666-0000-0000';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   final serviceRoleToken = JWT(
