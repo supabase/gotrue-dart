@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:html';
 
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
@@ -92,22 +93,17 @@ void main() {
       expect(response.session, isNull);
     });
 
-    test('signUp() with autoConfirm off with phone', () async {
-      final response = await clientWithAuthConfirmOff.signUp(
-        phone: phone,
-        password: password,
-      );
-      expect(response.user, isA<User>());
-      expect(response.session, isNull);
-    });
-
-    test('signUp() with autoConfirm off with phone', () async {
-      final response = await clientWithAuthConfirmOff.signUp(
-        phone: phone,
-        password: password,
-      );
-      expect(response.user, isA<User>());
-      expect(response.session, isNull);
+    test(
+        'signUp() with autoConfirm off with phone should fail because Twilio is not setup',
+        () async {
+      try {
+        await clientWithAuthConfirmOff.signUp(
+          phone: phone,
+          password: password,
+        );
+      } catch (error) {
+        expect(error, isA<AuthException>());
+      }
     });
 
     test('signUp() with email should throw error if used twice', () async {
@@ -120,15 +116,6 @@ void main() {
       }
     });
 
-    test('signUp with phone', () async {
-      try {
-        await client.signUp(phone: phone, password: password);
-        fail('signIn with phone did not throw');
-      } catch (error) {
-        expect(error, isA<AuthException>());
-      }
-    });
-
     test('signInWithOtp with email', () async {
       final response = await client.signInWithOtp(email: email);
       expect(response.session, isNull);
@@ -136,9 +123,11 @@ void main() {
     });
 
     test('signInWithOtp with phone', () async {
-      final response = await client.signInWithOtp(phone: phone);
-      expect(response.session, isNull);
-      expect(response.user, isNull);
+      try {
+        await client.signInWithOtp(phone: phone);
+      } catch (error) {
+        expect(error, isA<AuthenticatorAssertionResponse>());
+      }
     });
 
     test('signInWithPassword() with email', () async {
@@ -155,6 +144,13 @@ void main() {
       expect(payload['exp'], persistSession['expiresAt']);
     });
 
+    test('Get user', () async {
+      final user = client.currentUser;
+      expect(user, isNotNull);
+      expect(user!.id, isA<String>());
+      expect(user.appMetadata['provider'], 'email');
+    });
+
     test('signInWithPassword() with phone', () async {
       final response =
           await client.signInWithPassword(phone: phone, password: password);
@@ -167,13 +163,6 @@ void main() {
       final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
       expect(payload['exp'], persistSession['expiresAt']);
-    });
-
-    test('Get user', () async {
-      final user = client.currentUser;
-      expect(user, isNotNull);
-      expect(user!.id, isA<String>());
-      expect(user.appMetadata['provider'], 'email');
     });
 
     test('Set session', () async {
