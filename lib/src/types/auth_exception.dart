@@ -6,7 +6,7 @@ class AuthException implements Exception {
 
   @override
   String toString() =>
-      'GoTrueException(message: $message, statusCode: $statusCode)';
+      'AuthException(message: $message, statusCode: $statusCode)';
 
   @override
   bool operator ==(Object other) {
