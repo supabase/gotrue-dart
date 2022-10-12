@@ -1,4 +1,5 @@
 import 'package:gotrue/gotrue.dart';
+import 'package:gotrue/src/constants.dart';
 
 /// Response which might or might not contain session and/or user
 class AuthResponse {
@@ -84,7 +85,7 @@ class GenerateLinkProperties {
         hashedToken = json['hashed_token'],
         redirectTo = json['redirect_to'],
         verificationType =
-            GenerateLinkType.fromString(json['verification_type']);
+            GenerateLinkTypeExtended.fromString(json['verification_type']);
 }
 
 extension ToSnakeCase on Enum {

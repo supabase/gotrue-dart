@@ -70,10 +70,10 @@ class AdminUserAttributes extends UserAttributes {
   final String? banDuration;
 
   AdminUserAttributes({
-    super.email,
-    super.phone,
-    super.password,
-    super.data,
+    String? email,
+    String? phone,
+    String? password,
+    Object? data,
     this.userMetadata,
     this.appMetadata,
     this.emailConfirm,
@@ -83,7 +83,8 @@ class AdminUserAttributes extends UserAttributes {
             userMetadata is List ||
             userMetadata is Map),
         assert(
-            appMetadata == null || appMetadata is List || appMetadata is Map);
+            appMetadata == null || appMetadata is List || appMetadata is Map),
+        super(email: email, phone: phone, password: password, data: data);
 
   @override
   Map<String, dynamic> toJson() {

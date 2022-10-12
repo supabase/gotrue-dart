@@ -29,8 +29,10 @@ enum GenerateLinkType {
   magiclink,
   recovery,
   emailChangeCurrent,
-  emailChangeNew;
+  emailChangeNew,
+}
 
+extension GenerateLinkTypeExtended on GenerateLinkType {
   static GenerateLinkType fromString(String val) {
     for (final type in GenerateLinkType.values) {
       if (type.snakeCase == val) {
