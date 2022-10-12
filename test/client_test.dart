@@ -82,6 +82,20 @@ void main() {
       res.data!.unsubscribe();
     });
 
+    test('signUp() with phone', () async {
+      final response = await client.signUp(
+        phone: phone,
+        password: password,
+        emailRedirectTo: 'https://localhost:9998/welcome',
+        data: {"Hello": "World"},
+      );
+      final data = response.session;
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user.id, isA<String>());
+      expect(data?.user.userMetadata, {"Hello": "World"});
+    });
+
     test('signUp() with autoConfirm off with email', () async {
       final response = await clientWithAuthConfirmOff.signUp(
         email: email,
