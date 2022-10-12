@@ -22,7 +22,7 @@ class OAuthResponse {
   final String? url;
 
   /// Instanciates an `OAuthResponse` object from json response.
-  OAuthResponse({
+  const OAuthResponse({
     required this.provider,
     this.url,
   });
