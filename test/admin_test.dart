@@ -35,10 +35,11 @@ void main() {
   });
 
   group('User fetch', () {
-    test('getUserById() should a registered user given its user identifier',
+    test(
+        'getUserById() should return a registered user given its user identifier',
         () async {
-      final sessionResponse = await client.signInWithPassword(
-          email: unregistredUserEmail, password: password);
+      final sessionResponse =
+          await client.signUp(email: unregistredUserEmail, password: password);
       final createdUser = sessionResponse.user;
       expect(createdUser, isNotNull);
       targetUserId = createdUser!.id;

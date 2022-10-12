@@ -17,7 +17,7 @@ void main() {
       env['GOTRUE_URL'] ?? 'http://localhost:9999';
   final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
-  final phone = env['GOTRUE_USER_PHONE'] ?? '+1 666-0000-0000';
+  final phone = env['GOTRUE_USER_PHONE'] ?? '166600000000';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   group('Client with default http client', () {
