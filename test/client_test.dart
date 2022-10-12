@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:html';
 
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
@@ -126,7 +125,7 @@ void main() {
       try {
         await client.signInWithOtp(phone: phone);
       } catch (error) {
-        expect(error, isA<AuthenticatorAssertionResponse>());
+        expect(error, isA<AuthException>());
       }
     });
 
