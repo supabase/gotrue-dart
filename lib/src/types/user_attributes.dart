@@ -18,7 +18,7 @@ class UserAttributes {
     this.phone,
     this.password,
     this.data,
-  }) : assert(data is List || data is Map);
+  }) : assert(data == null || data is List || data is Map);
 
   Map<String, dynamic> toJson() {
     return {
@@ -79,8 +79,11 @@ class AdminUserAttributes extends UserAttributes {
     this.emailConfirm,
     this.phoneConfirm,
     this.banDuration,
-  })  : assert(userMetadata is List || userMetadata is Map),
-        assert(appMetadata is List || appMetadata is Map);
+  })  : assert(userMetadata == null ||
+            userMetadata is List ||
+            userMetadata is Map),
+        assert(
+            appMetadata == null || appMetadata is List || appMetadata is Map);
 
   @override
   Map<String, dynamic> toJson() {
