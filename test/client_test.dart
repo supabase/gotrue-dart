@@ -93,9 +93,29 @@ void main() {
       res.data!.unsubscribe();
     });
 
-    test('signUp() with autoConfirm off', () async {
+    test('signUp() with autoConfirm off with email', () async {
       final response = await clientWithAuthConfirmOff.signUp(
         email: email,
+        password: password,
+        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+      );
+      expect(response.user, isA<User>());
+      expect(response.session, isNull);
+    });
+
+    test('signUp() with autoConfirm off with phone', () async {
+      final response = await clientWithAuthConfirmOff.signUp(
+        phone: phone,
+        password: password,
+        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+      );
+      expect(response.user, isA<User>());
+      expect(response.session, isNull);
+    });
+
+    test('signUp() with autoConfirm off with phone', () async {
+      final response = await clientWithAuthConfirmOff.signUp(
+        phone: phone,
         password: password,
         options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
       );
@@ -121,6 +141,18 @@ void main() {
       } catch (error) {
         expect(error, isA<AuthException>());
       }
+    });
+
+    test('signInWithOtp with email', () async {
+      final response = await client.signInWithOtp(email: email);
+      expect(response.session, isNull);
+      expect(response.user, isNull);
+    });
+
+    test('signInWithOtp with phone', () async {
+      final response = await client.signInWithOtp(phone: phone);
+      expect(response.session, isNull);
+      expect(response.user, isNull);
     });
 
     test('signInWithPassword() with email', () async {
@@ -149,18 +181,6 @@ void main() {
       final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
       expect(payload['exp'], persistSession['expiresAt']);
-    });
-
-    test('signInWithOtp with email', () async {
-      final response = await client.signInWithOtp(email: email);
-      expect(response.session, isNull);
-      expect(response.user, isNull);
-    });
-
-    test('signInWithOtp with phone', () async {
-      final response = await client.signInWithOtp(phone: phone);
-      expect(response.session, isNull);
-      expect(response.user, isNull);
     });
 
     test('Get user', () async {
