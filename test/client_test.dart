@@ -248,13 +248,13 @@ void main() {
 
     group('The auth client can signin with third-party oAuth providers', () {
       test('signIn() with Provider', () async {
-        final res = await client.getOAuthSigninUrl(provider: Provider.google);
+        final res = await client.getOAuthSignInUrl(provider: Provider.google);
         expect(res.url, isA<String>());
         expect(res.provider, Provider.google);
       });
 
       test('signIn() with Provider can append a redirectUrl', () async {
-        final res = await client.getOAuthSigninUrl(
+        final res = await client.getOAuthSignInUrl(
             provider: Provider.google,
             redirectTo: 'https://localhost:9000/welcome');
         expect(res.url, isA<String>());
@@ -262,14 +262,14 @@ void main() {
       });
 
       test('signIn() with Provider can append scopes', () async {
-        final res = await client.getOAuthSigninUrl(
+        final res = await client.getOAuthSignInUrl(
             provider: Provider.google, scopes: 'repo');
         expect(res.url, isA<String>());
         expect(res.provider, Provider.google);
       });
 
       test('signIn() with Provider can append options', () async {
-        final res = await client.getOAuthSigninUrl(
+        final res = await client.getOAuthSignInUrl(
             provider: Provider.google,
             redirectTo: 'https://localhost:9000/welcome',
             scopes: 'repo');

@@ -24,7 +24,7 @@ void main() {
   });
 
   test('signIn() with Provider', () async {
-    final res = await client.getOAuthSigninUrl(provider: Provider.google);
+    final res = await client.getOAuthSignInUrl(provider: Provider.google);
     final url = res.url;
     final provider = res.provider;
     expect(url, '$gotrueUrl/authorize?provider=google');
@@ -32,7 +32,7 @@ void main() {
   });
 
   test('signIn() with Provider and options', () async {
-    final res = await client.getOAuthSigninUrl(
+    final res = await client.getOAuthSignInUrl(
       provider: Provider.github,
       redirectTo: 'redirectToURL',
       scopes: 'repo',
