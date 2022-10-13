@@ -20,9 +20,8 @@ class GoTrueAdminApi {
 
   /// Removes a logged-in session.
   Future<void> signOut(String jwt) async {
-    final headers = {..._headers};
-    headers['Authorization'] = 'Bearer $jwt';
-    final options = GotrueRequestOptions(headers: headers, noResolveJson: true);
+    final options =
+        GotrueRequestOptions(headers: _headers, noResolveJson: true, jwt: jwt);
     await _fetch.request(
       '$_url/logout',
       RequestMethodType.post,
