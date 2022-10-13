@@ -183,7 +183,7 @@ class GoTrueClient {
   }
 
   /// Log in an existing user via a third-party provider.
-  Future<OAuthResponse> signInWithOAuth({
+  Future<OAuthResponse> getOAuthSigninUrl({
     required Provider provider,
     String? redirectTo,
     String? scopes,
