@@ -16,3 +16,9 @@ enum Provider {
   twitter,
   workos,
 }
+
+extension ProviderName on Provider {
+  String get name {
+    return toString().split('.').last;
+  }
+}
