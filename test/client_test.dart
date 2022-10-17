@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:dotenv/dotenv.dart' show env, load;
@@ -26,6 +27,7 @@ void main() {
     late AuthSubscriptionResponse res;
 
     int subscriptionCallbackCalledCount = 0;
+    late StreamSubscription<AuthState> onAuthSubscription;
 
     setUpAll(() {
       client = GoTrueClient(
@@ -42,7 +44,7 @@ void main() {
           'apikey': anonToken,
         },
       );
-      res = client.onAuthStateChange((event, session) {
+      onAuthSubscription = client.onAuthStateChange.listen((_) {
         subscriptionCallbackCalledCount++;
       });
     });
@@ -79,7 +81,7 @@ void main() {
       expect(subscriptionCallbackCalledCount, 1);
 
       /// unsubscribe to prevent further calling the callback
-      res.data!.unsubscribe();
+      onAuthSubscription.cancel();
     });
 
     test('signUp() with phone', () async {

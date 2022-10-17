@@ -7,9 +7,7 @@ import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
-import 'package:gotrue/src/types/subscription.dart';
 
-import 'package:gotrue/src/uuid.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
 
@@ -30,11 +28,15 @@ class GoTrueClient {
   late final GotrueFetch _fetch = GotrueFetch(_httpClient);
 
   late bool _autoRefreshToken;
-  final Map<String, AuthSubscription> _stateChangeEmitters = {};
 
   Timer? _refreshTokenTimer;
 
   int _refreshTokenRetryCount = 0;
+
+  final _onAuthStateChangeController = StreamController<AuthState>.broadcast();
+  // Receive a notification every time an auth event happens.
+  Stream<AuthState> get onAuthStateChange =>
+      _onAuthStateChangeController.stream;
 
   GoTrueClient({
     String? url,
@@ -422,21 +424,6 @@ class GoTrueClient {
     }
   }
 
-  // Receive a notification every time an auth event happens.
-  AuthSubscriptionResponse onAuthStateChange(Callback callback) {
-    final id = uuid.generateV4();
-    final GoTrueClient self = this;
-    final subscription = AuthSubscription(
-      id: id,
-      callback: callback,
-      unsubscribe: () {
-        self._stateChangeEmitters.remove(id);
-      },
-    );
-    _stateChangeEmitters[id] = subscription;
-    return AuthSubscriptionResponse(data: subscription);
-  }
-
   /// Sends a reset request to an email address.
   Future<void> resetPasswordForEmail(
     String email, {
@@ -634,6 +621,6 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    _stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
+    _onAuthStateChangeController.add(AuthState(event, currentSession));
   }
 }
