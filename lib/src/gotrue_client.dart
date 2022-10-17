@@ -7,7 +7,6 @@ import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
-
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
 
@@ -208,7 +207,7 @@ class GoTrueClient {
   ///
   /// [emailRedirectTo] can be used to specify the redirect URL embedded in the email link
   ///
-  /// [data] can be userd to set the user's metadata, which maps to the `auth.users.user_metadata` column.
+  /// [data] can be user to set the user's metadata, which maps to the `auth.users.user_metadata` column.
   ///
   /// [captchaToken] Verification token received when the user completes the captcha on the site.
   Future<AuthResponse> signInWithOtp({
@@ -553,7 +552,7 @@ class GoTrueClient {
         );
       });
     } else {
-      final error = AuthException('Access token refresh retry limit exceded.');
+      final error = AuthException('Access token refresh retry limit exceeded.');
       completer.completeError(error, StackTrace.current);
     }
   }
