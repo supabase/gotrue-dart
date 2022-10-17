@@ -36,12 +36,6 @@ class UserResponse {
   UserResponse.fromJson(Map<String, dynamic> json) : user = User.fromJson(json);
 }
 
-class AuthSubscriptionResponse {
-  final AuthSubscription? data;
-
-  const AuthSubscriptionResponse({this.data}) : super();
-}
-
 class AuthSessionUrlResponse {
   final Session session;
   final String? redirectType;

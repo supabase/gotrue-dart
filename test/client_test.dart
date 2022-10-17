@@ -24,7 +24,6 @@ void main() {
   group('Client with default http client', () {
     late GoTrueClient client;
     late GoTrueClient clientWithAuthConfirmOff;
-    late AuthSubscriptionResponse res;
 
     int subscriptionCallbackCalledCount = 0;
     late StreamSubscription<AuthState> onAuthSubscription;

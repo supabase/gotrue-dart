@@ -7,7 +7,6 @@ export 'src/types/auth_exception.dart';
 export 'src/types/auth_response.dart' hide ToSnakeCase;
 export 'src/types/provider.dart';
 export 'src/types/session.dart';
-export 'src/types/subscription.dart' show AuthSubscription;
 export 'src/types/user.dart';
 export 'src/types/user_attributes.dart';
 export 'src/types/auth_state.dart';
