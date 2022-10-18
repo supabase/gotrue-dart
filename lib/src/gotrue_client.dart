@@ -211,7 +211,7 @@ class GoTrueClient {
   /// [data] can be userd to set the user's metadata, which maps to the `auth.users.user_metadata` column.
   ///
   /// [captchaToken] Verification token received when the user completes the captcha on the site.
-  Future<AuthResponse> signInWithOtp({
+  Future<void> signInWithOtp({
     String? email,
     String? phone,
     String? emailRedirectTo,
@@ -235,7 +235,7 @@ class GoTrueClient {
           },
         ),
       );
-      return AuthResponse();
+      return;
     }
     if (phone != null) {
       final body = {
@@ -251,7 +251,7 @@ class GoTrueClient {
         RequestMethodType.post,
         options: fetchOptions,
       );
-      return AuthResponse();
+      return;
     }
     throw AuthException(
       'You must provide either an email, phone number, a third-party provider or OpenID Connect.',

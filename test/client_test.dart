@@ -131,9 +131,7 @@ void main() {
     });
 
     test('signInWithOtp with email', () async {
-      final response = await client.signInWithOtp(email: email);
-      expect(response.session, isNull);
-      expect(response.user, isNull);
+      await client.signInWithOtp(email: email);
     });
 
     test('signInWithOtp with phone', () async {
