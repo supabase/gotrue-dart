@@ -196,12 +196,12 @@ void main() {
 
     test('Update user', () async {
       final response = await client.updateUser(
-        UserAttributes(
-          email: 'new@email.com',
-          data: {
-            'username': 'new_username',
-          },
-        ),
+        UserAttributes(data: {
+          'hello': 'world',
+          'japanese': '日本語',
+          'korean': '한국어',
+          'arabic': 'عربى',
+        }),
       );
       final user = response.user;
       expect(user?.id, isA<String>());
