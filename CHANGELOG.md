@@ -1,3 +1,63 @@
+## [1.0.0]
+
+- BREAKING: update the public API to match JS library ([#90](https://github.com/supabase-community/gotrue-dart/pull/90))
+  - `signUp()` now uses named parameters
+  ```dart
+    // Before
+    final res = await supabase.auth.signUp('example@email.com', 'password');
+    // After
+    final res = await supabase.auth.signUp(email: 'example@email.com', password: 'password');
+  ```
+  - `signIn()` is split into different methods
+  ```dart
+    // Magic link signin
+    // Before
+    final res = await supabase.auth.signIn(email: 'example@email.com');
+    // After
+    final res = await supabase.auth.signInWithOtp(email: 'example@email.com');
+
+    // Email and password signin
+    // Before
+    final res = await supabase.auth.signIn(email: 'example@email.com', password: 'password');
+    // After
+    final res = await supabase.auth.signInWithPassword(email: 'example@email.com', password: 'password');
+  ``` 
+  - `onAuthStateChange` is now a stream
+  ```dart
+    // Before
+    supabase.auth.onAuthStateChange((event, session) {
+      // ...
+    });
+    // After
+    final subscription = supabase.auth.onAuthStateChange().listen((data) {
+      final AuthChangeEvent event = data.event;
+      final Session? session = data.session;
+    });
+    // Don't forget to cancel the subscription when you're done
+    subscription.cancel();
+  ```
+  - `update()` is renamed to `updateUser()`
+  ```dart
+    // Before
+    final res = await supabase.auth.update(
+        UserAttributes(
+          email: 'new@email.com',
+          data: {
+            'username': 'new_username',
+          },
+        ),
+    );
+    // After
+    final res = await supabase.auth.updateUser(
+        UserAttributes(
+          email: 'new@email.com',
+          data: {
+            'username': 'new_username',
+          },
+        ),
+    );
+  ```
+
 ## [1.0.0-dev.4]
 
 - fix: encoding issue with some languages([#89](https://github.com/supabase-community/gotrue-dart/pull/89))
