@@ -19,25 +19,23 @@ void main() {
     final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     final email = 'fake2$timestamp@email.com';
     const password = 'secret';
-    final res = await client.signUp(email, password);
+    final res = await client.signUp(email: email, password: password);
     session = res.session!;
   });
 
   test('signIn() with Provider', () async {
-    final res = await client.signIn(provider: Provider.google);
+    final res = await client.getOAuthSignInUrl(provider: Provider.google);
     final url = res.url;
     final provider = res.provider;
     expect(url, '$gotrueUrl/authorize?provider=google');
-    expect(provider, 'google');
+    expect(provider, Provider.google);
   });
 
   test('signIn() with Provider and options', () async {
-    final res = await client.signIn(
+    final res = await client.getOAuthSignInUrl(
       provider: Provider.github,
-      options: AuthOptions(
-        redirectTo: 'redirectToURL',
-        scopes: 'repo',
-      ),
+      redirectTo: 'redirectToURL',
+      scopes: 'repo',
     );
     final url = res.url;
     final provider = res.provider;
@@ -45,7 +43,7 @@ void main() {
       url,
       '$gotrueUrl/authorize?provider=github&scopes=repo&redirect_to=redirectToURL',
     );
-    expect(provider, 'github');
+    expect(provider, Provider.github);
   });
 
   test('parse provider callback url with fragment', () async {
@@ -54,14 +52,15 @@ void main() {
     const refreshToken = 'my_refresh_token';
     const tokenType = 'my_token_type';
     const providerToken = 'my_provider_token_with_fragment';
+
     final url =
         'http://my-callback-url.com/welcome#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.session?.accessToken, accessToken);
-    expect(res.session?.expiresIn, expiresIn);
-    expect(res.session?.refreshToken, refreshToken);
-    expect(res.session?.tokenType, tokenType);
-    expect(res.session?.providerToken, providerToken);
+    expect(res.session.accessToken, accessToken);
+    expect(res.session.expiresIn, expiresIn);
+    expect(res.session.refreshToken, refreshToken);
+    expect(res.session.tokenType, tokenType);
+    expect(res.session.providerToken, providerToken);
   });
 
   test('parse provider callback url with fragment and query', () async {
@@ -73,11 +72,11 @@ void main() {
     final url =
         'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
     final res = await client.getSessionFromUrl(Uri.parse(url));
-    expect(res.session?.accessToken, accessToken);
-    expect(res.session?.expiresIn, expiresIn);
-    expect(res.session?.refreshToken, refreshToken);
-    expect(res.session?.tokenType, tokenType);
-    expect(res.session?.providerToken, providerToken);
+    expect(res.session.accessToken, accessToken);
+    expect(res.session.expiresIn, expiresIn);
+    expect(res.session.refreshToken, refreshToken);
+    expect(res.session.tokenType, tokenType);
+    expect(res.session.providerToken, providerToken);
   });
 
   test('parse provider callback url with missing param error', () async {
@@ -88,8 +87,8 @@ void main() {
       await client.getSessionFromUrl(Uri.parse(url));
       fail('Passed provider with missing param');
     } catch (error) {
-      expect(error, isA<GoTrueException>());
-      expect((error as GoTrueException).message, 'No expires_in detected.');
+      expect(error, isA<AuthException>());
+      expect((error as AuthException).message, 'No expires_in detected.');
     }
   });
 
@@ -100,7 +99,7 @@ void main() {
           'http://my-callback-url.com?page=welcome&foo=bar#error_description=$errorDesc';
       await client.getSessionFromUrl(Uri.parse(url));
       fail('Passed provider with error');
-    } on GoTrueException catch (error) {
+    } on AuthException catch (error) {
       expect(error.message, errorDesc);
     }
   });

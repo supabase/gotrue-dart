@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:gotrue/src/user.dart';
+import 'package:gotrue/src/types/user.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 
 class Session {
@@ -13,7 +13,7 @@ class Session {
 
   final String? refreshToken;
   final String tokenType;
-  final User? user;
+  final User user;
 
   const Session({
     required this.accessToken,
@@ -21,19 +21,24 @@ class Session {
     this.refreshToken,
     required this.tokenType,
     this.providerToken,
-    this.user,
+    required this.user,
   });
 
-  factory Session.fromJson(Map<String, dynamic> json) => Session(
-        accessToken: json['access_token'] as String,
-        expiresIn: json['expires_in'] as int?,
-        refreshToken: json['refresh_token'] as String?,
-        tokenType: json['token_type'] as String,
-        providerToken: json['provider_token'] as String?,
-        user: json['user'] != null
-            ? User.fromJson(json['user'] as Map<String, dynamic>)
-            : null,
-      );
+  /// Returns a `Session` object from a map of json
+  /// returns `null` if there is no `access_token` present
+  static Session? fromJson(Map<String, dynamic> json) {
+    if (json['access_token'] == null) {
+      return null;
+    }
+    return Session(
+      accessToken: json['access_token'] as String,
+      expiresIn: json['expires_in'] as int?,
+      refreshToken: json['refresh_token'] as String?,
+      tokenType: json['token_type'] as String,
+      providerToken: json['provider_token'] as String?,
+      user: User.fromJson(json['user'] as Map<String, dynamic>)!,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -42,7 +47,7 @@ class Session {
       'refresh_token': refreshToken,
       'token_type': tokenType,
       'provider_token': providerToken,
-      'user': user?.toJson(),
+      'user': user.toJson(),
     };
   }
 

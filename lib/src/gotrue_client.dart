@@ -4,15 +4,16 @@ import 'dart:math';
 
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
-import 'package:gotrue/src/subscription.dart';
-import 'package:gotrue/src/uuid.dart';
+import 'package:gotrue/src/fetch.dart';
+import 'package:gotrue/src/types/auth_response.dart';
+import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
 
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
-  late GoTrueApi api;
+  late GoTrueAdminApi admin;
 
   /// The currently logged in user or null.
   User? _currentUser;
@@ -20,31 +21,40 @@ class GoTrueClient {
   /// The session object for the currently logged in user or null.
   Session? _currentSession;
 
-  late bool autoRefreshToken;
-  Map<String, Subscription> stateChangeEmitters = {};
+  final String _url;
+  final Map<String, String> _headers;
+  final Client? _httpClient;
+  late final GotrueFetch _fetch = GotrueFetch(_httpClient);
+
+  late bool _autoRefreshToken;
 
   Timer? _refreshTokenTimer;
 
   int _refreshTokenRetryCount = 0;
 
+  final _onAuthStateChangeController = StreamController<AuthState>.broadcast();
+  // Receive a notification every time an auth event happens.
+  Stream<AuthState> get onAuthStateChange =>
+      _onAuthStateChangeController.stream;
+
   GoTrueClient({
     String? url,
     Map<String, String>? headers,
     bool? autoRefreshToken,
-    CookieOptions? cookieOptions,
     Client? httpClient,
-  }) {
-    this.autoRefreshToken = autoRefreshToken ?? true;
+  })  : _url = url ?? Constants.defaultGotrueUrl,
+        _headers = headers ?? {},
+        _httpClient = httpClient {
+    _autoRefreshToken = autoRefreshToken ?? true;
 
     final gotrueUrl = url ?? Constants.defaultGotrueUrl;
     final gotrueHeader = {
       ...Constants.defaultHeaders,
       if (headers != null) ...headers,
     };
-    api = GoTrueApi(
+    admin = GoTrueAdminApi(
       gotrueUrl,
       headers: gotrueHeader,
-      cookieOptions: cookieOptions,
       httpClient: httpClient,
     );
   }
@@ -57,89 +67,192 @@ class GoTrueClient {
 
   /// Creates a new user.
   ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
-  Future<GotrueSessionResponse> signUp(
-    String email,
-    String password, {
-    AuthOptions? options,
-    Map<String, dynamic>? userMetadata,
-  }) async {
-    _removeSession();
-
-    final response = await api.signUpWithEmail(
-      email,
-      password,
-      options: options,
-      userMetadata: userMetadata,
-    );
-
-    if (response.session != null) {
-      _saveSession(response.session!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
-    }
-
-    return response;
-  }
-
-  /// Signs up a new user using their phone number and a password.
+  /// [email] is the user's email address
   ///
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [password] is the password of the user
   ///
-  /// [userMetadata] sets [User.userMetadata] without an extra call to [update]
-  Future<GotrueSessionResponse> signUpWithPhone(
-    String phone,
-    String password, {
-    AuthOptions? options,
-    Map<String, dynamic>? userMetadata,
-  }) async {
-    _removeSession();
-
-    final response =
-        await api.signUpWithPhone(phone, password, userMetadata: userMetadata);
-    if (response.session == null) {
-      throw GoTrueException('An error occurred on sign up.');
-    }
-
-    _saveSession(response.session!);
-    _notifyAllSubscribers(AuthChangeEvent.signedIn);
-
-    return response;
-  }
-
-  /// Log in an existing user, or login via a third-party provider.
-  Future<GotrueSessionResponse> signIn({
+  /// [data] sets [User.userMetadata] without an extra call to [updateUser]
+  Future<AuthResponse> signUp({
     String? email,
     String? phone,
-    String? password,
-    Provider? provider,
-    OpenIDConnectCredentials? oidc,
-    AuthOptions? options,
+    required String password,
+    String? emailRedirectTo,
+    Map<String, dynamic>? data,
+    String? captchaToken,
+  }) async {
+    assert((email != null && phone == null) || (email == null && phone != null),
+        'You must provide either an email or phone number');
+
+    _removeSession();
+
+    late final Map<String, dynamic> response;
+
+    if (email != null) {
+      final urlParams = <String, String>{};
+
+      if (emailRedirectTo != null) {
+        final encodedRedirectTo = Uri.encodeComponent(emailRedirectTo);
+        urlParams['redirect_to'] = encodedRedirectTo;
+      }
+
+      response = await _fetch.request(
+        '$_url/signup',
+        RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: _headers,
+          body: {
+            'email': email,
+            'password': password,
+            'data': data,
+            'gotrue_meta_security': {'captcha_token': captchaToken},
+          },
+          query: urlParams,
+        ),
+      );
+    } else if (phone != null) {
+      final body = {
+        'phone': phone,
+        'password': password,
+        'data': data,
+        'gotrue_meta_security': {'captcha_token': captchaToken},
+      };
+      final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
+      response = await _fetch.request('$_url/signup', RequestMethodType.post,
+          options: fetchOptions) as Map<String, dynamic>;
+    } else {
+      throw AuthException(
+          'You must provide either an email or phone number and a password');
+    }
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    final session = authResponse.session;
+    if (session != null) {
+      _saveSession(session);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
+
+    return authResponse;
+  }
+
+  /// Log in an existing user with an email and password or phone and password.
+  Future<AuthResponse> signInWithPassword({
+    String? email,
+    String? phone,
+    required String password,
+    String? captchaToken,
   }) async {
     _removeSession();
 
-    if (email != null && password == null) {
-      await api.sendMagicLinkEmail(email, options: options);
-      return GotrueSessionResponse();
+    late final Map<String, dynamic> response;
+
+    if (email != null) {
+      response = await _fetch.request(
+        '$_url/token',
+        RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: _headers,
+          body: {'email': email, 'password': password},
+          query: {'grant_type': 'password'},
+        ),
+      );
+    } else if (phone != null) {
+      response = await _fetch.request(
+        '$_url/token',
+        RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: _headers,
+          body: {'phone': phone, 'password': password},
+          query: {'grant_type': 'password'},
+        ),
+      );
+    } else {
+      throw AuthException(
+        'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
+      );
     }
-    if (email != null && password != null) {
-      return _handleEmailSignIn(email, password, options: options);
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    if (authResponse.session != null) {
+      _saveSession(authResponse.session!);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
-    if (phone != null && password == null) {
-      await api.sendMobileOTP(phone);
-      return GotrueSessionResponse();
+    return authResponse;
+  }
+
+  /// Log in an existing user via a third-party provider.
+  Future<OAuthResponse> getOAuthSignInUrl({
+    required Provider provider,
+    String? redirectTo,
+    String? scopes,
+    Map<String, String>? queryParams,
+  }) async {
+    _removeSession();
+    return _handleProviderSignIn(provider,
+        redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
+  }
+
+  /// Log in a user using magiclink or a one-time password (OTP).
+  ///
+  /// If the `{{ .ConfirmationURL }}` variable is specified in the email template, a magiclink will be sent.
+  ///
+  /// If the `{{ .Token }}` variable is specified in the email template, an OTP will be sent.
+  ///
+  /// If you're using phone sign-ins, only an OTP will be sent. You won't be able to send a magiclink for phone sign-ins.
+  ///
+  /// If [shouldCreateUser] is set to false, this method will not create a new user. Defaults to true.
+  ///
+  /// [emailRedirectTo] can be used to specify the redirect URL embedded in the email link
+  ///
+  /// [data] can be used to set the user's metadata, which maps to the `auth.users.user_metadata` column.
+  ///
+  /// [captchaToken] Verification token received when the user completes the captcha on the site.
+  Future<void> signInWithOtp({
+    String? email,
+    String? phone,
+    String? emailRedirectTo,
+    bool? shouldCreateUser,
+    Map<String, dynamic>? data,
+    String? captchaToken,
+  }) async {
+    _removeSession();
+
+    if (email != null) {
+      await _fetch.request(
+        '$_url/otp',
+        RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: _headers,
+          body: {
+            'email': email,
+            'data': data ?? {},
+            'create_user': shouldCreateUser ?? true,
+            'gotrue_meta_security': {'captcha_token': captchaToken},
+          },
+        ),
+      );
+      return;
     }
-    if (phone != null && password != null) {
-      return _handlePhoneSignIn(phone, password);
+    if (phone != null) {
+      final body = {
+        'phone': phone,
+        'data': data ?? {},
+        'create_user': shouldCreateUser ?? true,
+        'gotrue_meta_security': {'captcha_token': captchaToken},
+      };
+      final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
+
+      await _fetch.request(
+        '$_url/otp',
+        RequestMethodType.post,
+        options: fetchOptions,
+      );
+      return;
     }
-    if (provider != null) {
-      return _handleProviderSignIn(provider, options);
-    }
-    if (oidc != null) {
-      return _handleOpenIDConnectSignIn(oidc);
-    }
-    throw GoTrueException(
+    throw AuthException(
       'You must provide either an email, phone number, a third-party provider or OpenID Connect.',
     );
   }
@@ -149,17 +262,33 @@ class GoTrueClient {
   /// [phone] is the user's phone number WITH international prefix
   ///
   /// [token] is the token that user was sent to their mobile phone
-  Future<GotrueSessionResponse> verifyOTP(
-    String phone,
-    String token, {
-    AuthOptions? options,
+  Future<AuthResponse> verifyOTP({
+    String? email,
+    String? phone,
+    required String token,
+    required OtpType type,
+    String? redirectTo,
+    String? captchaToken,
   }) async {
+    assert((email != null && phone == null) || (email == null && phone != null),
+        '`email` or `phone` needs to be specified.');
+
     _removeSession();
 
-    final response = await api.verifyMobileOTP(phone, token, options: options);
+    final body = {
+      if (email != null) 'email': email,
+      if (phone != null) 'phone': phone,
+      'token': token,
+      'type': type.snakeCase,
+      'redirect_to': redirectTo,
+      'gotrue_meta_security': {'captchaToken': captchaToken},
+    };
+    final fetchOptions = GotrueRequestOptions(headers: _headers, body: body);
+    final response = await _fetch
+        .request('$_url/verify', RequestMethodType.post, options: fetchOptions);
 
     if (response.session == null) {
-      throw GoTrueException(
+      throw AuthException(
         'An error occurred on token verification.',
       );
     }
@@ -172,34 +301,50 @@ class GoTrueClient {
 
   /// Force refreshes the session including the user data in case it was updated
   /// in a different session.
-  Future<GotrueSessionResponse> refreshSession() async {
-    final refreshCompleter = Completer<GotrueSessionResponse>();
+  Future<AuthResponse> refreshSession() async {
+    final refreshCompleter = Completer<AuthResponse>();
     if (currentSession?.accessToken == null) {
-      throw GoTrueException('Not logged in.');
+      throw AuthException('Not logged in.');
     }
 
-    final response = await _callRefreshToken(refreshCompleter);
-    return response;
+    return _callRefreshToken(refreshCompleter);
+  }
+
+  /// Updates user data, if there is a logged in user.
+  Future<UserResponse> updateUser(UserAttributes attributes) async {
+    final accessToken = currentSession?.accessToken;
+    if (accessToken == null) {
+      throw AuthException('Not logged in.');
+    }
+
+    final body = attributes.toJson();
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      body: body,
+      jwt: accessToken,
+    );
+    final response = await _fetch.request('$_url/user', RequestMethodType.put,
+        options: options);
+    final userResponse = UserResponse.fromJson(response);
+
+    _currentUser = userResponse.user;
+    _currentSession = currentSession?.copyWith(user: userResponse.user);
+    _notifyAllSubscribers(AuthChangeEvent.userUpdated);
+
+    return userResponse;
   }
 
   /// Sets the session data from refresh_token and returns the current session.
-  Future<GotrueSessionResponse> setSession(String refreshToken) async {
-    final refreshCompleter = Completer<GotrueSessionResponse>();
+  Future<AuthResponse> setSession(String refreshToken) async {
+    final refreshCompleter = Completer<AuthResponse>();
     if (refreshToken.isEmpty) {
-      throw GoTrueException('No current session.');
+      throw AuthException('No current session.');
     }
     return _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
   }
 
-  /// Overrides the JWT on the current client. The JWT will then be sent in all subsequent network requests.
-  Session setAuth(String accessToken) {
-    return _currentSession =
-        _currentSession?.copyWith(accessToken: accessToken) ??
-            Session(accessToken: accessToken, tokenType: 'bearer');
-  }
-
   /// Gets the session data from a oauth2 callback URL
-  Future<GotrueSessionResponse> getSessionFromUrl(
+  Future<AuthSessionUrlResponse> getSessionFromUrl(
     Uri originUrl, {
     bool storeSession = true,
   }) async {
@@ -214,7 +359,7 @@ class GoTrueClient {
 
     final errorDescription = url.queryParameters['error_description'];
     if (errorDescription != null) {
-      throw GoTrueException(errorDescription);
+      throw AuthException(errorDescription);
     }
 
     final accessToken = url.queryParameters['access_token'];
@@ -224,109 +369,110 @@ class GoTrueClient {
     final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
-      throw GoTrueException('No access_token detected.');
+      throw AuthException('No access_token detected.');
     }
     if (expiresIn == null) {
-      throw GoTrueException('No expires_in detected.');
+      throw AuthException('No expires_in detected.');
     }
     if (refreshToken == null) {
-      throw GoTrueException('No refresh_token detected.');
+      throw AuthException('No refresh_token detected.');
     }
     if (tokenType == null) {
-      throw GoTrueException('No token_type detected.');
+      throw AuthException('No token_type detected.');
     }
 
-    final response = await api.getUser(accessToken);
+    final headers = {..._headers};
+    headers['Authorization'] = 'Bearer $accessToken';
+    final options = GotrueRequestOptions(headers: headers);
+    final response = await _fetch.request('$_url/user', RequestMethodType.get,
+        options: options);
+    final user = UserResponse.fromJson(response).user;
+    if (user == null) {
+      throw AuthException('No user found. ');
+    }
 
     final session = Session(
+      providerToken: providerToken,
       accessToken: accessToken,
       expiresIn: int.parse(expiresIn),
       refreshToken: refreshToken,
       tokenType: tokenType,
-      providerToken: providerToken,
-      user: response.user,
+      user: user,
     );
+
+    final redirectType = url.queryParameters['type'];
 
     if (storeSession == true) {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
-      final type = url.queryParameters['type'];
-      if (type == 'recovery') {
+      if (redirectType == 'recovery') {
         _notifyAllSubscribers(AuthChangeEvent.passwordRecovery);
       }
     }
 
-    return GotrueSessionResponse(session: session);
-  }
-
-  /// Updates user data, if there is a logged in user.
-  Future<GotrueUserResponse> update(UserAttributes attributes) async {
-    if (currentSession?.accessToken == null) {
-      throw GoTrueException('Not logged in.');
-    }
-
-    final response =
-        await api.updateUser(currentSession!.accessToken, attributes);
-    // if (response.error != null) return response;
-
-    _currentUser = response.user;
-    _currentSession = currentSession?.copyWith(user: response.user);
-    _notifyAllSubscribers(AuthChangeEvent.userUpdated);
-
-    return response;
+    return AuthSessionUrlResponse(session: session, redirectType: redirectType);
   }
 
   /// Signs out the current user, if there is a logged in user.
-  Future<GotrueResponse> signOut() async {
+  Future<void> signOut() async {
     final accessToken = currentSession?.accessToken;
     _removeSession();
     _notifyAllSubscribers(AuthChangeEvent.signedOut);
     if (accessToken != null) {
-      return api.signOut(accessToken);
+      return admin.signOut(accessToken);
     }
-    return const GotrueResponse();
   }
 
-  // Receive a notification every time an auth event happens.
-  GotrueSubscription onAuthStateChange(Callback callback) {
-    final id = uuid.generateV4();
-    final GoTrueClient self = this;
-    final subscription = Subscription(
-      id: id,
-      callback: callback,
-      unsubscribe: () {
-        self.stateChangeEmitters.remove(id);
-      },
+  /// Sends a reset request to an email address.
+  Future<void> resetPasswordForEmail(
+    String email, {
+    String? redirectTo,
+    String? captchaToken,
+  }) async {
+    final body = {
+      'email': email,
+      'gotrue_meta_security': {'captcha_token': captchaToken},
+    };
+    final urlParams = <String, String>{};
+    if (redirectTo != null) {
+      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
+      urlParams['redirect_to'] = encodedRedirectTo;
+    }
+
+    final fetchOptions =
+        GotrueRequestOptions(headers: _headers, body: body, query: urlParams);
+    await _fetch.request(
+      '$_url/recover',
+      RequestMethodType.post,
+      options: fetchOptions,
     );
-    stateChangeEmitters[id] = subscription;
-    return GotrueSubscription(data: subscription);
   }
 
   /// Recover session from persisted session json string.
   /// Persisted session json has the format { currentSession, expiresAt }
   ///
   /// currentSession: session json object, expiresAt: timestamp in seconds
-  Future<GotrueSessionResponse> recoverSession(String jsonStr) async {
-    final refreshCompleter = Completer<GotrueSessionResponse>();
+  Future<AuthResponse> recoverSession(String jsonStr) async {
+    final refreshCompleter = Completer<AuthResponse>();
     final persistedData = json.decode(jsonStr) as Map<String, dynamic>;
     final currentSession =
         persistedData['currentSession'] as Map<String, dynamic>?;
     final expiresAt = persistedData['expiresAt'] as int?;
     if (currentSession == null) {
-      throw GoTrueException('Missing currentSession.');
+      throw AuthException('Missing currentSession.');
     }
     if (expiresAt == null) {
-      throw GoTrueException('Missing expiresAt.');
+      throw AuthException('Missing expiresAt.');
     }
 
     final session = Session.fromJson(currentSession);
-    if (session.user == null) {
-      throw GoTrueException('Current session is missing data.');
+    if (session == null) {
+      throw AuthException('Current session is missing data.');
     }
 
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     if (expiresAt < (timeNow - Constants.expiryMargin.inSeconds)) {
-      if (autoRefreshToken && session.refreshToken != null) {
+      if (_autoRefreshToken && session.refreshToken != null) {
         final response = await _callRefreshToken(
           refreshCompleter,
           refreshToken: session.refreshToken,
@@ -334,85 +480,46 @@ class GoTrueClient {
         );
         return response;
       } else {
-        throw GoTrueException('Session expired.');
+        throw AuthException('Session expired.');
       }
     } else {
       _saveSession(session);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
-      return GotrueSessionResponse(session: session);
+      return AuthResponse(session: session);
     }
-  }
-
-  Future<GotrueSessionResponse> _handleEmailSignIn(
-    String email,
-    String password, {
-    AuthOptions? options,
-  }) async {
-    final response =
-        await api.signInWithEmail(email, password, options: options);
-    // if (response.error != null) return response;
-
-    // ignore: deprecated_member_use_from_same_package
-    if (response.session?.user?.confirmedAt != null ||
-        response.session?.user?.emailConfirmedAt != null) {
-      _saveSession(response.session!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
-    }
-
-    return response;
   }
 
   /// return provider url only
-  GotrueSessionResponse _handleProviderSignIn(
-    Provider provider,
-    AuthOptions? options,
-  ) {
-    final url = api.getUrlForProvider(provider, options);
-    return GotrueSessionResponse(provider: provider.name(), url: url);
-  }
-
-  Future<GotrueSessionResponse> _handleOpenIDConnectSignIn(
-    OpenIDConnectCredentials oidc,
-  ) async {
-    if ((oidc.clientId != null && oidc.issuer != null) ||
-        oidc.provider != null) {
-      final response = await api.signInWithOpenIDConnect(oidc);
-
-      // if (response.error != null) return response;
-
-      _saveSession(response.session!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
-
-      return response;
+  OAuthResponse _handleProviderSignIn(
+    Provider provider, {
+    required String? scopes,
+    required String? redirectTo,
+    required Map<String, String>? queryParams,
+  }) {
+    // final url = admin.getUrlForProvider(provider, options);
+    final urlParams = {'provider': provider.name};
+    if (scopes != null) {
+      urlParams['scopes'] = scopes;
     }
-    throw GoTrueException(
-      'You must provider an OpenID Connect clientID and issuer or provider.',
-    );
-  }
-
-  Future<GotrueSessionResponse> _handlePhoneSignIn(
-    String phone, [
-    String? password,
-  ]) async {
-    final response = await api.signInWithPhone(phone, password);
-
-    // if (response.error != null) return response;
-
-    if (response.session?.user?.phoneConfirmedAt != null) {
-      _saveSession(response.session!);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    if (redirectTo != null) {
+      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
+      urlParams['redirect_to'] = encodedRedirectTo;
     }
+    if (queryParams != null) {
+      urlParams.addAll(queryParams);
+    }
+    final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
 
-    return response;
+    return OAuthResponse(provider: provider, url: url);
   }
 
   void _saveSession(Session session) {
-    final refreshCompleter = Completer<GotrueSessionResponse>();
+    final refreshCompleter = Completer<AuthResponse>();
     _currentSession = session;
     _currentUser = session.user;
     final expiresAt = session.expiresAt;
 
-    if (autoRefreshToken && expiresAt != null) {
+    if (_autoRefreshToken && expiresAt != null) {
       _refreshTokenTimer?.cancel();
 
       final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
@@ -430,7 +537,7 @@ class GoTrueClient {
 
   void _setTokenRefreshTimer(
     Duration timerDuration,
-    Completer<GotrueSessionResponse> completer, {
+    Completer<AuthResponse> completer, {
     String? refreshToken,
     String? accessToken,
   }) {
@@ -445,8 +552,7 @@ class GoTrueClient {
         );
       });
     } else {
-      final error =
-          GoTrueException('Access token refresh retry limit exceded.');
+      final error = AuthException('Access token refresh retry limit exceded.');
       completer.completeError(error, StackTrace.current);
     }
   }
@@ -458,14 +564,15 @@ class GoTrueClient {
     _refreshTokenTimer?.cancel();
   }
 
-  Future<GotrueSessionResponse> _callRefreshToken(
-    Completer<GotrueSessionResponse> completer, {
+  /// Generates a new JWT.
+  Future<AuthResponse> _callRefreshToken(
+    Completer<AuthResponse> completer, {
     String? refreshToken,
     String? accessToken,
   }) async {
     final token = refreshToken ?? currentSession?.refreshToken;
     if (token == null) {
-      final error = GoTrueException('No current session.');
+      final error = AuthException('No current session.');
       completer.completeError(error, StackTrace.current);
       throw error;
     }
@@ -473,19 +580,30 @@ class GoTrueClient {
     final jwt = accessToken ?? currentSession?.accessToken;
 
     try {
-      final response = await api.refreshAccessToken(token, jwt);
-      if (response.session == null) {
-        final error = GoTrueException('Invalid session data.');
+      final body = {'refresh_token': refreshToken};
+      if (jwt != null) {
+        _headers['Authorization'] = 'Bearer $jwt';
+      }
+      final options = GotrueRequestOptions(
+          headers: _headers,
+          body: body,
+          query: {'grant_type': 'refresh_token'});
+      final response = await _fetch
+          .request('$_url/token', RequestMethodType.post, options: options);
+      final authResponse = AuthResponse.fromJson(response);
+
+      if (authResponse.session == null) {
+        final error = AuthException('Invalid session data.');
         completer.completeError(error, StackTrace.current);
         throw error;
       }
       _refreshTokenRetryCount = 0;
 
-      _saveSession(response.session!);
+      _saveSession(authResponse.session!);
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
-      completer.complete(response);
+      completer.complete(authResponse);
       return completer.future;
     } on SocketException {
       _setTokenRefreshTimer(
@@ -502,6 +620,6 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    stateChangeEmitters.forEach((k, v) => v.callback(event, currentSession));
+    _onAuthStateChangeController.add(AuthState(event, currentSession));
   }
 }

@@ -1,3 +1,4 @@
+import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/version.dart';
 
 class Constants {
@@ -22,15 +23,38 @@ enum AuthChangeEvent {
   userDeleted,
 }
 
-enum InviteType {
+enum GenerateLinkType {
   signup,
+  invite,
   magiclink,
   recovery,
-  invite,
+  emailChangeCurrent,
+  emailChangeNew,
 }
 
-extension AuthChangeEventName on AuthChangeEvent {
-  String name() {
+extension GenerateLinkTypeExtended on GenerateLinkType {
+  static GenerateLinkType fromString(String val) {
+    for (final type in GenerateLinkType.values) {
+      if (type.snakeCase == val) {
+        return type;
+      }
+    }
+    throw Exception('GenerateLinkType of $val was not found');
+  }
+}
+
+enum OtpType {
+  sms,
+  phoneChange,
+  signup,
+  invite,
+  magiclink,
+  recovery,
+  emailChange
+}
+
+extension EnumName on Enum {
+  String get name {
     return toString().split('.').last;
   }
 }

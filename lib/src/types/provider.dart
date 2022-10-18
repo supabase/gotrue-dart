@@ -18,7 +18,7 @@ enum Provider {
 }
 
 extension ProviderName on Provider {
-  String name() {
+  String get name {
     return toString().split('.').last;
   }
 }

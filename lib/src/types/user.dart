@@ -44,33 +44,39 @@ class User {
     this.identities,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json['id'] as String,
-        appMetadata: json['app_metadata'] as Map<String, dynamic>,
-        userMetadata: json['user_metadata'] as Map<String, dynamic>?,
-        aud: json['aud'] as String,
-        confirmationSentAt: json['confirmation_sent_at'] as String?,
-        recoverySentAt: json['recovery_sent_at'] as String?,
-        emailChangeSentAt: json['email_change_sent_at'] as String?,
-        newEmail: json['new_email'] as String?,
-        invitedAt: json['invited_at'] as String?,
-        actionLink: json['action_link'] as String?,
-        email: json['email'] as String?,
-        phone: json['phone'] as String?,
-        createdAt: json['created_at'] as String,
-        // ignore: deprecated_member_use_from_same_package
-        confirmedAt: json['confirmed_at'] as String?,
-        emailConfirmedAt: json['email_confirmed_at'] as String?,
-        phoneConfirmedAt: json['phone_confirmed_at'] as String?,
-        lastSignInAt: json['last_sign_in_at'] as String?,
-        role: json['role'] as String,
-        updatedAt: json['updated_at'] as String,
-        identities: (json['identities'] as List?)
-            ?.cast<Map<String, dynamic>>()
-            .map((e) {
-          return UserIdentity.fromMap(e);
-        }).toList(),
-      );
+  /// Returns a `User` object from a map of json
+  /// returns `null` if there is no `id` present
+  static User? fromJson(Map<String, dynamic> json) {
+    if (json['id'] == null) {
+      return null;
+    }
+    return User(
+      id: json['id'] as String,
+      appMetadata: json['app_metadata'] as Map<String, dynamic>,
+      userMetadata: json['user_metadata'] as Map<String, dynamic>?,
+      aud: json['aud'] as String,
+      confirmationSentAt: json['confirmation_sent_at'] as String?,
+      recoverySentAt: json['recovery_sent_at'] as String?,
+      emailChangeSentAt: json['email_change_sent_at'] as String?,
+      newEmail: json['new_email'] as String?,
+      invitedAt: json['invited_at'] as String?,
+      actionLink: json['action_link'] as String?,
+      email: json['email'] as String?,
+      phone: json['phone'] as String?,
+      createdAt: json['created_at'] as String,
+      // ignore: deprecated_member_use_from_same_package
+      confirmedAt: json['confirmed_at'] as String?,
+      emailConfirmedAt: json['email_confirmed_at'] as String?,
+      phoneConfirmedAt: json['phone_confirmed_at'] as String?,
+      lastSignInAt: json['last_sign_in_at'] as String?,
+      role: json['role'] as String,
+      updatedAt: json['updated_at'] as String,
+      identities:
+          (json['identities'] as List?)?.cast<Map<String, dynamic>>().map((e) {
+        return UserIdentity.fromMap(e);
+      }).toList(),
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,

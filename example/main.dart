@@ -12,12 +12,12 @@ Future<bool> main(List<String> arguments) async {
   );
 
   try {
-    final login = await client.signIn(
+    final login = await client.signInWithPassword(
       email: 'email',
       password: '12345',
     );
-    print('Logged in, uid: ${login.session!.user!.id}');
-  } on GoTrueException catch (error) {
+    print('Logged in, uid: ${login.session!.user.id}');
+  } on AuthException catch (error) {
     print('Sign in Error: ${error.message}');
   }
 

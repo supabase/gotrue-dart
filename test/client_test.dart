@@ -1,7 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 
-import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
 import 'package:jwt_decode/jwt_decode.dart';
@@ -17,23 +16,17 @@ void main() {
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
   final gotrueUrlWithAutoConfirmOff =
       env['GOTRUE_URL'] ?? 'http://localhost:9999';
-  final anonToken = env['GOTRUE_TOKEN'] ?? '';
+  final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
   final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
+  final phone = env['GOTRUE_USER_PHONE'] ?? '166600000000';
   final password = env['GOTRUE_USER_PASS'] ?? 'secret';
-
-  final serviceRoleToken = JWT(
-    {
-      'role': 'service_role',
-    },
-  ).sign(
-    SecretKey(
-      env['GOTRUE_JWT_SECRET'] ?? '37c304f8-51aa-419a-a1af-06154e63707a',
-    ),
-  );
 
   group('Client with default http client', () {
     late GoTrueClient client;
     late GoTrueClient clientWithAuthConfirmOff;
+
+    int subscriptionCallbackCalledCount = 0;
+    late StreamSubscription<AuthState> onAuthSubscription;
 
     setUpAll(() {
       client = GoTrueClient(
@@ -50,6 +43,9 @@ void main() {
           'apikey': anonToken,
         },
       );
+      onAuthSubscription = client.onAuthStateChange.listen((_) {
+        subscriptionCallbackCalledCount++;
+      });
     });
 
     test('basic json parsing', () async {
@@ -60,56 +56,103 @@ void main() {
 
       expect(session, isNotNull);
       expect(
-        session.accessToken,
+        session!.accessToken,
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoxNjExODk1MzExLCJzdWIiOiI0Njg3YjkzNi02ZDE5LTRkNmUtOGIyYi1kYmU0N2I1ZjYzOWMiLCJlbWFpbCI6InRlc3Q5QGdtYWlsLmNvbSIsImFwcF9tZXRhZGF0YSI6eyJwcm92aWRlciI6ImVtYWlsIn0sInVzZXJfbWV0YWRhdGEiOm51bGwsInJvbGUiOiJhdXRoZW50aWNhdGVkIn0.GyIokEvKGp0M8PYU8IiIpvzeTAXspoCtR5aj-jCnWys',
       );
     });
 
-    test('signUp()', () async {
+    test('signUp() with email', () async {
       final response = await client.signUp(
-        email,
-        password,
-        options: AuthOptions(redirectTo: 'https://localhost:9998/welcome'),
-        userMetadata: {"Hello": "World"},
+        email: email,
+        password: password,
+        emailRedirectTo: 'https://localhost:9998/welcome',
+        data: {"Hello": "World"},
       );
       final data = response.session;
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
-      expect(data?.user?.id, isA<String>());
-      expect(data?.user?.userMetadata, {"Hello": "World"});
+      expect(data?.user.id, isA<String>());
+      expect(data?.user.userMetadata, {"Hello": "World"});
     });
 
-    test('signUp() with autoConfirm off', () async {
+    test('Subscribe a listener', () async {
+      /// auth subsctiption callback has been called once with the signup above
+      expect(subscriptionCallbackCalledCount, 1);
+
+      /// unsubscribe to prevent further calling the callback
+      onAuthSubscription.cancel();
+    });
+
+    test('signUp() with phone', () async {
+      final response = await client.signUp(
+        phone: phone,
+        password: password,
+        emailRedirectTo: 'https://localhost:9998/welcome',
+        data: {"Hello": "World"},
+      );
+      final data = response.session;
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user.id, isA<String>());
+      expect(data?.user.userMetadata, {"Hello": "World"});
+    });
+
+    test('signUp() with autoConfirm off with email', () async {
       final response = await clientWithAuthConfirmOff.signUp(
-        email,
-        password,
-        options: AuthOptions(redirectTo: 'https://localhost:9999/welcome'),
+        email: email,
+        password: password,
+        emailRedirectTo: 'https://localhost:9999/welcome',
       );
       expect(response.user, isA<User>());
       expect(response.session, isNull);
+    });
+
+    test(
+        'signUp() with autoConfirm off with phone should fail because Twilio is not setup',
+        () async {
+      try {
+        await clientWithAuthConfirmOff.signUp(
+          phone: phone,
+          password: password,
+        );
+      } catch (error) {
+        expect(error, isA<AuthException>());
+      }
     });
 
     test('signUp() with email should throw error if used twice', () async {
       final localEmail = email;
 
       try {
-        await client.signUp(localEmail, password);
+        await client.signUp(email: localEmail, password: password);
       } catch (error) {
-        expect(error, isA<GoTrueException>());
+        expect(error, isA<AuthException>());
       }
     });
 
-    test('signIn()', () async {
-      final response = await client.signIn(email: email, password: password);
+    test('signInWithOtp with email', () async {
+      await client.signInWithOtp(email: email);
+    });
+
+    test('signInWithOtp with phone', () async {
+      try {
+        await client.signInWithOtp(phone: phone);
+      } catch (error) {
+        expect(error, isA<AuthException>());
+      }
+    });
+
+    test('signInWithPassword() with email', () async {
+      final response =
+          await client.signInWithPassword(email: email, password: password);
       final data = response.session;
 
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
-      expect(data?.user?.id, isA<String>());
+      expect(data?.user.id, isA<String>());
 
       final payload = Jwt.parseJwt(data!.accessToken);
       final persistSession = json.decode(data.persistSessionString);
-      // ignore: avoid_dynamic_calls
       expect(payload['exp'], persistSession['expiresAt']);
     });
 
@@ -120,15 +163,18 @@ void main() {
       expect(user.appMetadata['provider'], 'email');
     });
 
-    test('Set auth', () async {
-      final jwt = client.currentSession?.accessToken ?? '';
-      expect(jwt, isNotEmpty);
+    test('signInWithPassword() with phone', () async {
+      final response =
+          await client.signInWithPassword(phone: phone, password: password);
+      final data = response.session;
 
-      final newClient = GoTrueClient(url: gotrueUrl, autoRefreshToken: false);
+      expect(data?.accessToken, isA<String>());
+      expect(data?.refreshToken, isA<String>());
+      expect(data?.user.id, isA<String>());
 
-      expect(newClient.currentSession?.accessToken, isNot(equals(jwt)));
-      newClient.setAuth(jwt);
-      expect(newClient.currentSession?.accessToken, equals(jwt));
+      final payload = Jwt.parseJwt(data!.accessToken);
+      final persistSession = json.decode(data.persistSessionString);
+      expect(payload['exp'], persistSession['expiresAt']);
     });
 
     test('Set session', () async {
@@ -149,7 +195,7 @@ void main() {
     });
 
     test('Update user', () async {
-      final response = await client.update(
+      final response = await client.updateUser(
         UserAttributes(data: {
           'hello': 'world',
           'japanese': '日本語',
@@ -157,10 +203,10 @@ void main() {
           'arabic': 'عربى',
         }),
       );
-      final data = response.data;
-      expect(data?.id, isA<String>());
-      expect(data?.userMetadata?['hello'], 'world');
-      expect(client.currentSession?.user?.userMetadata?['hello'], 'world');
+      final user = response.user;
+      expect(user?.id, isA<String>());
+      expect(user?.userMetadata?['hello'], 'world');
+      expect(client.currentSession?.user.userMetadata?['hello'], 'world');
     });
 
     test('Get user after updating', () async {
@@ -171,20 +217,6 @@ void main() {
       expect(user?.userMetadata?['japanese'], '日本語');
       expect(user?.userMetadata?['korean'], '한국어');
       expect(user?.userMetadata?['arabic'], 'عربى');
-    });
-
-    test('signIn with OpenIDConnect wrong id_token', () async {
-      try {
-        const oidc = OpenIDConnectCredentials(
-          idToken: "abcdf",
-          nonce: "random value",
-          provider: Provider.google,
-        );
-        await client.signIn(oidc: oidc);
-        fail('Passed with wrong id token');
-      } on GoTrueException catch (error) {
-        expect(error.message, isNotNull);
-      }
     });
 
     test('signOut', () async {
@@ -198,15 +230,51 @@ void main() {
 
     test('signIn() with the wrong password', () async {
       try {
-        final res = await client.signIn(
+        await client.signInWithPassword(
           email: email,
-          password: '${password}2',
+          password: 'wrong_$password',
         );
-        final data = res.session;
-        expect(data, isNull);
-      } on GoTrueException catch (error) {
+        fail('signInWithPassword did not throw');
+      } on AuthException catch (error) {
         expect(error.message, isNotNull);
       }
+    });
+
+    test('Unsubscribe a listener works', () {
+      /// Because we unsubscribed on subscription test, the callback should not longer be called.
+      expect(subscriptionCallbackCalledCount, 1);
+    });
+
+    group('The auth client can signin with third-party oAuth providers', () {
+      test('signIn() with Provider', () async {
+        final res = await client.getOAuthSignInUrl(provider: Provider.google);
+        expect(res.url, isA<String>());
+        expect(res.provider, Provider.google);
+      });
+
+      test('signIn() with Provider can append a redirectUrl', () async {
+        final res = await client.getOAuthSignInUrl(
+            provider: Provider.google,
+            redirectTo: 'https://localhost:9000/welcome');
+        expect(res.url, isA<String>());
+        expect(res.provider, Provider.google);
+      });
+
+      test('signIn() with Provider can append scopes', () async {
+        final res = await client.getOAuthSignInUrl(
+            provider: Provider.google, scopes: 'repo');
+        expect(res.url, isA<String>());
+        expect(res.provider, Provider.google);
+      });
+
+      test('signIn() with Provider can append options', () async {
+        final res = await client.getOAuthSignInUrl(
+            provider: Provider.google,
+            redirectTo: 'https://localhost:9000/welcome',
+            scopes: 'repo');
+        expect(res.url, isA<String>());
+        expect(res.provider, Provider.google);
+      });
     });
   });
 
@@ -222,88 +290,11 @@ void main() {
 
     test('signIn()', () async {
       try {
-        await client.signIn(email: email, password: password);
+        await client.signInWithPassword(email: email, password: password);
       } catch (error) {
-        expect(error, isA<GoTrueException>());
-        expect((error as GoTrueException).statusCode, '420');
+        expect(error, isA<AuthException>());
+        expect((error as AuthException).statusCode, '420');
       }
-    });
-  });
-
-  group('header', () {
-    test('X-Client-Info is set', () {
-      final client = GoTrueClient(
-        url: gotrueUrl,
-        headers: {
-          'Authorization': 'Bearer $anonToken',
-          'apikey': anonToken,
-        },
-      );
-
-      expect(
-        client.api.headers['X-Client-Info']!.split('/').first,
-        'gotrue-dart',
-      );
-    });
-
-    test('X-Client-Info can be overridden', () {
-      final client = GoTrueClient(
-        url: gotrueUrl,
-        headers: {
-          'Authorization': 'Bearer $anonToken',
-          'apikey': anonToken,
-          'X-Client-Info': 'supabase-dart/0.0.0'
-        },
-      );
-
-      expect(client.api.headers['X-Client-Info'], 'supabase-dart/0.0.0');
-    });
-  });
-
-  group('server api tests', () {
-    late final GoTrueClient serviceRoleApiClient;
-
-    final unregistredUserEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
-
-    setUpAll(() {
-      serviceRoleApiClient = GoTrueClient(
-        url: gotrueUrl,
-        headers: {
-          'Authorization': 'Bearer $serviceRoleToken',
-          'apikey': serviceRoleToken,
-        },
-      );
-    });
-
-    test(
-        'generateLink() supports signUp with generate confirmation signup link ',
-        () async {
-      final authOptions =
-          AuthOptions(redirectTo: 'http://localhost:9999/welcome');
-
-      const userMetadata = {'status': 'alpha'};
-
-      final response = await serviceRoleApiClient.api.generateLink(
-        unregistredUserEmail,
-        InviteType.signup,
-        password: password,
-        userMetadata: userMetadata,
-        options: authOptions,
-      );
-
-      expect(response.statusCode, 200);
-      expect(response.data, isNotNull);
-
-      final actionLink = response.data!['action_link'];
-      expect(actionLink is String, true);
-
-      final actionUri = Uri.tryParse(actionLink as String);
-      expect(actionUri, isNotNull);
-
-      expect(actionUri!.queryParameters['token'], isNotEmpty);
-      expect(actionUri.queryParameters['type'], isNotEmpty);
-      expect(actionUri.queryParameters['redirect_to'], authOptions.redirectTo);
-      expect(response.data!['user_metadata'], userMetadata);
     });
   });
 }

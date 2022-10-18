@@ -1,18 +1,18 @@
-class GoTrueException implements Exception {
+class AuthException implements Exception {
   final String message;
   final String? statusCode;
 
-  const GoTrueException(this.message, {this.statusCode});
+  const AuthException(this.message, {this.statusCode});
 
   @override
   String toString() =>
-      'GoTrueException(message: $message, statusCode: $statusCode)';
+      'AuthException(message: $message, statusCode: $statusCode)';
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is GoTrueException &&
+    return other is AuthException &&
         other.message == message &&
         other.statusCode == statusCode;
   }
