@@ -1,5 +1,6 @@
 ## [1.0.0]
 
+- chore: v1.0.0 release 🚀
 - BREAKING: update the public API to match JS library ([#90](https://github.com/supabase-community/gotrue-dart/pull/90))
   - `signUp()` now uses named parameters
   ```dart
