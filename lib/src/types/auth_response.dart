@@ -11,7 +11,7 @@ class AuthResponse {
     User? user,
   }) : user = user ?? session?.user;
 
-  /// Instantiates an `AuthResponse` object from json response.
+  /// Instanciates an `AuthResponse` object from json response.
   AuthResponse.fromJson(Map<String, dynamic> json)
       : session = Session.fromJson(json),
         user = User.fromJson(json) ?? Session.fromJson(json)?.user;
@@ -22,6 +22,7 @@ class OAuthResponse {
   final Provider provider;
   final String? url;
 
+  /// Instanciates an `OAuthResponse` object from json response.
   const OAuthResponse({
     required this.provider,
     this.url,

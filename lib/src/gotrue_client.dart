@@ -207,7 +207,7 @@ class GoTrueClient {
   ///
   /// [emailRedirectTo] can be used to specify the redirect URL embedded in the email link
   ///
-  /// [data] can be user to set the user's metadata, which maps to the `auth.users.user_metadata` column.
+  /// [data] can be used to set the user's metadata, which maps to the `auth.users.user_metadata` column.
   ///
   /// [captchaToken] Verification token received when the user completes the captcha on the site.
   Future<void> signInWithOtp({
@@ -552,7 +552,7 @@ class GoTrueClient {
         );
       });
     } else {
-      final error = AuthException('Access token refresh retry limit exceeded.');
+      final error = AuthException('Access token refresh retry limit exceded.');
       completer.completeError(error, StackTrace.current);
     }
   }
