@@ -92,16 +92,12 @@ class GoTrueClient {
     if (email != null) {
       final urlParams = <String, String>{};
 
-      if (emailRedirectTo != null) {
-        final encodedRedirectTo = Uri.encodeComponent(emailRedirectTo);
-        urlParams['redirect_to'] = encodedRedirectTo;
-      }
-
       response = await _fetch.request(
         '$_url/signup',
         RequestMethodType.post,
         options: GotrueRequestOptions(
           headers: _headers,
+          redirectTo: emailRedirectTo,
           body: {
             'email': email,
             'password': password,
@@ -226,6 +222,7 @@ class GoTrueClient {
         RequestMethodType.post,
         options: GotrueRequestOptions(
           headers: _headers,
+          redirectTo: emailRedirectTo,
           body: {
             'email': email,
             'data': data ?? {},

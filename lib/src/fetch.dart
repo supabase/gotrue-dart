@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:gotrue/src/types/auth_exception.dart';
+import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
@@ -48,7 +48,7 @@ class GotrueFetch {
 
     final qs = options?.query ?? {};
     if (options?.redirectTo != null) {
-      qs['redirect_to'] = options!.redirectTo!;
+      qs['redirect_to'] = Uri.encodeComponent(options!.redirectTo!);
     }
     Uri uri = Uri.parse(url);
     uri = uri.replace(queryParameters: qs);
