@@ -38,7 +38,6 @@ class GotrueFetch {
   Future<dynamic> request(
     String url,
     RequestMethodType method, {
-    Map<String, dynamic>? body,
     GotrueRequestOptions? options,
   }) async {
     final headers = options?.headers ?? {};
