@@ -172,7 +172,7 @@ class GoTrueClient {
 
     final authResponse = AuthResponse.fromJson(response);
 
-    if (authResponse.session != null) {
+    if (authResponse.session?.accessToken != null) {
       _saveSession(authResponse.session!);
       _notifyAllSubscribers(AuthChangeEvent.signedIn);
     }
