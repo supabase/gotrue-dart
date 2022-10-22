@@ -551,7 +551,7 @@ class GoTrueClient {
         );
       });
     } else {
-      final error = AuthException('Access token refresh retry limit exceded.');
+      final error = AuthException('Access token refresh retry limit exceeded.');
       completer.completeError(error, StackTrace.current);
     }
   }
@@ -559,6 +559,7 @@ class GoTrueClient {
   void _removeSession() {
     _currentSession = null;
     _currentUser = null;
+    _refreshTokenRetryCount = 0;
 
     _refreshTokenTimer?.cancel();
   }
