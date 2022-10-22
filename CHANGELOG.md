@@ -2,6 +2,7 @@
 
 - fix: verify otp exception on successful verification ([#95](https://github.com/supabase-community/gotrue-dart/pull/95))
 - fix: query parameter format for `redirect_to` when making request ([#96](https://github.com/supabase-community/gotrue-dart/pull/96))
+- fix: reset token retry count on session remove ([#98](https://github.com/supabase-community/gotrue-dart/pull/98))
 
 ## [1.0.1]
 
