@@ -1,5 +1,6 @@
 ## [1.0.2]
 
+- fix: verify otp exception on successful verification ([#95](https://github.com/supabase-community/gotrue-dart/pull/95))
 - fix: query parameter format for `redirect_to` when making request ([#96](https://github.com/supabase-community/gotrue-dart/pull/96))
 
 ## [1.0.1]
