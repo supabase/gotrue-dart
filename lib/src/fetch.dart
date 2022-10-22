@@ -47,7 +47,7 @@ class GotrueFetch {
 
     final qs = options?.query ?? {};
     if (options?.redirectTo != null) {
-      qs['redirect_to'] = Uri.encodeComponent(options!.redirectTo!);
+      qs['redirect_to'] = options!.redirectTo!;
     }
     Uri uri = Uri.parse(url);
     uri = uri.replace(queryParameters: qs);
