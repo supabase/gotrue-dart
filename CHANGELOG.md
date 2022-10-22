@@ -1,3 +1,7 @@
+## [1.0.1]
+
+- fix: a bug where emailRedirect does not work properly ([#92](https://github.com/supabase-community/gotrue-dart/pull/92))
+
 ## [1.0.0]
 
 - chore: v1.0.0 release 🚀
