@@ -284,16 +284,18 @@ class GoTrueClient {
     final response = await _fetch
         .request('$_url/verify', RequestMethodType.post, options: fetchOptions);
 
-    if (response.session == null) {
+    final authResponse = AuthResponse.fromJson(response);
+
+    if (authResponse.session == null) {
       throw AuthException(
         'An error occurred on token verification.',
       );
     }
 
-    _saveSession(response.session!);
+    _saveSession(authResponse.session!);
     _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
-    return response;
+    return authResponse;
   }
 
   /// Force refreshes the session including the user data in case it was updated
