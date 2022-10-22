@@ -1,3 +1,7 @@
+## [1.0.2]
+
+- fix: query parameter format for `redirect_to` when making request ([#96](https://github.com/supabase-community/gotrue-dart/pull/96))
+
 ## [1.0.1]
 
 - fix: a bug where emailRedirect does not work properly ([#92](https://github.com/supabase-community/gotrue-dart/pull/92))
