@@ -88,7 +88,9 @@ void main() {
 
       final urlWithoutAccessToken = Uri.parse(
           'http://my-callback-url.com/welcome#expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken');
-      client.getSessionFromUrl(urlWithoutAccessToken);
+      try {
+        await client.getSessionFromUrl(urlWithoutAccessToken);
+      } catch (_) {}
     });
 
     test('Subscribe a listener', () async {
