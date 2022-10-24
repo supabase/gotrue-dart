@@ -26,6 +26,7 @@ void main() {
     late GoTrueClient clientWithAuthConfirmOff;
 
     int subscriptionCallbackCalledCount = 0;
+
     late StreamSubscription<AuthState> onAuthSubscription;
 
     setUpAll(() {
@@ -73,6 +74,21 @@ void main() {
       expect(data?.refreshToken, isA<String>());
       expect(data?.user.id, isA<String>());
       expect(data?.user.userMetadata, {"Hello": "World"});
+    });
+
+    test(
+        'Trying to parse invalid URL should emit Exception on onAuthStateChange',
+        () async {
+      expect(client.onAuthStateChange, emitsError(isA<AuthException>()));
+
+      const expiresIn = 12345;
+      const refreshToken = 'my_refresh_token';
+      const tokenType = 'my_token_type';
+      const providerToken = 'my_provider_token_with_fragment';
+
+      final urlWithoutAccessToken = Uri.parse(
+          'http://my-callback-url.com/welcome#expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken');
+      client.getSessionFromUrl(urlWithoutAccessToken);
     });
 
     test('Subscribe a listener', () async {

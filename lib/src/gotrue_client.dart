@@ -358,7 +358,7 @@ class GoTrueClient {
 
     final errorDescription = url.queryParameters['error_description'];
     if (errorDescription != null) {
-      throw AuthException(errorDescription);
+      throw _notifyException(AuthException(errorDescription));
     }
 
     final accessToken = url.queryParameters['access_token'];
@@ -368,16 +368,16 @@ class GoTrueClient {
     final providerToken = url.queryParameters['provider_token'];
 
     if (accessToken == null) {
-      throw AuthException('No access_token detected.');
+      throw _notifyException(AuthException('No access_token detected.'));
     }
     if (expiresIn == null) {
-      throw AuthException('No expires_in detected.');
+      throw _notifyException(AuthException('No expires_in detected.'));
     }
     if (refreshToken == null) {
-      throw AuthException('No refresh_token detected.');
+      throw _notifyException(AuthException('No refresh_token detected.'));
     }
     if (tokenType == null) {
-      throw AuthException('No token_type detected.');
+      throw _notifyException(AuthException('No token_type detected.'));
     }
 
     final headers = {..._headers};
@@ -387,7 +387,7 @@ class GoTrueClient {
         options: options);
     final user = UserResponse.fromJson(response).user;
     if (user == null) {
-      throw AuthException('No user found. ');
+      throw _notifyException(AuthException('No user found.'));
     }
 
     final session = Session(
@@ -621,5 +621,10 @@ class GoTrueClient {
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
     _onAuthStateChangeController.add(AuthState(event, currentSession));
+  }
+
+  Exception _notifyException(Exception exception) {
+    _onAuthStateChangeController.addError(exception);
+    return exception;
   }
 }
