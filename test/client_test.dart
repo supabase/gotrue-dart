@@ -89,6 +89,7 @@ void main() {
           'http://my-callback-url.com/welcome#expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken');
       try {
         await client.getSessionFromUrl(urlWithoutAccessToken);
+        fail('getSessionFromUrl did not throw exception');
       } catch (_) {}
     });
 
