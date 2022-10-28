@@ -84,9 +84,6 @@ class GenerateLinkProperties {
 
 extension ToSnakeCase on Enum {
   String get snakeCase {
-    if (name.isEmpty) {
-      return name;
-    }
     var a = 'a'.codeUnitAt(0), z = 'z'.codeUnitAt(0);
     var A = 'A'.codeUnitAt(0), Z = 'Z'.codeUnitAt(0);
     var result = StringBuffer()..write(name[0].toLowerCase());
