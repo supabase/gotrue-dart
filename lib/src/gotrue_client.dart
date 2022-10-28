@@ -432,14 +432,12 @@ class GoTrueClient {
       'email': email,
       'gotrue_meta_security': {'captcha_token': captchaToken},
     };
-    final urlParams = <String, String>{};
-    if (redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
-      urlParams['redirect_to'] = encodedRedirectTo;
-    }
 
-    final fetchOptions =
-        GotrueRequestOptions(headers: _headers, body: body, query: urlParams);
+    final fetchOptions = GotrueRequestOptions(
+      headers: _headers,
+      body: body,
+      redirectTo: redirectTo,
+    );
     await _fetch.request(
       '$_url/recover',
       RequestMethodType.post,
