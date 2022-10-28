@@ -84,13 +84,13 @@ class GenerateLinkProperties {
 
 extension ToSnakeCase on Enum {
   String get snakeCase {
-    var a = 'a'.codeUnitAt(0), z = 'z'.codeUnitAt(0);
-    var A = 'A'.codeUnitAt(0), Z = 'Z'.codeUnitAt(0);
-    var result = StringBuffer()..write(name[0].toLowerCase());
+    final a = 'a'.codeUnitAt(0), z = 'z'.codeUnitAt(0);
+    final A = 'A'.codeUnitAt(0), Z = 'Z'.codeUnitAt(0);
+    final result = StringBuffer()..write(name[0].toLowerCase());
     for (var i = 1; i < name.length; i++) {
-      var char = name.codeUnitAt(i);
+      final char = name.codeUnitAt(i);
       if (A <= char && char <= Z) {
-        var pChar = name.codeUnitAt(i - 1);
+        final pChar = name.codeUnitAt(i - 1);
         if (a <= pChar && pChar <= z) {
           result.write('_');
         }
