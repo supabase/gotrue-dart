@@ -499,8 +499,7 @@ class GoTrueClient {
       urlParams['scopes'] = scopes;
     }
     if (redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
-      urlParams['redirect_to'] = encodedRedirectTo;
+      urlParams['redirect_to'] = redirectTo;
     }
     if (queryParams != null) {
       urlParams.addAll(queryParams);
