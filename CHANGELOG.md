@@ -1,3 +1,7 @@
+## [1.0.3]
+
+- fix: avoid positive lookbehind in snake case extension ([#100](https://github.com/supabase-community/gotrue-dart/pull/101))
+
 ## [1.0.2]
 
 - fix: verify otp exception on successful verification ([#95](https://github.com/supabase-community/gotrue-dart/pull/95))
