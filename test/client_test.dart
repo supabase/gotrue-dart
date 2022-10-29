@@ -270,6 +270,14 @@ void main() {
         expect(res.provider, Provider.google);
       });
 
+      test('signIn() with Provider with redirectTo', () async {
+        final res = await client.getOAuthSignInUrl(
+            provider: Provider.google, redirectTo: 'https://supabase.com');
+        expect(res.url,
+            '$gotrueUrl/authorize?provider=google&redirect_to=https%3A%2F%2Fsupabase.com');
+        expect(res.provider, Provider.google);
+      });
+
       test('signIn() with Provider can append a redirectUrl', () async {
         final res = await client.getOAuthSignInUrl(
             provider: Provider.google,
