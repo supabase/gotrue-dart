@@ -1,6 +1,16 @@
-## [1.0.3]
+## [1.1.0]
 
+- fix: redirect_to double URL encoding issue [#102](https://github.com/supabase-community/gotrue-dart/pull/102)
 - fix: avoid positive lookbehind in snake case extension ([#100](https://github.com/supabase-community/gotrue-dart/pull/101))
+- fix: reset token retry count on session remove [#98](https://github.com/supabase-community/gotrue-dart/pull/98)
+- feat: fail to getSessionFromUrl throws error on onAuthStateChange [#99](https://github.com/supabase-community/gotrue-dart/pull/99)
+  ```dart
+  supabase.onAuthStateChange.listen((data) {
+    // handle auth state change here
+  }, onError: (error) {
+    // handle error here
+  });
+  ```
 
 ## [1.0.2]
 
