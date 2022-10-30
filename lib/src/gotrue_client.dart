@@ -577,7 +577,7 @@ class GoTrueClient {
     final jwt = accessToken ?? currentSession?.accessToken;
 
     try {
-      final body = {'refresh_token': refreshToken};
+      final body = {'refresh_token': token};
       if (jwt != null) {
         _headers['Authorization'] = 'Bearer $jwt';
       }
@@ -606,7 +606,7 @@ class GoTrueClient {
       _setTokenRefreshTimer(
         Constants.retryInterval * pow(2, _refreshTokenRetryCount),
         completer,
-        refreshToken: refreshToken,
+        refreshToken: token,
         accessToken: accessToken,
       );
       return completer.future;
