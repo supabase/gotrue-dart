@@ -1,3 +1,7 @@
+## [1.1.1]
+
+- fix: use correct token for refreshing [#104](https://github.com/supabase-community/gotrue-dart/pull/104)
+
 ## [1.1.0]
 
 - fix: redirect_to double URL encoding issue [#102](https://github.com/supabase-community/gotrue-dart/pull/102)
