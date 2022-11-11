@@ -29,6 +29,41 @@ class GoTrueAdminApi {
     );
   }
 
+  // Requires either an email or phone
+  Future<UserResponse> createUser(AdminUserAttributes attributes) async {
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      body: attributes.toJson(),
+    );
+    final response = await _fetch.request(
+      '$_url/admin/users',
+      RequestMethodType.post,
+      options: options,
+    );
+    return UserResponse.fromJson(response);
+  }
+
+  Future<void> deleteUser(String id) async {
+    final options = GotrueRequestOptions(headers: _headers);
+    await _fetch.request(
+      '$_url/admin/users/$id',
+      RequestMethodType.delete,
+      options: options,
+    );
+  }
+
+  Future<List<UserResponse>> listUsers() async {
+    final options = GotrueRequestOptions(headers: _headers);
+    final response = await _fetch.request(
+      '$_url/admin/users',
+      RequestMethodType.get,
+      options: options,
+    );
+    return (response["users"] as List)
+        .map((e) => UserResponse.fromJson(e))
+        .toList();
+  }
+
   /// Sends an invite link to an email address.
   Future<UserResponse> inviteUserByEmail(
     String email, {
@@ -36,15 +71,10 @@ class GoTrueAdminApi {
     Map<String, dynamic>? data,
   }) async {
     final body = {'email': email};
-    final urlParams = <String, String>{};
-    if (redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
-      urlParams['redirect_to'] = encodedRedirectTo;
-    }
     final fetchOptions = GotrueRequestOptions(
       headers: _headers,
       body: body,
-      query: urlParams,
+      redirectTo: redirectTo,
     );
 
     final response = await _fetch.request(
