@@ -39,7 +39,7 @@ class AdminUserAttributes extends UserAttributes {
   ///
   /// Note: When using the GoTrueAdminApi and wanting to modify a user's metadata,
   /// this attribute is used instead of UserAttributes data.
-  final Object? userMetadata;
+  final Map<String, dynamic>? userMetadata;
 
   /// A custom data object to store the user's application specific metadata. This maps to the `auth.users.app_metadata` column.
   ///
@@ -47,7 +47,7 @@ class AdminUserAttributes extends UserAttributes {
   ///
   /// The `app_metadata` should be a JSON object that includes app-specific info, such as identity providers, roles, and other
   /// access control information.
-  final Object? appMetadata;
+  final Map<String, dynamic>? appMetadata;
 
   /// Confirms the user's email address if set to true.
   ///
@@ -79,12 +79,7 @@ class AdminUserAttributes extends UserAttributes {
     this.emailConfirm,
     this.phoneConfirm,
     this.banDuration,
-  })  : assert(userMetadata == null ||
-            userMetadata is List ||
-            userMetadata is Map),
-        assert(
-            appMetadata == null || appMetadata is List || appMetadata is Map),
-        super(email: email, phone: phone, password: password, data: data);
+  }) : super(email: email, phone: phone, password: password, data: data);
 
   @override
   Map<String, dynamic> toJson() {

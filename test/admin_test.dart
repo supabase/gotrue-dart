@@ -99,5 +99,28 @@ void main() {
       expect(res.user?.email, newEmail);
       expect(res.user?.invitedAt, isNotNull);
     });
+
+    test('createUser() creates a new user', () async {
+      final newEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
+      final userMetadata = {"name": "supabase"};
+      final res = await client.admin.createUser(
+          AdminUserAttributes(email: newEmail, userMetadata: userMetadata));
+      expect(res.user, isNotNull);
+      expect(res.user?.email, newEmail);
+      expect(res.user?.userMetadata, userMetadata);
+    });
+  });
+
+  group("User deletion", () {
+    test("deleteUser() deletes an user", () async {
+      final newUser = await client.admin.createUser(AdminUserAttributes(
+        email: 'new${Random.secure().nextInt(4096)}@fake.org',
+        password: password,
+      ));
+      final userLengthBefore = (await client.admin.listUsers()).length;
+      await client.admin.deleteUser(newUser.user!.id);
+      final userLengthAfter = (await client.admin.listUsers()).length;
+      expect(userLengthBefore - 1, userLengthAfter);
+    });
   });
 }

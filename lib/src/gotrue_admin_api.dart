@@ -29,6 +29,51 @@ class GoTrueAdminApi {
     );
   }
 
+  /// Creates a new user.
+  ///
+  /// This function should only be called on a server. Never expose your `service_role` key on the client.
+  ///
+  // Requires either an email or phone
+  Future<UserResponse> createUser(AdminUserAttributes attributes) async {
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      body: attributes.toJson(),
+    );
+    final response = await _fetch.request(
+      '$_url/admin/users',
+      RequestMethodType.post,
+      options: options,
+    );
+    return UserResponse.fromJson(response);
+  }
+
+  /// Delete a user. Requires a `service_role` key.
+  ///
+  ///  [id] is the user id of the user you want to remove.
+  ///
+  /// This function should only be called on a server. Never expose your `service_role` key on the client.
+  Future<void> deleteUser(String id) async {
+    final options = GotrueRequestOptions(headers: _headers);
+    await _fetch.request(
+      '$_url/admin/users/$id',
+      RequestMethodType.delete,
+      options: options,
+    );
+  }
+
+  /// Get a list of users.
+  ///
+  /// This function should only be called on a server. Never expose your `service_role` key on the client.
+  Future<List<User>> listUsers() async {
+    final options = GotrueRequestOptions(headers: _headers);
+    final response = await _fetch.request(
+      '$_url/admin/users',
+      RequestMethodType.get,
+      options: options,
+    );
+    return (response["users"] as List).map((e) => User.fromJson(e)!).toList();
+  }
+
   /// Sends an invite link to an email address.
   Future<UserResponse> inviteUserByEmail(
     String email, {
@@ -36,15 +81,10 @@ class GoTrueAdminApi {
     Map<String, dynamic>? data,
   }) async {
     final body = {'email': email};
-    final urlParams = <String, String>{};
-    if (redirectTo != null) {
-      final encodedRedirectTo = Uri.encodeComponent(redirectTo);
-      urlParams['redirect_to'] = encodedRedirectTo;
-    }
     final fetchOptions = GotrueRequestOptions(
       headers: _headers,
       body: body,
-      query: urlParams,
+      redirectTo: redirectTo,
     );
 
     final response = await _fetch.request(
