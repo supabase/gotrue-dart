@@ -1,3 +1,7 @@
+## [1.2.0]
+
+- feat: add `createUser()`, `deleteUser()`, and `listUsers()` to admin methods. [#106](https://github.com/supabase/gotrue-dart/pull/106)
+
 ## [1.1.1]
 
 - fix: use correct token for refreshing [#104](https://github.com/supabase-community/gotrue-dart/pull/104)
