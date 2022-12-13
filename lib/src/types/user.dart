@@ -69,8 +69,8 @@ class User {
       emailConfirmedAt: json['email_confirmed_at'] as String?,
       phoneConfirmedAt: json['phone_confirmed_at'] as String?,
       lastSignInAt: json['last_sign_in_at'] as String?,
-      role: json['role'] as String,
-      updatedAt: json['updated_at'] as String,
+      role: json['role'] as String?,
+      updatedAt: json['updated_at'] as String?,
       identities:
           (json['identities'] as List?)?.cast<Map<String, dynamic>>().map((e) {
         return UserIdentity.fromMap(e);
