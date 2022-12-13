@@ -1,4 +1,4 @@
-## [1.2.0]
+## [1.2.1]
 
 - fix: allow nullable `role` and `updatedAt` in `User.fromJson()` [#108](https://github.com/supabase/gotrue-dart/pull/108)
 
