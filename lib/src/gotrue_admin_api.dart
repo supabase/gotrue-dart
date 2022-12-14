@@ -69,9 +69,9 @@ class GoTrueAdminApi {
   Future<List<User>> listUsers({int? page, int? perPage}) async {
     final options = GotrueRequestOptions(
       headers: _headers,
-      body: {
-        if (page != null) 'page': page,
-        if (perPage != null) 'per_page': perPage,
+      query: {
+        if (page != null) 'page': page.toString(),
+        if (perPage != null) 'per_page': perPage.toString(),
       },
     );
     final response = await _fetch.request(
