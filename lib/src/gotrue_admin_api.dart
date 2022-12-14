@@ -64,8 +64,16 @@ class GoTrueAdminApi {
   /// Get a list of users.
   ///
   /// This function should only be called on a server. Never expose your `service_role` key on the client.
-  Future<List<User>> listUsers() async {
-    final options = GotrueRequestOptions(headers: _headers);
+  ///
+  /// The result is paginated. Use the [page] and [perPage] parameters to paginate the result.
+  Future<List<User>> listUsers({int? page, int? perPage}) async {
+    final options = GotrueRequestOptions(
+      headers: _headers,
+      query: {
+        if (page != null) 'page': page.toString(),
+        if (perPage != null) 'per_page': perPage.toString(),
+      },
+    );
     final response = await _fetch.request(
       '$_url/admin/users',
       RequestMethodType.get,
