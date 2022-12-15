@@ -1,7 +1,5 @@
 import 'package:gotrue/src/types/user.dart';
 
-import '../gotrue_mfa_api.dart';
-
 class AuthMFAEnrollResponse {
   /// ID of the factor that was just enrolled (in an unverified state).
   final String id;
@@ -73,6 +71,16 @@ class AuthMFAVerifyResponse {
     required this.refreshToken,
     required this.user,
   });
+
+  factory AuthMFAVerifyResponse.fromJson(Map<String, dynamic> json) {
+    return AuthMFAVerifyResponse(
+      accessToken: json['access_token'],
+      tokenType: json['token_type'],
+      expiresIn: Duration(seconds: json['expires_in']),
+      refreshToken: json['refresh_token'],
+      user: User.fromJson(json['user'])!,
+    );
+  }
 }
 
 class AuthMFAUnenrollResponse {

@@ -1,8 +1,10 @@
-import 'package:gotrue/src/types/mfa.dart';
-
-import 'gotrue_client.dart';
+part of 'gotrue_client.dart';
 
 class GoTrueMFAApi {
+  final GoTrueClient client;
+  final GotrueFetch fetch;
+  GoTrueMFAApi(this.client, this.fetch);
+
   /// Starts the enrollment process for a new Multi-Factor Authentication (MFA)
   /// factor. This method creates a new `unverified` factor.
   /// To verify a factor, present the QR code or secret to the user and ask them to add it to their
@@ -29,15 +31,39 @@ class GoTrueMFAApi {
     throw UnimplementedError();
   }
 
-  /// Verifies a code against a challenge.
+  /// Verifies a code against a [challengeId].
   ///
-  /// The verification code is provided by the user by entering a code seen in their authenticator app.
+  /// The verification [code] is provided by the user by entering a code seen in their authenticator app.
   Future<AuthMFAVerifyResponse> verify({
     required String factorId,
     required String challengeId,
     required String code,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final session = client.currentSession;
+
+    final data = await fetch.request(
+        '${client._url}/factors/$factorId/verify', RequestMethodType.post,
+        options: GotrueRequestOptions(
+          headers: client._headers,
+          body: {
+            'challenge_id': challengeId,
+            'code': code,
+          },
+          jwt: session?.accessToken,
+        ));
+
+    final response = AuthMFAVerifyResponse.fromJson(data);
+    client._saveSession(
+      Session(
+        accessToken: response.accessToken,
+        tokenType: response.tokenType,
+        user: response.user,
+        expiresIn: response.expiresIn.inSeconds,
+        refreshToken: response.refreshToken,
+      ),
+    );
+    client._notifyAllSubscribers(AuthChangeEvent.mfaChallengeVerified);
+    return response;
   }
 
   /// Unenroll removes a MFA factor.

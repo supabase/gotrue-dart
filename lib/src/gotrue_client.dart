@@ -10,6 +10,10 @@ import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
 
+import 'types/mfa.dart';
+
+part 'gotrue_mfa_api.dart';
+
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
