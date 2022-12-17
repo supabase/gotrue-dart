@@ -62,6 +62,13 @@ class AuthMFAChallengeResponse {
   final DateTime expiresAt;
 
   AuthMFAChallengeResponse({required this.id, required this.expiresAt});
+
+  factory AuthMFAChallengeResponse.fromJson(Map<String, dynamic> json) {
+    return AuthMFAChallengeResponse(
+      id: json['id'],
+      expiresAt: DateTime.parse(json['expires_at']),
+    );
+  }
 }
 
 class AuthMFAVerifyResponse {

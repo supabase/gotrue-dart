@@ -46,8 +46,20 @@ class GoTrueMFAApi {
   /// Prepares a challenge used to verify that a user has access to a MFA factor.
   Future<AuthMFAChallengeResponse> challenge({
     required String factorId,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final session = client.currentSession;
+
+    final data = await fetch.request(
+      "${client._url}/factors/$factorId/challenge",
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: client._headers,
+        jwt: session?.accessToken,
+      ),
+    );
+
+    final response = AuthMFAChallengeResponse.fromJson(data);
+    return response;
   }
 
   /// Verifies a code against a [challengeId].
