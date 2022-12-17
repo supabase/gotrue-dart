@@ -17,7 +17,7 @@ class GoTrueMFAApi {
   /// [issuer] : Domain which the user is enrolled with.
   /// [friendlyName] : Human readable name assigned to the factor.
   Future<AuthMFAEnrollResponse> enroll({
-    String factorType = "totp",
+    FactorType factorType = FactorType.totp,
     String? issuer,
     String? friendlyName,
   }) async {
@@ -28,7 +28,7 @@ class GoTrueMFAApi {
       options: GotrueRequestOptions(
         headers: client._headers,
         body: {
-          'factor_type': factorType,
+          'factor_type': factorType.name,
           'issuer': issuer,
           'friendly_name': friendlyName,
         },

@@ -158,10 +158,10 @@ class Factor {
       id: json['id'],
       friendlyName: json['friendly_name'],
       factorType: FactorType.values.firstWhere(
-        (e) => e.toString() == 'FactorType.${json['factor_type']}',
+        (e) => e.name == json['factor_type'],
       ),
       status: FactorStatus.values.firstWhere(
-        (e) => e.toString() == 'FactorStatus.${json['status']}',
+        (e) => e.name == json['status'],
       ),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
@@ -209,7 +209,7 @@ class AMREntry {
   factory AMREntry.fromJson(Map<String, dynamic> json) {
     return AMREntry(
       method: AMRMethod.values.firstWhere(
-        (e) => e.toString() == 'AMRMethod.${json['method']}',
+        (e) => e.name == json['method'],
       ),
       timestamp: DateTime.parse(json['timestamp']),
     );
