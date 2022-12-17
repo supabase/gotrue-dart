@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
+import 'package:jwt_decode/jwt_decode.dart';
 import 'package:universal_io/io.dart';
 
 import 'types/mfa.dart';

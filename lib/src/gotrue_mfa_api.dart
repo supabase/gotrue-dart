@@ -119,35 +119,62 @@ class GoTrueMFAApi {
   Future<AuthMFAVerifyResponse> challengeAndVerify({
     required String factorId,
     required String code,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final challengeResponse = await challenge(factorId: factorId);
+    return verify(
+      factorId: factorId,
+      challengeId: challengeResponse.id,
+      code: code,
+    );
   }
 
-  /// Returns the list of MFA factors enabled for this user. For most use cases
-  /// you should consider using [GoTrueMFAApi.getAuthenticatorAssuranceLevel]. This uses a cached version
-  /// of the factors and avoids incurring a network call. If you need to update
-  /// this list, call [GoTrueClient.currentUser] first.
+  /// Returns the list of MFA factors enabled for this user. If you need to update this list, call [GoTrueClient.refreshSession] first.
   ///
   /// see [GoTrueMFAApi.enroll]
   /// see [GoTrueMFAApi.getAuthenticatorAssuranceLevel]
-  /// see [GoTrueClient.currentUser]
-  Future<AuthMFAListFactorsResponse> listFactors() {
-    throw UnimplementedError();
+  AuthMFAListFactorsResponse listFactors() {
+    final user = client.currentUser;
+    final factors = user?.factors ?? [];
+    final totp = factors
+        .where((element) =>
+            element.factorType == FactorType.totp &&
+            element.status == FactorStatus.verified)
+        .toList();
+
+    return AuthMFAListFactorsResponse(all: factors, totp: totp);
   }
 
   /// Returns the Authenticator Assurance Level (AAL) for the active session.
   ///
-  /// - `aal1` (or `null`) means that the user's identity has been verified only
-  /// with a conventional login (email+password, OTP, magic link, social login,
-  /// etc.).
-  /// - `aal2` means that the user's identity has been verified both with a conventional login and at least one MFA factor.
-  ///
-  /// Although this method returns a promise, it's fairly quick (microseconds)
-  /// and rarely uses the network. You can use this to check whether the current
-  /// user needs to be shown a screen to verify their MFA factors.
-  ///
-  Future<AuthMFAGetAuthenticatorAssuranceLevelResponse>
+  ///You can use this to check whether the current user needs to be shown a screen to verify their MFA factors.
+  AuthMFAGetAuthenticatorAssuranceLevelResponse
       getAuthenticatorAssuranceLevel() {
-    throw UnimplementedError();
+    final session = client.currentSession;
+    if (session == null) {
+      return AuthMFAGetAuthenticatorAssuranceLevelResponse(
+        currentLevel: null,
+        nextLevel: null,
+        currentAuthenticationMethods: [],
+      );
+    }
+    final payload = Jwt.parseJwt(session.accessToken);
+
+    final currentLevel = AuthenticatorAssuranceLevels.values
+        .firstWhereOrNull((level) => level.name == payload['aal']);
+
+    var nextLevel = currentLevel;
+
+    if (session.user.factors
+            ?.any((element) => element.status == FactorStatus.verified) ??
+        false) {
+      nextLevel = AuthenticatorAssuranceLevels.aal2;
+    }
+
+    final amr = payload['amr']?.map((e) => AMREntry.fromJson(e));
+    return AuthMFAGetAuthenticatorAssuranceLevelResponse(
+      currentLevel: currentLevel,
+      nextLevel: nextLevel,
+      currentAuthenticationMethods: amr,
+    );
   }
 }

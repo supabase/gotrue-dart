@@ -152,9 +152,30 @@ class Factor {
     required this.createdAt,
     required this.updatedAt,
   });
+
+  factory Factor.fromJson(Map<String, dynamic> json) {
+    return Factor(
+      id: json['id'],
+      friendlyName: json['friendly_name'],
+      factorType: FactorType.values.firstWhere(
+        (e) => e.toString() == 'FactorType.${json['factor_type']}',
+      ),
+      status: FactorStatus.values.firstWhere(
+        (e) => e.toString() == 'FactorStatus.${json['status']}',
+      ),
+      createdAt: DateTime.parse(json['created_at']),
+      updatedAt: DateTime.parse(json['updated_at']),
+    );
+  }
 }
 
-enum AuthenticatorAssuranceLevels { aal1, aal2 }
+enum AuthenticatorAssuranceLevels {
+  // The user's identity has been verified only with a conventional login (email+password, OTP, magic link, social login, etc.).
+  aal1,
+
+  // The user's identity has been verified both with a conventional login and at least one MFA factor.
+  aal2,
+}
 
 class AuthMFAGetAuthenticatorAssuranceLevelResponse {
   /// Current AAL level of the session.
@@ -165,8 +186,32 @@ class AuthMFAGetAuthenticatorAssuranceLevelResponse {
   /// see [GoTrueMFAApi.challenge]
   final AuthenticatorAssuranceLevels? nextLevel;
 
+  /// A list of all authentication methods attached to this session.
+  ///
+  /// Use the information here to detect the last time a user verified a factor, for example if implementing a step-up scenario.
+  final List<AMREntry> currentAuthenticationMethods;
+
   AuthMFAGetAuthenticatorAssuranceLevelResponse({
     required this.currentLevel,
     required this.nextLevel,
+    required this.currentAuthenticationMethods,
   });
+}
+
+enum AMRMethod { passowrd, otp, oauth, mfaTotp }
+
+class AMREntry {
+  final AMRMethod method;
+  final DateTime timestamp;
+
+  AMREntry({required this.method, required this.timestamp});
+
+  factory AMREntry.fromJson(Map<String, dynamic> json) {
+    return AMREntry(
+      method: AMRMethod.values.firstWhere(
+        (e) => e.toString() == 'AMRMethod.${json['method']}',
+      ),
+      timestamp: DateTime.parse(json['timestamp']),
+    );
+  }
 }
