@@ -1,3 +1,4 @@
+import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/types/user.dart';
 
 class AuthMFAEnrollResponse {
