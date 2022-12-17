@@ -104,6 +104,10 @@ class AuthMFAUnenrollResponse {
   final String id;
 
   AuthMFAUnenrollResponse({required this.id});
+
+  factory AuthMFAUnenrollResponse.fromJson(Map<String, dynamic> json) {
+    return AuthMFAUnenrollResponse(id: json['id']);
+  }
 }
 
 class AuthMFAListFactorsResponse {

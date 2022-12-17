@@ -88,8 +88,17 @@ class GoTrueMFAApi {
   /// Unenroll removes a MFA factor.
   ///
   /// A user has to have an `aal2` authenticator level in order to unenroll a `verified` factor.
-  Future<AuthMFAUnenrollResponse> unenroll(String factorId) {
-    throw UnimplementedError();
+  Future<AuthMFAUnenrollResponse> unenroll(String factorId) async {
+    final session = client.currentSession;
+
+    final data = await fetch.request(
+        '${client._url}/factors/$factorId', RequestMethodType.delete,
+        options: GotrueRequestOptions(
+          headers: client._headers,
+          jwt: session?.accessToken,
+        ));
+
+    return AuthMFAUnenrollResponse.fromJson(data);
   }
 
   /// Helper method which creates a challenge and immediately uses the given code to verify against it thereafter.
