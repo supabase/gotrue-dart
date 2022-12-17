@@ -15,6 +15,14 @@ class AuthMFAEnrollResponse {
     required this.type,
     required this.totp,
   });
+
+  factory AuthMFAEnrollResponse.fromJson(Map<String, dynamic> json) {
+    return AuthMFAEnrollResponse(
+      id: json['id'],
+      type: json['type'],
+      totp: TOTPEnrollment.fromJson(json['totp']),
+    );
+  }
 }
 
 class TOTPEnrollment {
@@ -36,6 +44,14 @@ class TOTPEnrollment {
     required this.secret,
     required this.uri,
   });
+
+  factory TOTPEnrollment.fromJson(Map<String, dynamic> json) {
+    return TOTPEnrollment(
+      qrCode: json['qr_code'],
+      secret: json['secret'],
+      uri: json['uri'],
+    );
+  }
 }
 
 class AuthMFAChallengeResponse {

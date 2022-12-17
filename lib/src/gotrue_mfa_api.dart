@@ -20,8 +20,27 @@ class GoTrueMFAApi {
     String factorType = "totp",
     String? issuer,
     String? friendlyName,
-  }) {
-    throw UnimplementedError();
+  }) async {
+    final session = client.currentSession;
+    final data = await fetch.request(
+      "${client._url}/factors",
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: client._headers,
+        body: {
+          'factor_type': factorType,
+          'issuer': issuer,
+          'friendly_name': friendlyName,
+        },
+        jwt: session?.accessToken,
+      ),
+    );
+
+    data["totp"]["qr_code"] =
+        "data:image/svg+xml;utf-8,${data["totp"]["qr_code"]}";
+
+    final response = AuthMFAEnrollResponse.fromJson(data);
+    return response;
   }
 
   /// Prepares a challenge used to verify that a user has access to a MFA factor.
