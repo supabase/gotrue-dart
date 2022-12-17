@@ -1,3 +1,10 @@
+## [1.3.0]
+
+- feat: paginate `admin.listUsers()`
+  ```dart
+  auth.admin.listUsers(page: 2, perPage: 10);
+  ```
+
 ## [1.2.1]
 
 - fix: allow nullable `role` and `updatedAt` in `User.fromJson()` [#108](https://github.com/supabase/gotrue-dart/pull/108)
