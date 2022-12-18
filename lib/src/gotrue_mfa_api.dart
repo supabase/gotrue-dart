@@ -3,7 +3,8 @@ part of 'gotrue_client.dart';
 class GoTrueMFAApi {
   final GoTrueClient client;
   final GotrueFetch fetch;
-  GoTrueMFAApi(this.client, this.fetch);
+
+  GoTrueMFAApi({required this.client, required this.fetch});
 
   /// Starts the enrollment process for a new Multi-Factor Authentication (MFA)
   /// factor. This method creates a new `unverified` factor.

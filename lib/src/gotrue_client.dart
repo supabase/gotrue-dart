@@ -19,7 +19,10 @@ part 'gotrue_mfa_api.dart';
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
-  late GoTrueAdminApi admin;
+  late final GoTrueAdminApi admin;
+
+  /// Namespace for the GoTrue MFA API methods.
+  late final GoTrueMFAApi mfa;
 
   /// The currently logged in user or null.
   User? _currentUser;
@@ -62,6 +65,10 @@ class GoTrueClient {
       gotrueUrl,
       headers: gotrueHeader,
       httpClient: httpClient,
+    );
+    mfa = GoTrueMFAApi(
+      client: this,
+      fetch: _fetch,
     );
   }
 

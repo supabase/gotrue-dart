@@ -125,6 +125,31 @@ class AuthMFAListFactorsResponse {
   AuthMFAListFactorsResponse({required this.all, required this.totp});
 }
 
+class AuthMFAAdminListFactorsResponse {
+  /// All factors attached to the user.
+  final List<Factor> factors;
+
+  AuthMFAAdminListFactorsResponse({required this.factors});
+
+  factory AuthMFAAdminListFactorsResponse.fromJson(Map<String, dynamic> json) {
+    return AuthMFAAdminListFactorsResponse(
+      factors:
+          (json['factors'] as List).map((e) => Factor.fromJson(e)).toList(),
+    );
+  }
+}
+
+class AuthMFAAdminDeleteFactorResponse {
+  /// ID of the factor that was successfully deleted.
+  final String id;
+
+  AuthMFAAdminDeleteFactorResponse({required this.id});
+
+  factory AuthMFAAdminDeleteFactorResponse.fromJson(Map<String, dynamic> json) {
+    return AuthMFAAdminDeleteFactorResponse(id: json['id']);
+  }
+}
+
 enum FactorStatus { verified, unverified }
 
 enum FactorType { totp }
