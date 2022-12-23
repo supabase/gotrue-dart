@@ -11,7 +11,7 @@ class AuthMFAEnrollResponse {
   /// TOTP enrollment information.
   final TOTPEnrollment totp;
 
-  AuthMFAEnrollResponse({
+  const AuthMFAEnrollResponse({
     required this.id,
     required this.type,
     required this.totp,
@@ -40,7 +40,7 @@ class TOTPEnrollment {
   ///The authenticator URI encoded within the QR code, should you need to use it. Avoid logging this value to the console.
   final String uri;
 
-  TOTPEnrollment({
+  const TOTPEnrollment({
     required this.qrCode,
     required this.secret,
     required this.uri,
@@ -62,12 +62,12 @@ class AuthMFAChallengeResponse {
   /// Timestamp when this challenge will no longer be usable.
   final DateTime expiresAt;
 
-  AuthMFAChallengeResponse({required this.id, required this.expiresAt});
+  const AuthMFAChallengeResponse({required this.id, required this.expiresAt});
 
   factory AuthMFAChallengeResponse.fromJson(Map<String, dynamic> json) {
     return AuthMFAChallengeResponse(
       id: json['id'],
-      expiresAt: DateTime.parse(json['expires_at']),
+      expiresAt: DateTime.fromMillisecondsSinceEpoch(json['expires_at'] * 1000),
     );
   }
 }
@@ -88,7 +88,7 @@ class AuthMFAVerifyResponse {
   /// Updated user profile.
   final User user;
 
-  AuthMFAVerifyResponse({
+  const AuthMFAVerifyResponse({
     required this.accessToken,
     required this.tokenType,
     required this.expiresIn,
@@ -111,7 +111,7 @@ class AuthMFAUnenrollResponse {
   /// ID of the factor that was successfully unenrolled.
   final String id;
 
-  AuthMFAUnenrollResponse({required this.id});
+  const AuthMFAUnenrollResponse({required this.id});
 
   factory AuthMFAUnenrollResponse.fromJson(Map<String, dynamic> json) {
     return AuthMFAUnenrollResponse(id: json['id']);
@@ -129,7 +129,7 @@ class AuthMFAAdminListFactorsResponse {
   /// All factors attached to the user.
   final List<Factor> factors;
 
-  AuthMFAAdminListFactorsResponse({required this.factors});
+  const AuthMFAAdminListFactorsResponse({required this.factors});
 
   factory AuthMFAAdminListFactorsResponse.fromJson(Map<String, dynamic> json) {
     return AuthMFAAdminListFactorsResponse(
@@ -143,7 +143,7 @@ class AuthMFAAdminDeleteFactorResponse {
   /// ID of the factor that was successfully deleted.
   final String id;
 
-  AuthMFAAdminDeleteFactorResponse({required this.id});
+  const AuthMFAAdminDeleteFactorResponse({required this.id});
 
   factory AuthMFAAdminDeleteFactorResponse.fromJson(Map<String, dynamic> json) {
     return AuthMFAAdminDeleteFactorResponse(id: json['id']);
@@ -170,7 +170,7 @@ class Factor {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  Factor({
+  const Factor({
     required this.id,
     required this.friendlyName,
     required this.factorType,
@@ -217,7 +217,7 @@ class AuthMFAGetAuthenticatorAssuranceLevelResponse {
   /// Use the information here to detect the last time a user verified a factor, for example if implementing a step-up scenario.
   final List<AMREntry> currentAuthenticationMethods;
 
-  AuthMFAGetAuthenticatorAssuranceLevelResponse({
+  const AuthMFAGetAuthenticatorAssuranceLevelResponse({
     required this.currentLevel,
     required this.nextLevel,
     required this.currentAuthenticationMethods,
@@ -230,7 +230,7 @@ class AMREntry {
   final AMRMethod method;
   final DateTime timestamp;
 
-  AMREntry({required this.method, required this.timestamp});
+  const AMREntry({required this.method, required this.timestamp});
 
   factory AMREntry.fromJson(Map<String, dynamic> json) {
     return AMREntry(
