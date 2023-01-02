@@ -5,8 +5,8 @@ class AuthMFAEnrollResponse {
   /// ID of the factor that was just enrolled (in an unverified state).
   final String id;
 
-  /// Type of MFA factor. Only `totp` supported for now.
-  final String type;
+  /// Type of MFA factor. Only `[FactorType.totp] supported for now.
+  final FactorType type;
 
   /// TOTP enrollment information.
   final TOTPEnrollment totp;
@@ -20,7 +20,9 @@ class AuthMFAEnrollResponse {
   factory AuthMFAEnrollResponse.fromJson(Map<String, dynamic> json) {
     return AuthMFAEnrollResponse(
       id: json['id'],
-      type: json['type'],
+      type: FactorType.values.firstWhere(
+        (e) => e.name == json['type']
+      ),
       totp: TOTPEnrollment.fromJson(json['totp']),
     );
   }
