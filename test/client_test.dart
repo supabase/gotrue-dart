@@ -29,7 +29,7 @@ void main() {
 
     late StreamSubscription<AuthState> onAuthSubscription;
 
-    setUpAll(() {
+    setUp(() async {
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
@@ -37,6 +37,7 @@ void main() {
           'apikey': anonToken,
         },
       );
+
       clientWithAuthConfirmOff = GoTrueClient(
         url: gotrueUrlWithAutoConfirmOff,
         headers: {
@@ -65,7 +66,7 @@ void main() {
     test('signUp() with email', () async {
       final response = await client.signUp(
         email: email,
-        password: password,
+        password: "secret",
         emailRedirectTo: 'https://localhost:9998/welcome',
         data: {"Hello": "World"},
       );

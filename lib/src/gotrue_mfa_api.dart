@@ -16,7 +16,7 @@ class GoTrueMFAApi {
   ///
   /// Upon verifying a factor, all other sessions are logged out and the current session's authenticator level is promoted to `aal2`.
   ///
-  /// [factorType] : he type of factor being enrolled.
+  /// [factorType] : Type of factor being enrolled.
   ///
   /// [issuer] : Domain which the user is enrolled with.
   ///
