@@ -36,7 +36,7 @@ void main() {
       },
     );
   });
-  
+
   test('enroll', () async {
     await client.signInWithPassword(
         password: "secret", email: "fake1@email.com");

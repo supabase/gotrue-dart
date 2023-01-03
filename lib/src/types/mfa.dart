@@ -20,9 +20,7 @@ class AuthMFAEnrollResponse {
   factory AuthMFAEnrollResponse.fromJson(Map<String, dynamic> json) {
     return AuthMFAEnrollResponse(
       id: json['id'],
-      type: FactorType.values.firstWhere(
-        (e) => e.name == json['type']
-      ),
+      type: FactorType.values.firstWhere((e) => e.name == json['type']),
       totp: TOTPEnrollment.fromJson(json['totp']),
     );
   }
