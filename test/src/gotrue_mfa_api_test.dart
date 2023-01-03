@@ -6,16 +6,12 @@ import 'package:otp/otp.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-
   load(); // Load env variables from .env file
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
-  final gotrueUrlWithAutoConfirmOff =
-      env['GOTRUE_URL'] ?? 'http://localhost:9999';
+
   final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
-  final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
-  final phone = env['GOTRUE_USER_PHONE'] ?? '166600000000';
+  // final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
   final password = 'secret';
 
   late GoTrueClient client;
@@ -39,7 +35,7 @@ void main() {
 
   test('enroll', () async {
     await client.signInWithPassword(
-        password: "secret", email: "fake1@email.com");
+        password: password, email: "fake1@email.com");
 
     final res = await client.mfa
         .enroll(issuer: "MyFriend", friendlyName: "MyFriendName");
@@ -52,7 +48,7 @@ void main() {
 
   test('challenge', () async {
     await client.signInWithPassword(
-        password: "secret", email: "fake1@email.com");
+        password: password, email: "fake1@email.com");
     final factorId = "0d3aa138-da96-4aea-8217-af07daa6b82d";
     final res = await client.mfa.challenge(factorId: factorId);
     expect(res.expiresAt.isAfter(DateTime.now()), true);
@@ -60,7 +56,7 @@ void main() {
 
   test('verify', () async {
     await client.signInWithPassword(
-        password: "secret", email: "fake1@email.com");
+        password: password, email: "fake1@email.com");
 
     final factorId = "0d3aa138-da96-4aea-8217-af07daa6b82d";
     final secret = "R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS";
@@ -81,7 +77,7 @@ void main() {
 
   test("challenge and verify", () async {
     await client.signInWithPassword(
-        password: "secret", email: "fake1@email.com");
+        password: password, email: "fake1@email.com");
 
     final factorId = "0d3aa138-da96-4aea-8217-af07daa6b82d";
     final secret = "R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS";
