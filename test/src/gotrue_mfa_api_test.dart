@@ -73,9 +73,14 @@ void main() {
   test("challenge and verify", () async {
     await client.signInWithPassword(password: password, email: email1);
 
+    expect(client.currentUser!.factors!.length, 1);
+    expect(client.currentUser!.factors!.first.status, FactorStatus.unverified);
     final res = await client.mfa
         .challengeAndVerify(factorId: factorId1, code: getTOTP());
     expect(client.currentUser, res.user);
+    expect(client.currentUser!.factors!.length, 1);
+    expect(client.currentUser!.factors!.first.id, factorId1);
+    expect(client.currentUser!.factors!.first.status, FactorStatus.verified);
   });
 
   test("unenroll", () async {
@@ -121,6 +126,9 @@ void main() {
 String getTOTP() {
   final secret = "R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS";
   return OTP.generateTOTPCodeString(
-      secret, DateTime.now().millisecondsSinceEpoch,
-      algorithm: Algorithm.SHA1, isGoogle: true);
+    secret,
+    DateTime.now().millisecondsSinceEpoch,
+    algorithm: Algorithm.SHA1,
+    isGoogle: true,
+  );
 }
