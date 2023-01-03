@@ -1,5 +1,3 @@
-// part of 'gotrue_client.dart';
-
 import 'fetch.dart';
 import 'types/fetch_options.dart';
 import 'types/mfa.dart';
@@ -7,17 +5,18 @@ import 'types/mfa.dart';
 class GoTrueAdminMFAApi {
   final String _url;
   final Map<String, String> _headers;
-  final GotrueFetch fetch;
+  final GotrueFetch _fetch;
 
   GoTrueAdminMFAApi({
     required String url,
     required Map<String, String> headers,
-    required this.fetch,
+    required GotrueFetch fetch,
   })  : _url = url,
-        _headers = headers;
+        _headers = headers,
+        _fetch = fetch;
 
   Future<AuthMFAAdminListFactorsResponse> listFactors(String userId) async {
-    final data = await fetch.request(
+    final data = await _fetch.request(
       '$_url/admin/users/$userId/factors',
       RequestMethodType.get,
       options: GotrueRequestOptions(
@@ -25,12 +24,13 @@ class GoTrueAdminMFAApi {
       ),
     );
 
-    return AuthMFAAdminListFactorsResponse.fromJson(data);
+    return AuthMFAAdminListFactorsResponse(
+        factors: (data as List).map((e) => Factor.fromJson(e)).toList());
   }
 
   Future<AuthMFAAdminDeleteFactorResponse> deleteFactor(
       String userId, String factorId) async {
-    final data = await fetch.request(
+    final data = await _fetch.request(
       '$_url/admin/users/$userId/factors/$factorId',
       RequestMethodType.delete,
       options: GotrueRequestOptions(
