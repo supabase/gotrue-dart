@@ -176,7 +176,9 @@ class GoTrueMFAApi {
       nextLevel = AuthenticatorAssuranceLevels.aal2;
     }
 
-    final amr = payload['amr']?.map((e) => AMREntry.fromJson(e));
+    final amr = (payload['amr'] as List)
+        .map((e) => AMREntry.fromJson(Map.from(e)))
+        .toList();
     return AuthMFAGetAuthenticatorAssuranceLevelResponse(
       currentLevel: currentLevel,
       nextLevel: nextLevel,

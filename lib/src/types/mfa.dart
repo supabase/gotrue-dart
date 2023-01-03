@@ -224,7 +224,7 @@ class AuthMFAGetAuthenticatorAssuranceLevelResponse {
   });
 }
 
-enum AMRMethod { passowrd, otp, oauth, mfaTotp }
+enum AMRMethod { password, otp, oauth, totp }
 
 class AMREntry {
   final AMRMethod method;
@@ -237,7 +237,7 @@ class AMREntry {
       method: AMRMethod.values.firstWhere(
         (e) => e.name == json['method'],
       ),
-      timestamp: DateTime.parse(json['timestamp']),
+      timestamp: DateTime.parse(json['timestamp'].toString()),
     );
   }
 }
