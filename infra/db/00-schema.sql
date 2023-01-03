@@ -39,12 +39,30 @@ VALUES (
         '',
         '',
         '$2a$10$fOz84O1J.eztX.VzugMBteSCiLv4GnrzZJgoC4aJMvMPqCI.15vR2',
-        '2023-01-02 08:32:24.940663+00',
-        '2023-01-02 08:32:24.940663+00',
+        now(),
+        now(),
         '{"provider": "email", "providers": ["email"]}',
         '{}',
-        '2023-01-02 08:32:24.940663+00',
-        '2023-01-02 08:32:24.940663+00',
+        now(),
+        now(),
+        '',
+        '',
+        '',
+        ''
+    ),
+    (
+        '00000000-0000-0000-0000-000000000000',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        'fake2@email.com',
+        '',
+        '',
+        '$2a$10$fOz84O1J.eztX.VzugMBteSCiLv4GnrzZJgoC4aJMvMPqCI.15vR2',
+        now(),
+        now(),
+        '{"provider": "email", "providers": ["email"]}',
+        '{}',
+        now(),
+        now(),
         '',
         '',
         '',
@@ -64,11 +82,20 @@ VALUES (
         '18bc7a4e-c095-4573-93dc-e0be29bada97',
         '{"sub": "18bc7a4e-c095-4573-93dc-e0be29bada97", "email": "fake1@email.com"}',
         'email',
-        '2023-01-02 08:32:24.940663+00',
-        '2023-01-02 08:32:24.940663+00',
-        '2023-01-02 08:32:24.940663+00'
+        now(),
+        now(),
+        now()
+    ),
+    (
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        '{"sub": "28bc7a4e-c095-4573-93dc-e0be29bada97", "email": "fake2@email.com"}',
+        'email',
+        now(),
+        now(),
+        now()
     );
-INSERT INTO mfa_factors (
+INSERT INTO auth.mfa_factors (
         id,
         user_id,
         friendly_name,
@@ -79,29 +106,73 @@ INSERT INTO mfa_factors (
         secret
     )
 VALUES (
-        '0d3aa138-da96-4aea-8217-af07daa6b82d',
+        '1d3aa138-da96-4aea-8217-af07daa6b82d',
         '18bc7a4e-c095-4573-93dc-e0be29bada97',
-        'MyFriendlyName',
+        'UnverifiedFactor',
         'totp',
         'unverified',
         now(),
         now(),
         'R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS'
+    ),
+    (
+        '2d3aa138-da96-4aea-8217-af07daa6b82d',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        'VeririedFactor',
+        'totp',
+        'verified',
+        now(),
+        now(),
+        'R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS'
     );
--- RAISE EXCEPTION 'TEST NOTICE %', select current_setting('request.headers', true);
-INSERT INTO mfa_challenges (id, factor_id, created_at, ip_address)
+INSERT INTO auth.mfa_challenges (id, factor_id, created_at, ip_address)
 VALUES (
         'b824ca10-cc13-4250-adba-20ee6e5e7dcd',
-        '0d3aa138-da96-4aea-8217-af07daa6b82d',
+        '1d3aa138-da96-4aea-8217-af07daa6b82d',
         now(),
         COALESCE(
-            (SPLIT_PART(current_setting('request.headers', true)::json->>'x-forwarded-for',',',1))::inet,
+            (
+                SPLIT_PART(
+                    current_setting('request.headers', true)::json->>'x-forwarded-for',
+                    ',',
+                    1
+                )
+            )::inet,
             '192.168.96.1'::inet
         )
     );
+INSERT INTO auth.sessions (
+        id,
+        user_id,
+        created_at,
+        updated_at,
+        factor_id,
+        aal
+    )
+VALUES (
+        'c2297abc-e22a-4bc8-ab79-b939b09556d9',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        now(),
+        now(),
+        '2d3aa138-da96-4aea-8217-af07daa6b82d',
+        'aal2'
+    );
+INSERT INTO auth.mfa_amr_claims (
+        session_id,
+        created_at,
+        updated_at,
+        authentication_method,
+        id
+    )
+VALUES(
+        'c2297abc-e22a-4bc8-ab79-b939b09556d9',
+        now(),
+        now(),
+        'totp',
+        'c12fa6c6-dc60-43fa-ac09-1413d77c2bd6'
+    );
 $$;
 COMMIT;
-
 create or replace function auth.test() returns json language sql as $$
-select current_setting('request.headers',true)::json;
+select current_setting('request.headers', true)::json;
 $$;
