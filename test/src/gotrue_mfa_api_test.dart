@@ -24,7 +24,7 @@ void main() {
     final res = await http.post(
         Uri.parse("http://localhost:3000/rpc/reset_and_init_auth_data"),
         headers: {'x-forwarded-for': '127.0.0.1'});
-    print(res.body);
+    if (res.body.isNotEmpty) throw res.body;
 
     client = GoTrueClient(
       url: gotrueUrl,

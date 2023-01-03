@@ -29,7 +29,7 @@ void main() {
 
     late StreamSubscription<AuthState> onAuthSubscription;
 
-    setUp(() async {
+    setUpAll(() async {
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
@@ -66,7 +66,7 @@ void main() {
     test('signUp() with email', () async {
       final response = await client.signUp(
         email: email,
-        password: "secret",
+        password: password,
         emailRedirectTo: 'https://localhost:9998/welcome',
         data: {"Hello": "World"},
       );
