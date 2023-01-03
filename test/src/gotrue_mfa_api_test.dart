@@ -99,6 +99,14 @@ void main() {
     expect(res.all.length, 1);
     expect(res.all.first.id, factorId2);
     expect(res.all.first.status, FactorStatus.verified);
+    expect(
+        res.all.first.createdAt.difference(DateTime.now()) <
+            Duration(seconds: 2),
+        true);
+    expect(
+        res.all.first.updatedAt.difference(DateTime.now()) <
+            Duration(seconds: 2),
+        true);
   });
 
   test("aal1 for only password", () async {
@@ -120,6 +128,9 @@ void main() {
         .firstWhereOrNull((element) => element.method == AMRMethod.totp);
     expect(passwordEntry, isNotNull);
     expect(totpEntry, isNotNull);
+    expect(
+        totpEntry!.timestamp.difference(DateTime.now()) < Duration(seconds: 2),
+        true);
   });
 }
 

@@ -1,5 +1,5 @@
+import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
-import 'package:gotrue/src/types/user.dart';
 
 class AuthMFAEnrollResponse {
   /// ID of the factor that was just enrolled (in an unverified state).
@@ -226,8 +226,18 @@ class AuthMFAGetAuthenticatorAssuranceLevelResponse {
 
 enum AMRMethod { password, otp, oauth, totp }
 
+/// An authentication method reference (AMR) entry.
+///
+/// An entry designates what method was used by the user to verify their
+/// identity and at what time.
+///
+/// see [GoTrueMFAApi.getAuthenticatorAssuranceLevel].
+///
 class AMREntry {
+  /// authentication method name
   final AMRMethod method;
+
+  /// Timestamp when the method was successfully used.
   final DateTime timestamp;
 
   const AMREntry({required this.method, required this.timestamp});
@@ -237,7 +247,7 @@ class AMREntry {
       method: AMRMethod.values.firstWhere(
         (e) => e.name == json['method'],
       ),
-      timestamp: DateTime.parse(json['timestamp'].toString()),
+      timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp'] * 1000),
     );
   }
 }
