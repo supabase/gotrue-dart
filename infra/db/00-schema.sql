@@ -4,9 +4,12 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth TO postgres;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth TO postgres;
 ALTER USER postgres
 SET search_path = "auth";
+
+
 BEGIN;
-SET LOCAL check_function_bodies TO FALSE;
 -- Tables have not been created yet
+SET LOCAL check_function_bodies TO FALSE;
+
 create OR REPLACE function auth.reset_and_init_auth_data() returns void language sql security definer as $$
 DELETE FROM auth.users;
 DELETE FROM auth.mfa_amr_claims;
@@ -14,6 +17,8 @@ DELETE FROM auth.mfa_challenges;
 DELETE FROM auth.mfa_factors;
 DELETE FROM auth.sessions;
 DELETE FROM auth.refresh_tokens;
+
+
 INSERT INTO auth.users (
         instance_id,
         id,
@@ -32,7 +37,8 @@ INSERT INTO auth.users (
         email_change_token_new,
         email_change
     )
-VALUES (
+VALUES -- For unverified factors
+    (
         '00000000-0000-0000-0000-000000000000',
         '18bc7a4e-c095-4573-93dc-e0be29bada97',
         'fake1@email.com',
@@ -50,6 +56,7 @@ VALUES (
         '',
         ''
     ),
+    -- For verified factors
     (
         '00000000-0000-0000-0000-000000000000',
         '28bc7a4e-c095-4573-93dc-e0be29bada97',
@@ -68,6 +75,8 @@ VALUES (
         '',
         ''
     );
+
+
 INSERT INTO auth.identities (
         id,
         user_id,
@@ -95,6 +104,8 @@ VALUES (
         now(),
         now()
     );
+
+
 INSERT INTO auth.mfa_factors (
         id,
         user_id,
@@ -125,6 +136,8 @@ VALUES (
         now(),
         'R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS'
     );
+
+
 INSERT INTO auth.mfa_challenges (id, factor_id, created_at, ip_address)
 VALUES (
         'b824ca10-cc13-4250-adba-20ee6e5e7dcd',
@@ -141,6 +154,8 @@ VALUES (
             '192.168.96.1'::inet
         )
     );
+
+
 INSERT INTO auth.sessions (
         id,
         user_id,
@@ -157,6 +172,8 @@ VALUES (
         '2d3aa138-da96-4aea-8217-af07daa6b82d',
         'aal2'
     );
+
+
 INSERT INTO auth.mfa_amr_claims (
         session_id,
         created_at,
@@ -173,6 +190,3 @@ VALUES(
     );
 $$;
 COMMIT;
-create or replace function auth.test() returns json language sql as $$
-select current_setting('request.headers', true)::json;
-$$;
