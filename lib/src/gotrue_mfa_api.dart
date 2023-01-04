@@ -8,10 +8,10 @@ class GoTrueMFAApi {
       : _client = client,
         _fetch = fetch;
 
-  /// Starts the enrollment process for a new Multi-Factor Authentication (MFA)
-  /// factor. This method creates a new `unverified` factor.
-  /// To verify a factor, present the QR code or secret to the user and ask them to add it to their
-  /// authenticator app.
+  /// Starts the enrollment process for a new Multi-Factor Authentication (MFA) factor.
+  /// This method creates a new `unverified` factor.
+  /// To verify a factor, present the QR code or secret to the user and ask them to add it to their authenticator app.
+  ///
   /// The user has to enter the code from their authenticator app to verify it.
   ///
   /// Upon verifying a factor, all other sessions are logged out and the current session's authenticator level is promoted to `aal2`.
@@ -79,15 +79,17 @@ class GoTrueMFAApi {
     final session = _client.currentSession;
 
     final data = await _fetch.request(
-        '${_client._url}/factors/$factorId/verify', RequestMethodType.post,
-        options: GotrueRequestOptions(
-          headers: _client._headers,
-          body: {
-            'challenge_id': challengeId,
-            'code': code,
-          },
-          jwt: session?.accessToken,
-        ));
+      '${_client._url}/factors/$factorId/verify',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: _client._headers,
+        body: {
+          'challenge_id': challengeId,
+          'code': code,
+        },
+        jwt: session?.accessToken,
+      ),
+    );
 
     final response = AuthMFAVerifyResponse.fromJson(data);
     _client._saveSession(
@@ -110,11 +112,13 @@ class GoTrueMFAApi {
     final session = _client.currentSession;
 
     final data = await _fetch.request(
-        '${_client._url}/factors/$factorId', RequestMethodType.delete,
-        options: GotrueRequestOptions(
-          headers: _client._headers,
-          jwt: session?.accessToken,
-        ));
+      '${_client._url}/factors/$factorId',
+      RequestMethodType.delete,
+      options: GotrueRequestOptions(
+        headers: _client._headers,
+        jwt: session?.accessToken,
+      ),
+    );
 
     return AuthMFAUnenrollResponse.fromJson(data);
   }
@@ -134,11 +138,11 @@ class GoTrueMFAApi {
     );
   }
 
-  /// Returns the list of MFA factors enabled for this user. If you need to update this list, call [GoTrueClient.refreshSession] first.
+  /// Returns the list of MFA factors enabled for this user.
   ///
-  /// see [GoTrueMFAApi.enroll]
-  /// see [GoTrueMFAApi.getAuthenticatorAssuranceLevel]
-  AuthMFAListFactorsResponse listFactors() {
+  /// Automatically refreshes the session to get the latest list of factors.
+  Future<AuthMFAListFactorsResponse> listFactors() async {
+    await _client.refreshSession();
     final user = _client.currentUser;
     final factors = user?.factors ?? [];
     final totp = factors
@@ -152,7 +156,7 @@ class GoTrueMFAApi {
 
   /// Returns the Authenticator Assurance Level (AAL) for the active session.
   ///
-  ///You can use this to check whether the current user needs to be shown a screen to verify their MFA factors.
+  /// You can use this to check whether the current user needs to be shown a screen to verify their MFA factors.
   AuthMFAGetAuthenticatorAssuranceLevelResponse
       getAuthenticatorAssuranceLevel() {
     final session = _client.currentSession;

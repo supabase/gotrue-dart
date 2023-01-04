@@ -94,7 +94,9 @@ void main() {
 
   test("list factors", () async {
     await client.signInWithPassword(password: password, email: email2);
-    final res = client.mfa.listFactors();
+
+    final res = await client.mfa.listFactors();
+
     expect(res.totp.length, 1);
     expect(res.all.length, 1);
     expect(res.all.first.id, factorId2);
