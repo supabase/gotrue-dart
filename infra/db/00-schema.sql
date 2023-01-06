@@ -35,7 +35,9 @@ INSERT INTO auth.users (
         confirmation_token,
         recovery_token,
         email_change_token_new,
-        email_change
+        email_change,
+        phone,
+        phone_confirmed_at
     )
 VALUES -- For unverified factors
     (
@@ -54,7 +56,9 @@ VALUES -- For unverified factors
         '',
         '',
         '',
-        ''
+        '',
+        '166600000000',
+        now()
     ),
     -- For verified factors
     (
@@ -73,7 +77,9 @@ VALUES -- For unverified factors
         '',
         '',
         '',
-        ''
+        '',
+        null,
+        null
     );
 
 
