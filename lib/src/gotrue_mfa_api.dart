@@ -146,9 +146,9 @@ class GoTrueMFAApi {
     final user = _client.currentUser;
     final factors = user?.factors ?? [];
     final totp = factors
-        .where((element) =>
-            element.factorType == FactorType.totp &&
-            element.status == FactorStatus.verified)
+        .where((factor) =>
+            factor.factorType == FactorType.totp &&
+            factor.status == FactorStatus.verified)
         .toList();
 
     return AuthMFAListFactorsResponse(all: factors, totp: totp);
