@@ -1,3 +1,5 @@
+import 'package:gotrue/src/types/mfa.dart';
+
 class User {
   final String id;
   final Map<String, dynamic> appMetadata;
@@ -20,6 +22,7 @@ class User {
   final String? role;
   final String? updatedAt;
   final List<UserIdentity>? identities;
+  final List<Factor>? factors;
 
   const User({
     required this.id,
@@ -42,6 +45,7 @@ class User {
     this.role,
     this.updatedAt,
     this.identities,
+    this.factors,
   });
 
   /// Returns a `User` object from a map of json
@@ -74,6 +78,10 @@ class User {
       identities:
           (json['identities'] as List?)?.cast<Map<String, dynamic>>().map((e) {
         return UserIdentity.fromMap(e);
+      }).toList(),
+      factors:
+          (json['factors'] as List?)?.cast<Map<String, dynamic>>().map((e) {
+        return Factor.fromJson(e);
       }).toList(),
     );
   }

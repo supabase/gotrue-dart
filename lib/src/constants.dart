@@ -21,6 +21,7 @@ enum AuthChangeEvent {
   tokenRefreshed,
   userUpdated,
   userDeleted,
+  mfaChallengeVerified,
 }
 
 enum GenerateLinkType {

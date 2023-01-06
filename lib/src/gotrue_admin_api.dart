@@ -4,19 +4,28 @@ import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 
+import 'gotrue_admin_mfa_api.dart';
+
 class GoTrueAdminApi {
   final String _url;
   final Map<String, String> _headers;
 
   final Client? _httpClient;
   late final GotrueFetch _fetch = GotrueFetch(_httpClient);
+  late final GoTrueAdminMFAApi mfa;
 
   GoTrueAdminApi(
     this._url, {
     Map<String, String>? headers,
     Client? httpClient,
   })  : _headers = headers ?? {},
-        _httpClient = httpClient;
+        _httpClient = httpClient {
+    mfa = GoTrueAdminMFAApi(
+      url: _url,
+      headers: _headers,
+      fetch: _fetch,
+    );
+  }
 
   /// Removes a logged-in session.
   Future<void> signOut(String jwt) async {
@@ -79,7 +88,7 @@ class GoTrueAdminApi {
       RequestMethodType.get,
       options: options,
     );
-    return (response["users"] as List).map((e) => User.fromJson(e)!).toList();
+    return (response['users'] as List).map((e) => User.fromJson(e)!).toList();
   }
 
   /// Sends an invite link to an email address.

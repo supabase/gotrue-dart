@@ -102,7 +102,7 @@ void main() {
 
     test('createUser() creates a new user', () async {
       final newEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
-      final userMetadata = {"name": "supabase"};
+      final userMetadata = {'name': 'supabase'};
       final res = await client.admin.createUser(
           AdminUserAttributes(email: newEmail, userMetadata: userMetadata));
       expect(res.user, isNotNull);
@@ -111,8 +111,8 @@ void main() {
     });
   });
 
-  group("User deletion", () {
-    test("deleteUser() deletes an user", () async {
+  group('User deletion', () {
+    test('deleteUser() deletes an user', () async {
       final newUser = await client.admin.createUser(AdminUserAttributes(
         email: 'new${Random.secure().nextInt(4096)}@fake.org',
         password: password,

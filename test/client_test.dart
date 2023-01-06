@@ -29,7 +29,7 @@ void main() {
 
     late StreamSubscription<AuthState> onAuthSubscription;
 
-    setUpAll(() {
+    setUpAll(() async {
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
@@ -37,6 +37,7 @@ void main() {
           'apikey': anonToken,
         },
       );
+
       clientWithAuthConfirmOff = GoTrueClient(
         url: gotrueUrlWithAutoConfirmOff,
         headers: {
@@ -67,13 +68,13 @@ void main() {
         email: email,
         password: password,
         emailRedirectTo: 'https://localhost:9998/welcome',
-        data: {"Hello": "World"},
+        data: {'Hello': 'World'},
       );
       final data = response.session;
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user.id, isA<String>());
-      expect(data?.user.userMetadata, {"Hello": "World"});
+      expect(data?.user.userMetadata, {'Hello': 'World'});
     });
 
     test('Parsing invalid URL should emit Exception on onAuthStateChange',
@@ -106,13 +107,13 @@ void main() {
         phone: phone,
         password: password,
         emailRedirectTo: 'https://localhost:9998/welcome',
-        data: {"Hello": "World"},
+        data: {'Hello': 'World'},
       );
       final data = response.session;
       expect(data?.accessToken, isA<String>());
       expect(data?.refreshToken, isA<String>());
       expect(data?.user.id, isA<String>());
-      expect(data?.user.userMetadata, {"Hello": "World"});
+      expect(data?.user.userMetadata, {'Hello': 'World'});
     });
 
     test('signUp() with autoConfirm off with email', () async {
@@ -304,7 +305,7 @@ void main() {
     });
   });
 
-  group("Client with custom http client", () {
+  group('Client with custom http client', () {
     late GoTrueClient client;
 
     setUpAll(() {

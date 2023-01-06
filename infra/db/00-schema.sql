@@ -1,86 +1,192 @@
 CREATE SCHEMA IF NOT EXISTS auth AUTHORIZATION postgres;
--- auth.users definition
-CREATE TABLE auth.users (
-	instance_id uuid NULL,
-	id uuid NOT NULL,
-	aud varchar(255) NULL,
-	"role" varchar(255) NULL,
-	email varchar(255) NULL,
-	encrypted_password varchar(255) NULL,
-	confirmed_at timestamptz NULL,
-	invited_at timestamptz NULL,
-	confirmation_token varchar(255) NULL,
-	confirmation_sent_at timestamptz NULL,
-	recovery_token varchar(255) NULL,
-	recovery_sent_at timestamptz NULL,
-	email_change_token varchar(255) NULL,
-	email_change varchar(255) NULL,
-	email_change_sent_at timestamptz NULL,
-	last_sign_in_at timestamptz NULL,
-	raw_app_meta_data jsonb NULL,
-	raw_user_meta_data jsonb NULL,
-	is_super_admin bool NULL,
-	created_at timestamptz NULL,
-	updated_at timestamptz NULL,
-	CONSTRAINT users_pkey PRIMARY KEY (id)
-);
-CREATE INDEX users_instance_id_email_idx ON auth.users USING btree (instance_id, email);
-CREATE INDEX users_instance_id_idx ON auth.users USING btree (instance_id);
--- auth.refresh_tokens definition
-CREATE TABLE auth.refresh_tokens (
-	instance_id uuid NULL,
-	id bigserial NOT NULL,
-	"token" varchar(255) NULL,
-	user_id varchar(255) NULL,
-	revoked bool NULL,
-	created_at timestamptz NULL,
-	updated_at timestamptz NULL,
-	CONSTRAINT refresh_tokens_pkey PRIMARY KEY (id)
-);
-CREATE INDEX refresh_tokens_instance_id_idx ON auth.refresh_tokens USING btree (instance_id);
-CREATE INDEX refresh_tokens_instance_id_user_id_idx ON auth.refresh_tokens USING btree (instance_id, user_id);
-CREATE INDEX refresh_tokens_token_idx ON auth.refresh_tokens USING btree (token);
--- auth.instances definition
-CREATE TABLE auth.instances (
-	id uuid NOT NULL,
-	uuid uuid NULL,
-	raw_base_config text NULL,
-	created_at timestamptz NULL,
-	updated_at timestamptz NULL,
-	CONSTRAINT instances_pkey PRIMARY KEY (id)
-);
--- auth.audit_log_entries definition
-CREATE TABLE auth.audit_log_entries (
-	instance_id uuid NULL,
-	id uuid NOT NULL,
-	payload json NULL,
-	created_at timestamptz NULL,
-	CONSTRAINT audit_log_entries_pkey PRIMARY KEY (id)
-);
-CREATE INDEX audit_logs_instance_id_idx ON auth.audit_log_entries USING btree (instance_id);
--- auth.schema_migrations definition
-CREATE TABLE auth.schema_migrations (
-	"version" varchar(255) NOT NULL,
-	CONSTRAINT schema_migrations_pkey PRIMARY KEY ("version")
-);
-INSERT INTO auth.schema_migrations (version)
-VALUES  ('20171026211738'),
-        ('20171026211808'),
-        ('20171026211834'),
-        ('20180103212743'),
-        ('20180108183307'),
-        ('20180119214651'),
-        ('20180125194653');
--- Gets the User ID from the request cookie
-create or replace function auth.uid() returns uuid as $$
-  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid;
-$$ language sql stable;
--- Gets the User ID from the request cookie
-create or replace function auth.role() returns text as $$
-  select nullif(current_setting('request.jwt.claim.role', true), '')::text;
-$$ language sql stable;
 GRANT ALL PRIVILEGES ON SCHEMA auth TO postgres;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA auth TO postgres;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA auth TO postgres;
-ALTER USER postgres SET search_path = "auth";
+ALTER USER postgres
+SET search_path = "auth";
 
+
+BEGIN;
+-- Tables have not been created yet
+SET LOCAL check_function_bodies TO FALSE;
+
+create OR REPLACE function auth.reset_and_init_auth_data() returns void language sql security definer as $$
+DELETE FROM auth.users;
+DELETE FROM auth.mfa_amr_claims;
+DELETE FROM auth.mfa_challenges;
+DELETE FROM auth.mfa_factors;
+DELETE FROM auth.sessions;
+DELETE FROM auth.refresh_tokens;
+
+
+INSERT INTO auth.users (
+        instance_id,
+        id,
+        email,
+        aud,
+        role,
+        encrypted_password,
+        email_confirmed_at,
+        last_sign_in_at,
+        raw_app_meta_data,
+        raw_user_meta_data,
+        created_at,
+        updated_at,
+        confirmation_token,
+        recovery_token,
+        email_change_token_new,
+        email_change
+    )
+VALUES -- For unverified factors
+    (
+        '00000000-0000-0000-0000-000000000000',
+        '18bc7a4e-c095-4573-93dc-e0be29bada97',
+        'fake1@email.com',
+        '',
+        '',
+        '$2a$10$fOz84O1J.eztX.VzugMBteSCiLv4GnrzZJgoC4aJMvMPqCI.15vR2',
+        now(),
+        now(),
+        '{"provider": "email", "providers": ["email"]}',
+        '{}',
+        now(),
+        now(),
+        '',
+        '',
+        '',
+        ''
+    ),
+    -- For verified factors
+    (
+        '00000000-0000-0000-0000-000000000000',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        'fake2@email.com',
+        '',
+        '',
+        '$2a$10$fOz84O1J.eztX.VzugMBteSCiLv4GnrzZJgoC4aJMvMPqCI.15vR2',
+        now(),
+        now(),
+        '{"provider": "email", "providers": ["email"]}',
+        '{}',
+        now(),
+        now(),
+        '',
+        '',
+        '',
+        ''
+    );
+
+
+INSERT INTO auth.identities (
+        id,
+        user_id,
+        identity_data,
+        provider,
+        last_sign_in_at,
+        created_at,
+        updated_at
+    )
+VALUES (
+        '18bc7a4e-c095-4573-93dc-e0be29bada97',
+        '18bc7a4e-c095-4573-93dc-e0be29bada97',
+        '{"sub": "18bc7a4e-c095-4573-93dc-e0be29bada97", "email": "fake1@email.com"}',
+        'email',
+        now(),
+        now(),
+        now()
+    ),
+    (
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        '{"sub": "28bc7a4e-c095-4573-93dc-e0be29bada97", "email": "fake2@email.com"}',
+        'email',
+        now(),
+        now(),
+        now()
+    );
+
+
+INSERT INTO auth.mfa_factors (
+        id,
+        user_id,
+        friendly_name,
+        factor_type,
+        status,
+        created_at,
+        updated_at,
+        secret
+    )
+VALUES (
+        '1d3aa138-da96-4aea-8217-af07daa6b82d',
+        '18bc7a4e-c095-4573-93dc-e0be29bada97',
+        'UnverifiedFactor',
+        'totp',
+        'unverified',
+        now(),
+        now(),
+        'R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS'
+    ),
+    (
+        '2d3aa138-da96-4aea-8217-af07daa6b82d',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        'VerifiedFactor',
+        'totp',
+        'verified',
+        now(),
+        now(),
+        'R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS'
+    );
+
+
+INSERT INTO auth.mfa_challenges (id, factor_id, created_at, ip_address)
+VALUES (
+        'b824ca10-cc13-4250-adba-20ee6e5e7dcd',
+        '1d3aa138-da96-4aea-8217-af07daa6b82d',
+        now(),
+        COALESCE(
+            (
+                SPLIT_PART(
+                    current_setting('request.headers', true)::json->>'x-forwarded-for',
+                    ',',
+                    1
+                )
+            )::inet,
+            '192.168.96.1'::inet
+        )
+    );
+
+
+INSERT INTO auth.sessions (
+        id,
+        user_id,
+        created_at,
+        updated_at,
+        factor_id,
+        aal
+    )
+VALUES (
+        'c2297abc-e22a-4bc8-ab79-b939b09556d9',
+        '28bc7a4e-c095-4573-93dc-e0be29bada97',
+        now(),
+        now(),
+        '2d3aa138-da96-4aea-8217-af07daa6b82d',
+        'aal2'
+    );
+
+
+INSERT INTO auth.mfa_amr_claims (
+        session_id,
+        created_at,
+        updated_at,
+        authentication_method,
+        id
+    )
+VALUES(
+        'c2297abc-e22a-4bc8-ab79-b939b09556d9',
+        now(),
+        now(),
+        'totp',
+        'c12fa6c6-dc60-43fa-ac09-1413d77c2bd6'
+    );
+$$;
+COMMIT;
