@@ -15,8 +15,10 @@ void main() {
         env['GOTRUE_JWT_SECRET'] ?? '37c304f8-51aa-419a-a1af-06154e63707a'),
   );
 
-  final userId2 = "28bc7a4e-c095-4573-93dc-e0be29bada97";
-  final factorId2 = "2d3aa138-da96-4aea-8217-af07daa6b82d";
+  /// User ID of the user with verified factor
+  const userId2 = "28bc7a4e-c095-4573-93dc-e0be29bada97";
+  /// Factor ID of `userId2`
+  const factorId2 = "2d3aa138-da96-4aea-8217-af07daa6b82d";
 
   late GoTrueClient client;
 
