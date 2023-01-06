@@ -175,7 +175,7 @@ class GoTrueMFAApi {
     var nextLevel = currentLevel;
 
     if (session.user.factors
-            ?.any((element) => element.status == FactorStatus.verified) ??
+            ?.any((factor) => factor.status == FactorStatus.verified) ??
         false) {
       nextLevel = AuthenticatorAssuranceLevels.aal2;
     }
