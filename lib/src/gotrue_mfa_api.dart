@@ -8,6 +8,24 @@ class GoTrueMFAApi {
       : _client = client,
         _fetch = fetch;
 
+  /// Unenroll removes a MFA factor.
+  ///
+  /// A user has to have an `aal2` authenticator level in order to unenroll a `verified` factor.
+  Future<AuthMFAUnenrollResponse> unenroll(String factorId) async {
+    final session = _client.currentSession;
+
+    final data = await _fetch.request(
+      '${_client._url}/factors/$factorId',
+      RequestMethodType.delete,
+      options: GotrueRequestOptions(
+        headers: _client._headers,
+        jwt: session?.accessToken,
+      ),
+    );
+
+    return AuthMFAUnenrollResponse.fromJson(data);
+  }
+
   /// Starts the enrollment process for a new Multi-Factor Authentication (MFA) factor.
   /// This method creates a new `unverified` factor.
   /// To verify a factor, present the QR code or secret to the user and ask them to add it to their authenticator app.
@@ -48,26 +66,6 @@ class GoTrueMFAApi {
     return response;
   }
 
-  /// Prepares a challenge used to verify that a user has access to a MFA factor.
-  ///
-  /// [factorId] System assigned identifier for authenticator device as returned by enroll
-  Future<AuthMFAChallengeResponse> challenge({
-    required String factorId,
-  }) async {
-    final session = _client.currentSession;
-
-    final data = await _fetch.request(
-      "${_client._url}/factors/$factorId/challenge",
-      RequestMethodType.post,
-      options: GotrueRequestOptions(
-        headers: _client._headers,
-        jwt: session?.accessToken,
-      ),
-    );
-
-    return AuthMFAChallengeResponse.fromJson(data);
-  }
-
   /// Verifies a code against a [challengeId].
   ///
   /// The verification [code] is provided by the user by entering a code seen in their authenticator app.
@@ -105,22 +103,24 @@ class GoTrueMFAApi {
     return response;
   }
 
-  /// Unenroll removes a MFA factor.
+  /// Prepares a challenge used to verify that a user has access to a MFA factor.
   ///
-  /// A user has to have an `aal2` authenticator level in order to unenroll a `verified` factor.
-  Future<AuthMFAUnenrollResponse> unenroll(String factorId) async {
+  /// [factorId] System assigned identifier for authenticator device as returned by enroll
+  Future<AuthMFAChallengeResponse> challenge({
+    required String factorId,
+  }) async {
     final session = _client.currentSession;
 
     final data = await _fetch.request(
-      '${_client._url}/factors/$factorId',
-      RequestMethodType.delete,
+      "${_client._url}/factors/$factorId/challenge",
+      RequestMethodType.post,
       options: GotrueRequestOptions(
         headers: _client._headers,
         jwt: session?.accessToken,
       ),
     );
 
-    return AuthMFAUnenrollResponse.fromJson(data);
+    return AuthMFAChallengeResponse.fromJson(data);
   }
 
   /// Helper method which creates a challenge and immediately uses the given code to verify against it thereafter.
