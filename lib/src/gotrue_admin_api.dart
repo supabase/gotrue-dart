@@ -88,7 +88,7 @@ class GoTrueAdminApi {
       RequestMethodType.get,
       options: options,
     );
-    return (response["users"] as List).map((e) => User.fromJson(e)!).toList();
+    return (response['users'] as List).map((e) => User.fromJson(e)!).toList();
   }
 
   /// Sends an invite link to an email address.

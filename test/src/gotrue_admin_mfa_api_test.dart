@@ -16,16 +16,16 @@ void main() {
   );
 
   /// User ID of the user with verified factor
-  const userId2 = "28bc7a4e-c095-4573-93dc-e0be29bada97";
+  const userId2 = '28bc7a4e-c095-4573-93dc-e0be29bada97';
 
   /// Factor ID of `userId2`
-  const factorId2 = "2d3aa138-da96-4aea-8217-af07daa6b82d";
+  const factorId2 = '2d3aa138-da96-4aea-8217-af07daa6b82d';
 
   late GoTrueClient client;
 
   setUp(() async {
     final res = await http.post(
-        Uri.parse("http://localhost:3000/rpc/reset_and_init_auth_data"),
+        Uri.parse('http://localhost:3000/rpc/reset_and_init_auth_data'),
         headers: {'x-forwarded-for': '127.0.0.1'});
     if (res.body.isNotEmpty) throw res.body;
 
@@ -39,7 +39,7 @@ void main() {
     );
   });
 
-  test("list factors", () async {
+  test('list factors', () async {
     final res = await client.admin.mfa.listFactors(userId: userId2);
     expect(res.factors.length, 1);
     final factor = res.factors.first;
@@ -50,7 +50,7 @@ void main() {
     expect(factor.id, factorId2);
   });
 
-  test("delete factor", () async {
+  test('delete factor', () async {
     final res = await client.admin.mfa.deleteFactor(
       userId: userId2,
       factorId: factorId2,

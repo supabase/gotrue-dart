@@ -20,17 +20,17 @@ void main() {
   const email2 = 'fake2@email.com';
 
   /// Factor ID of user with email1
-  const factorId1 = "1d3aa138-da96-4aea-8217-af07daa6b82d";
+  const factorId1 = '1d3aa138-da96-4aea-8217-af07daa6b82d';
 
   /// Factor ID of user with email2
-  const factorId2 = "2d3aa138-da96-4aea-8217-af07daa6b82d";
+  const factorId2 = '2d3aa138-da96-4aea-8217-af07daa6b82d';
 
   final password = 'secret';
 
   late GoTrueClient client;
   setUp(() async {
     final res = await http.post(
-        Uri.parse("http://localhost:3000/rpc/reset_and_init_auth_data"),
+        Uri.parse('http://localhost:3000/rpc/reset_and_init_auth_data'),
         headers: {'x-forwarded-for': '127.0.0.1'});
     if (res.body.isNotEmpty) throw res.body;
 
@@ -48,12 +48,12 @@ void main() {
     await client.signInWithPassword(password: password, email: email1);
 
     final res = await client.mfa
-        .enroll(issuer: "MyFriend", friendlyName: "MyFriendName");
+        .enroll(issuer: 'MyFriend', friendlyName: 'MyFriendName');
     final uri = Uri.parse(res.totp.uri);
 
     expect(res.type, FactorType.totp);
-    expect(uri.queryParameters["issuer"], "MyFriend");
-    expect(uri.scheme, "otpauth");
+    expect(uri.queryParameters['issuer'], 'MyFriend');
+    expect(uri.scheme, 'otpauth');
   });
 
   test('challenge', () async {
@@ -67,7 +67,7 @@ void main() {
   test('verify', () async {
     await client.signInWithPassword(password: password, email: email1);
 
-    final challengeId = "b824ca10-cc13-4250-adba-20ee6e5e7dcd";
+    final challengeId = 'b824ca10-cc13-4250-adba-20ee6e5e7dcd';
 
     final res = await client.mfa
         .verify(factorId: factorId1, challengeId: challengeId, code: getTOTP());
@@ -78,7 +78,7 @@ void main() {
     expect(client.currentSession?.expiresIn, res.expiresIn.inSeconds);
   });
 
-  test("challenge and verify", () async {
+  test('challenge and verify', () async {
     await client.signInWithPassword(password: password, email: email1);
 
     expect(client.currentUser!.factors!.length, 1);
@@ -91,7 +91,7 @@ void main() {
     expect(client.currentUser!.factors!.first.status, FactorStatus.verified);
   });
 
-  test("unenroll", () async {
+  test('unenroll', () async {
     await client.signInWithPassword(password: password, email: email2);
 
     await client.mfa.challengeAndVerify(factorId: factorId2, code: getTOTP());
@@ -100,7 +100,7 @@ void main() {
     expect(res.id, factorId2);
   });
 
-  test("list factors", () async {
+  test('list factors', () async {
     await client.signInWithPassword(password: password, email: email2);
 
     final res = await client.mfa.listFactors();
@@ -119,14 +119,14 @@ void main() {
         true);
   });
 
-  test("aal1 for only password", () async {
+  test('aal1 for only password', () async {
     await client.signInWithPassword(password: password, email: email2);
     final res = client.mfa.getAuthenticatorAssuranceLevel();
     expect(res.currentLevel, AuthenticatorAssuranceLevels.aal1);
     expect(res.nextLevel, AuthenticatorAssuranceLevels.aal2);
   });
 
-  test("aal2 for password and totp", () async {
+  test('aal2 for password and totp', () async {
     await client.signInWithPassword(password: password, email: email2);
     await client.mfa.challengeAndVerify(factorId: factorId2, code: getTOTP());
     final res = client.mfa.getAuthenticatorAssuranceLevel();
@@ -145,7 +145,7 @@ void main() {
 }
 
 String getTOTP() {
-  final secret = "R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS";
+  final secret = 'R7K3TR4HN5XBOCDWHGGUGI2YYGQSCLUS';
   return OTP.generateTOTPCodeString(
     secret,
     DateTime.now().millisecondsSinceEpoch,

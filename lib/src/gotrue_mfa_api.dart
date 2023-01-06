@@ -46,7 +46,7 @@ class GoTrueMFAApi {
   }) async {
     final session = _client.currentSession;
     final data = await _fetch.request(
-      "${_client._url}/factors",
+      '${_client._url}/factors',
       RequestMethodType.post,
       options: GotrueRequestOptions(
         headers: _client._headers,
@@ -112,7 +112,7 @@ class GoTrueMFAApi {
     final session = _client.currentSession;
 
     final data = await _fetch.request(
-      "${_client._url}/factors/$factorId/challenge",
+      '${_client._url}/factors/$factorId/challenge',
       RequestMethodType.post,
       options: GotrueRequestOptions(
         headers: _client._headers,
