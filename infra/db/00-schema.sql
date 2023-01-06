@@ -129,7 +129,7 @@ VALUES (
     (
         '2d3aa138-da96-4aea-8217-af07daa6b82d',
         '28bc7a4e-c095-4573-93dc-e0be29bada97',
-        'VeririedFactor',
+        'VerifiedFactor',
         'totp',
         'verified',
         now(),
