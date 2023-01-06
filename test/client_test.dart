@@ -29,7 +29,12 @@ void main() {
 
     late StreamSubscription<AuthState> onAuthSubscription;
 
-    setUpAll(() async {
+    setUp(() async {
+      final res = await http.post(
+          Uri.parse('http://localhost:3000/rpc/reset_and_init_auth_data'),
+          headers: {'x-forwarded-for': '127.0.0.1'});
+      if (res.body.isNotEmpty) throw res.body;
+
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
@@ -48,6 +53,10 @@ void main() {
       onAuthSubscription = client.onAuthStateChange.listen((_) {
         subscriptionCallbackCalledCount++;
       }, onError: (_) {});
+    });
+
+    tearDown(() {
+      onAuthSubscription.cancel();
     });
 
     test('basic json parsing', () async {
