@@ -15,7 +15,7 @@ class GoTrueAdminMFAApi {
         _headers = headers,
         _fetch = fetch;
 
-  Future<AuthMFAAdminListFactorsResponse> listFactors(String userId) async {
+  Future<AuthMFAAdminListFactorsResponse> listFactors({required String userId}) async {
     final data = await _fetch.request(
       '$_url/admin/users/$userId/factors',
       RequestMethodType.get,
