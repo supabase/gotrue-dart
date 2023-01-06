@@ -17,6 +17,7 @@ void main() {
 
   /// User ID of the user with verified factor
   const userId2 = "28bc7a4e-c095-4573-93dc-e0be29bada97";
+
   /// Factor ID of `userId2`
   const factorId2 = "2d3aa138-da96-4aea-8217-af07daa6b82d";
 
@@ -39,7 +40,7 @@ void main() {
   });
 
   test("list factors", () async {
-    final res = await client.admin.mfa.listFactors(userId2);
+    final res = await client.admin.mfa.listFactors(userId: userId2);
     expect(res.factors.length, 1);
     final factor = res.factors.first;
     expect(factor.createdAt.difference(DateTime.now()) < Duration(seconds: 2),
@@ -50,7 +51,11 @@ void main() {
   });
 
   test("delete factor", () async {
-    final res = await client.admin.mfa.deleteFactor(userId2, factorId2);
+    final res = await client.admin.mfa.deleteFactor(
+      userId: userId2,
+      factorId: factorId2,
+    );
+
     expect(res.id, factorId2);
   });
 }

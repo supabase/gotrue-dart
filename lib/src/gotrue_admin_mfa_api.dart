@@ -15,7 +15,8 @@ class GoTrueAdminMFAApi {
         _headers = headers,
         _fetch = fetch;
 
-  Future<AuthMFAAdminListFactorsResponse> listFactors({required String userId}) async {
+  Future<AuthMFAAdminListFactorsResponse> listFactors(
+      {required String userId}) async {
     final data = await _fetch.request(
       '$_url/admin/users/$userId/factors',
       RequestMethodType.get,
@@ -28,8 +29,10 @@ class GoTrueAdminMFAApi {
         factors: (data as List).map((e) => Factor.fromJson(e)).toList());
   }
 
-  Future<AuthMFAAdminDeleteFactorResponse> deleteFactor(
-      {required String userId, required String factorId,}) async {
+  Future<AuthMFAAdminDeleteFactorResponse> deleteFactor({
+    required String userId,
+    required String factorId,
+  }) async {
     final data = await _fetch.request(
       '$_url/admin/users/$userId/factors/$factorId',
       RequestMethodType.delete,
