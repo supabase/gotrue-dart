@@ -29,7 +29,7 @@ class GoTrueAdminMFAApi {
   }
 
   Future<AuthMFAAdminDeleteFactorResponse> deleteFactor(
-      String userId, String factorId) async {
+      {required String userId, required String factorId,}) async {
     final data = await _fetch.request(
       '$_url/admin/users/$userId/factors/$factorId',
       RequestMethodType.delete,
