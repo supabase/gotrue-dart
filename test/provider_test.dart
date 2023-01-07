@@ -1,13 +1,14 @@
 import 'package:gotrue/gotrue.dart';
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   const gotrueUrl = 'http://localhost:9998';
   const annonToken = '';
 
   late GoTrueClient client;
   late Session session;
-  const password = 'secret';
 
   setUp(() async {
     client = GoTrueClient(
@@ -45,8 +46,7 @@ void main() {
 
   group('getSessionFromUrl()', () {
     setUp(() async {
-      await client.signInWithPassword(
-          email: 'fake1@email.com', password: password);
+      await client.signInWithPassword(email: email1, password: password);
       session = client.currentSession!;
     });
 

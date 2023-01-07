@@ -6,14 +6,12 @@ import 'package:gotrue/gotrue.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
+import 'utils.dart';
+
 void main() {
   load(); // Load env variables from .env file
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
-  final unregistredUserEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
-  const existingUserId = '18bc7a4e-c095-4573-93dc-e0be29bada97';
-  const existingEmail = 'fake1@email.com';
-  final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   final serviceRoleToken = JWT(
     {
@@ -46,21 +44,21 @@ void main() {
     test(
         'getUserById() should return a registered user given its user identifier',
         () async {
-      final foundUserResponse = await client.admin.getUserById(existingUserId);
+      final foundUserResponse = await client.admin.getUserById(userId1);
       expect(foundUserResponse.user, isNotNull);
-      expect(foundUserResponse.user?.email, existingEmail);
+      expect(foundUserResponse.user?.email, email1);
     });
   });
 
   group('User updates', () {
     test('modify email using updateUserById()', () async {
-      final res = await client.admin.updateUserById(existingUserId,
+      final res = await client.admin.updateUserById(userId1,
           attributes: AdminUserAttributes(email: 'new@email.com'));
       expect(res.user!.email, 'new@email.com');
     });
 
     test('modify userMetadata using updateUserById()', () async {
-      final res = await client.admin.updateUserById(existingUserId,
+      final res = await client.admin.updateUserById(userId1,
           attributes:
               AdminUserAttributes(userMetadata: {'username': 'newUserName'}));
       expect(res.user!.userMetadata!['username'], 'newUserName');
@@ -75,7 +73,7 @@ void main() {
 
       final response = await client.admin.generateLink(
         type: GenerateLinkType.signup,
-        email: unregistredUserEmail,
+        email: getNewEmail(),
         password: password,
         data: userMetadata,
         redirectTo: 'http://localhost:9999/welcome',
@@ -117,7 +115,7 @@ void main() {
   group('User deletion', () {
     test('deleteUser() deletes an user', () async {
       final userLengthBefore = (await client.admin.listUsers()).length;
-      await client.admin.deleteUser(existingUserId);
+      await client.admin.deleteUser(userId1);
       final userLengthAfter = (await client.admin.listUsers()).length;
       expect(userLengthBefore - 1, userLengthAfter);
     });

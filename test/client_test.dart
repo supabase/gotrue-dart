@@ -7,6 +7,7 @@ import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
 import 'custom_http_client.dart';
+import 'utils.dart';
 
 void main() {
   load(); // Load env variables from .env file
@@ -17,9 +18,6 @@ void main() {
   final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
   late String newEmail;
   late String newPhone;
-  const existingEmail = 'fake1@email.com';
-  const existingPhone = '166600000000';
-  final password = 'secret';
 
   group('Client with default http client', () {
     late GoTrueClient client;
@@ -31,10 +29,8 @@ void main() {
           headers: {'x-forwarded-for': '127.0.0.1'});
       if (res.body.isNotEmpty) throw res.body;
 
-      final timestamp =
-          (DateTime.now().microsecondsSinceEpoch / (1000 * 1000)).round();
-      newEmail = 'fake$timestamp@email.com';
-      newPhone = '$timestamp';
+      newEmail = getNewEmail();
+      newPhone = getNewPhone();
 
       client = GoTrueClient(
         url: gotrueUrl,
@@ -110,7 +106,7 @@ void main() {
         ]),
       );
 
-      await client.signInWithPassword(email: existingEmail, password: password);
+      await client.signInWithPassword(email: email1, password: password);
       await client.signOut();
     });
 
@@ -143,7 +139,7 @@ void main() {
         () async {
       try {
         await clientWithAuthConfirmOff.signUp(
-          phone: existingPhone,
+          phone: phone1,
           password: password,
         );
       } catch (error) {
@@ -152,7 +148,7 @@ void main() {
     });
 
     test('signUp() with email should throw error if used twice', () async {
-      final localEmail = existingEmail;
+      final localEmail = email1;
 
       try {
         await client.signUp(email: localEmail, password: password);
@@ -167,15 +163,15 @@ void main() {
 
     test('signInWithOtp with phone', () async {
       try {
-        await client.signInWithOtp(phone: existingPhone);
+        await client.signInWithOtp(phone: phone1);
       } catch (error) {
         expect(error, isA<AuthException>());
       }
     });
 
     test('signInWithPassword() with email', () async {
-      final response = await client.signInWithPassword(
-          email: existingEmail, password: password);
+      final response =
+          await client.signInWithPassword(email: email1, password: password);
       final data = response.session;
 
       expect(data?.accessToken, isA<String>());
@@ -188,7 +184,7 @@ void main() {
     });
 
     test('Get user', () async {
-      await client.signInWithPassword(email: existingEmail, password: password);
+      await client.signInWithPassword(email: email1, password: password);
 
       final user = client.currentUser;
       expect(user, isNotNull);
@@ -197,8 +193,8 @@ void main() {
     });
 
     test('signInWithPassword() with phone', () async {
-      final response = await client.signInWithPassword(
-          phone: existingPhone, password: password);
+      final response =
+          await client.signInWithPassword(phone: phone1, password: password);
       final data = response.session;
 
       expect(data?.accessToken, isA<String>());
@@ -211,7 +207,7 @@ void main() {
     });
 
     test('Set session', () async {
-      await client.signInWithPassword(email: existingEmail, password: password);
+      await client.signInWithPassword(email: email1, password: password);
 
       final refreshToken = client.currentSession?.refreshToken ?? '';
       expect(refreshToken, isNotEmpty);
@@ -230,7 +226,7 @@ void main() {
     });
 
     test('Update user', () async {
-      await client.signInWithPassword(email: existingEmail, password: password);
+      await client.signInWithPassword(email: email1, password: password);
 
       final response = await client.updateUser(
         UserAttributes(data: {
@@ -250,7 +246,7 @@ void main() {
     });
 
     test('signOut', () async {
-      await client.signInWithPassword(email: existingEmail, password: password);
+      await client.signInWithPassword(email: email1, password: password);
       expect(client.currentUser, isNotNull);
       await client.signOut();
       expect(client.currentUser, isNull);
@@ -265,7 +261,7 @@ void main() {
     test('signIn() with the wrong password', () async {
       try {
         await client.signInWithPassword(
-          email: existingEmail,
+          email: email1,
           password: 'wrong_$password',
         );
         fail('signInWithPassword did not throw');
@@ -327,8 +323,7 @@ void main() {
 
     test('signIn()', () async {
       try {
-        await client.signInWithPassword(
-            email: existingEmail, password: password);
+        await client.signInWithPassword(email: email1, password: password);
       } catch (error) {
         expect(error, isA<AuthException>());
         expect((error as AuthException).statusCode, '420');
