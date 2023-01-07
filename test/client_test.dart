@@ -124,14 +124,19 @@ void main() {
       expect(data?.user.userMetadata, {'Hello': 'World'});
     });
 
-    test('signUp() with autoConfirm off with email', () async {
-      // final response = await clientWithAuthConfirmOff.signUp(
-      //   email: email,
-      //   password: password,
-      //   emailRedirectTo: 'https://localhost:9999/welcome',
-      // );
-      // expect(response.user, isA<User>());
-      // expect(response.session, isNull);
+    test(
+        'signUp() with autoConfirm off with email should fail because email sending fails',
+        () async {
+      try {
+        await clientWithAuthConfirmOff.signUp(
+          email: newEmail,
+          password: password,
+          emailRedirectTo: 'https://localhost:9999/welcome',
+        );
+        fail('should throw');
+      } catch (error) {
+        expect(error, isA<AuthException>());
+      }
     });
 
     test(
