@@ -1,3 +1,20 @@
+## [1.4.0]
+
+- feat: add support for [MFA](https://supabase.com/docs/guides/auth/auth-mfa)
+  ```dart
+  // Start the enrollment process for a new Multi-Factor Authentication (MFA) factor
+  final res = await client.mfa
+    .enroll(issuer: 'MyFriend', friendlyName: 'MyFriendName');
+
+  // Prepares a challenge used to verify that a user has access to a MFA factor.
+  final res = await client.mfa.challenge(factorId: factorId1);
+
+  // Verifies a code against a challenge.
+  final res = await client.mfa
+          .verify(factorId: factorId1, challengeId: challengeId, code: getTOTP());
+  ```
+  Read more about MFA with Supabase [here](https://supabase.com/docs/guides/auth/auth-mfa)
+
 ## [1.3.0]
 
 - feat: paginate `admin.listUsers()`
