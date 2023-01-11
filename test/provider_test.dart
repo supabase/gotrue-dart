@@ -1,11 +1,12 @@
 import 'package:gotrue/gotrue.dart';
+import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
 
 import 'utils.dart';
 
 void main() {
   const gotrueUrl = 'http://localhost:9998';
-  const annonToken = '';
+  const annonToken = 'anonKey';
 
   late GoTrueClient client;
   late Session session;
@@ -46,6 +47,11 @@ void main() {
 
   group('getSessionFromUrl()', () {
     setUp(() async {
+      final res = await http.post(
+          Uri.parse('http://localhost:3000/rpc/reset_and_init_auth_data'),
+          headers: {'x-forwarded-for': '127.0.0.1'});
+      if (res.body.isNotEmpty) throw res.body;
+
       await client.signInWithPassword(email: email1, password: password);
       session = client.currentSession!;
     });
