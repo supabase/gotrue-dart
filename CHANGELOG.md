@@ -1,3 +1,7 @@
+## [1.4.1]
+
+- fix: downgrade minimum `collection` version to support wider range of Flutter SDK versions
+
 ## [1.4.0]
 
 - feat: add support for [MFA](https://supabase.com/docs/guides/auth/auth-mfa)
