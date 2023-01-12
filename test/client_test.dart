@@ -1,35 +1,35 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
+import 'package:http/http.dart' as http;
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:test/test.dart';
 
 import 'custom_http_client.dart';
+import 'utils.dart';
 
 void main() {
-  final timestamp = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-
   load(); // Load env variables from .env file
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
-  final gotrueUrlWithAutoConfirmOff =
-      env['GOTRUE_URL'] ?? 'http://localhost:9999';
   final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
-  final email = env['GOTRUE_USER_EMAIL'] ?? 'fake$timestamp@email.com';
-  final phone = env['GOTRUE_USER_PHONE'] ?? '166600000000';
-  final password = env['GOTRUE_USER_PASS'] ?? 'secret';
+  late String newEmail;
+  late String newPhone;
 
   group('Client with default http client', () {
     late GoTrueClient client;
     late GoTrueClient clientWithAuthConfirmOff;
 
-    int subscriptionCallbackCalledCount = 0;
+    setUp(() async {
+      final res = await http.post(
+          Uri.parse('http://localhost:3000/rpc/reset_and_init_auth_data'),
+          headers: {'x-forwarded-for': '127.0.0.1'});
+      if (res.body.isNotEmpty) throw res.body;
 
-    late StreamSubscription<AuthState> onAuthSubscription;
+      newEmail = getNewEmail();
+      newPhone = getNewPhone();
 
-    setUpAll(() async {
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
@@ -39,15 +39,13 @@ void main() {
       );
 
       clientWithAuthConfirmOff = GoTrueClient(
-        url: gotrueUrlWithAutoConfirmOff,
+        url: gotrueUrl,
+        httpClient: NoEmailConfirmationHttpClient(),
         headers: {
           'Authorization': 'Bearer $anonToken',
           'apikey': anonToken,
         },
       );
-      onAuthSubscription = client.onAuthStateChange.listen((_) {
-        subscriptionCallbackCalledCount++;
-      }, onError: (_) {});
     });
 
     test('basic json parsing', () async {
@@ -65,7 +63,7 @@ void main() {
 
     test('signUp() with email', () async {
       final response = await client.signUp(
-        email: email,
+        email: newEmail,
         password: password,
         emailRedirectTo: 'https://localhost:9998/welcome',
         data: {'Hello': 'World'},
@@ -95,16 +93,25 @@ void main() {
     });
 
     test('Subscribe a listener', () async {
-      /// auth subsctiption callback has been called once with the signup above
-      expect(subscriptionCallbackCalledCount, 1);
+      final stream = client.onAuthStateChange;
 
-      /// unsubscribe to prevent further calling the callback
-      onAuthSubscription.cancel();
+      expect(
+        stream,
+        emitsInOrder([
+          predicate<AuthState>(
+              (event) => event.event == AuthChangeEvent.signedIn),
+          predicate<AuthState>(
+              (event) => event.event == AuthChangeEvent.signedOut),
+        ]),
+      );
+
+      await client.signInWithPassword(email: email1, password: password);
+      await client.signOut();
     });
 
     test('signUp() with phone', () async {
       final response = await client.signUp(
-        phone: phone,
+        phone: newPhone,
         password: password,
         emailRedirectTo: 'https://localhost:9998/welcome',
         data: {'Hello': 'World'},
@@ -117,13 +124,14 @@ void main() {
     });
 
     test('signUp() with autoConfirm off with email', () async {
-      final response = await clientWithAuthConfirmOff.signUp(
-        email: email,
+      final res = await clientWithAuthConfirmOff.signUp(
+        email: newEmail,
         password: password,
         emailRedirectTo: 'https://localhost:9999/welcome',
       );
-      expect(response.user, isA<User>());
-      expect(response.session, isNull);
+      expect(res.session, isNull);
+      expect(res.user, isNotNull);
+      expect(res.user!.email, 'fake1@email.com');
     });
 
     test(
@@ -131,7 +139,7 @@ void main() {
         () async {
       try {
         await clientWithAuthConfirmOff.signUp(
-          phone: phone,
+          phone: phone1,
           password: password,
         );
       } catch (error) {
@@ -140,7 +148,7 @@ void main() {
     });
 
     test('signUp() with email should throw error if used twice', () async {
-      final localEmail = email;
+      final localEmail = email1;
 
       try {
         await client.signUp(email: localEmail, password: password);
@@ -150,12 +158,12 @@ void main() {
     });
 
     test('signInWithOtp with email', () async {
-      await client.signInWithOtp(email: email);
+      await client.signInWithOtp(email: newEmail);
     });
 
     test('signInWithOtp with phone', () async {
       try {
-        await client.signInWithOtp(phone: phone);
+        await client.signInWithOtp(phone: phone1);
       } catch (error) {
         expect(error, isA<AuthException>());
       }
@@ -163,7 +171,7 @@ void main() {
 
     test('signInWithPassword() with email', () async {
       final response =
-          await client.signInWithPassword(email: email, password: password);
+          await client.signInWithPassword(email: email1, password: password);
       final data = response.session;
 
       expect(data?.accessToken, isA<String>());
@@ -176,6 +184,8 @@ void main() {
     });
 
     test('Get user', () async {
+      await client.signInWithPassword(email: email1, password: password);
+
       final user = client.currentUser;
       expect(user, isNotNull);
       expect(user!.id, isA<String>());
@@ -184,7 +194,7 @@ void main() {
 
     test('signInWithPassword() with phone', () async {
       final response =
-          await client.signInWithPassword(phone: phone, password: password);
+          await client.signInWithPassword(phone: phone1, password: password);
       final data = response.session;
 
       expect(data?.accessToken, isA<String>());
@@ -197,6 +207,8 @@ void main() {
     });
 
     test('Set session', () async {
+      await client.signInWithPassword(email: email1, password: password);
+
       final refreshToken = client.currentSession?.refreshToken ?? '';
       expect(refreshToken, isNotEmpty);
 
@@ -214,6 +226,8 @@ void main() {
     });
 
     test('Update user', () async {
+      await client.signInWithPassword(email: email1, password: password);
+
       final response = await client.updateUser(
         UserAttributes(data: {
           'hello': 'world',
@@ -223,14 +237,7 @@ void main() {
         }),
       );
       final user = response.user;
-      expect(user?.id, isA<String>());
-      expect(user?.userMetadata?['hello'], 'world');
-      expect(client.currentSession?.user.userMetadata?['hello'], 'world');
-    });
-
-    test('Get user after updating', () async {
-      final user = client.currentUser;
-      expect(user, isNotNull);
+      expect(user, client.currentUser);
       expect(user?.id, isA<String>());
       expect(user?.userMetadata?['hello'], 'world');
       expect(user?.userMetadata?['japanese'], '日本語');
@@ -239,7 +246,11 @@ void main() {
     });
 
     test('signOut', () async {
+      await client.signInWithPassword(email: email1, password: password);
+      expect(client.currentUser, isNotNull);
       await client.signOut();
+      expect(client.currentUser, isNull);
+      expect(client.currentSession, isNull);
     });
 
     test('Get user after logging out', () async {
@@ -250,18 +261,13 @@ void main() {
     test('signIn() with the wrong password', () async {
       try {
         await client.signInWithPassword(
-          email: email,
+          email: email1,
           password: 'wrong_$password',
         );
         fail('signInWithPassword did not throw');
       } on AuthException catch (error) {
         expect(error.message, isNotNull);
       }
-    });
-
-    test('Unsubscribe a listener works', () {
-      /// Because we unsubscribed on subscription test, the callback should not longer be called.
-      expect(subscriptionCallbackCalledCount, 1);
     });
 
     group('The auth client can signin with third-party oAuth providers', () {
@@ -317,7 +323,7 @@ void main() {
 
     test('signIn()', () async {
       try {
-        await client.signInWithPassword(email: email, password: password);
+        await client.signInWithPassword(email: email1, password: password);
       } catch (error) {
         expect(error, isA<AuthException>());
         expect((error as AuthException).statusCode, '420');

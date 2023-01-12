@@ -6,26 +6,14 @@ import 'package:http/http.dart' as http;
 import 'package:otp/otp.dart';
 import 'package:test/test.dart';
 
+import '../utils.dart';
+
 void main() {
   load(); // Load env variables from .env file
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
 
   final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
-
-  /// Email of a user with unverified factor
-  const email1 = 'fake1@email.com';
-
-  /// Email of a user with verified factor
-  const email2 = 'fake2@email.com';
-
-  /// Factor ID of user with email1
-  const factorId1 = '1d3aa138-da96-4aea-8217-af07daa6b82d';
-
-  /// Factor ID of user with email2
-  const factorId2 = '2d3aa138-da96-4aea-8217-af07daa6b82d';
-
-  final password = 'secret';
 
   late GoTrueClient client;
   setUp(() async {

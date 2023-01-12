@@ -3,14 +3,15 @@ import 'dart:math';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
+import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
+
+import 'utils.dart';
 
 void main() {
   load(); // Load env variables from .env file
 
   final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
-  final unregistredUserEmail = 'new${Random.secure().nextInt(4096)}@fake.org';
-  final password = env['GOTRUE_USER_PASS'] ?? 'secret';
 
   final serviceRoleToken = JWT(
     {
@@ -22,9 +23,14 @@ void main() {
   );
 
   late GoTrueClient client;
-  late String targetUserId;
 
-  setUpAll(() {
+  setUp(() async {
+    final res = await http.post(
+      Uri.parse('http://localhost:3000/rpc/reset_and_init_auth_data'),
+    );
+
+    if (res.body.isNotEmpty) throw res.body;
+
     client = GoTrueClient(
       url: gotrueUrl,
       headers: {
@@ -38,26 +44,21 @@ void main() {
     test(
         'getUserById() should return a registered user given its user identifier',
         () async {
-      final sessionResponse =
-          await client.signUp(email: unregistredUserEmail, password: password);
-      final createdUser = sessionResponse.user;
-      expect(createdUser, isNotNull);
-      targetUserId = createdUser!.id;
-      final foundUserResponse = await client.admin.getUserById(targetUserId);
+      final foundUserResponse = await client.admin.getUserById(userId1);
       expect(foundUserResponse.user, isNotNull);
-      expect(foundUserResponse.user?.email, unregistredUserEmail);
+      expect(foundUserResponse.user?.email, email1);
     });
   });
 
   group('User updates', () {
     test('modify email using updateUserById()', () async {
-      final res = await client.admin.updateUserById(targetUserId,
+      final res = await client.admin.updateUserById(userId1,
           attributes: AdminUserAttributes(email: 'new@email.com'));
       expect(res.user!.email, 'new@email.com');
     });
 
     test('modify userMetadata using updateUserById()', () async {
-      final res = await client.admin.updateUserById(targetUserId,
+      final res = await client.admin.updateUserById(userId1,
           attributes:
               AdminUserAttributes(userMetadata: {'username': 'newUserName'}));
       expect(res.user!.userMetadata!['username'], 'newUserName');
@@ -72,7 +73,7 @@ void main() {
 
       final response = await client.admin.generateLink(
         type: GenerateLinkType.signup,
-        email: unregistredUserEmail,
+        email: getNewEmail(),
         password: password,
         data: userMetadata,
         redirectTo: 'http://localhost:9999/welcome',
@@ -113,12 +114,8 @@ void main() {
 
   group('User deletion', () {
     test('deleteUser() deletes an user', () async {
-      final newUser = await client.admin.createUser(AdminUserAttributes(
-        email: 'new${Random.secure().nextInt(4096)}@fake.org',
-        password: password,
-      ));
       final userLengthBefore = (await client.admin.listUsers()).length;
-      await client.admin.deleteUser(newUser.user!.id);
+      await client.admin.deleteUser(userId1);
       final userLengthAfter = (await client.admin.listUsers()).length;
       expect(userLengthBefore - 1, userLengthAfter);
     });
