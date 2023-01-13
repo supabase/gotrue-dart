@@ -10,6 +10,7 @@ import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:rxdart/subjects.dart';
 import 'package:universal_io/io.dart';
 
 import 'types/mfa.dart';
@@ -41,8 +42,19 @@ class GoTrueClient {
 
   int _refreshTokenRetryCount = 0;
 
-  final _onAuthStateChangeController = StreamController<AuthState>.broadcast();
-  // Receive a notification every time an auth event happens.
+  final _onAuthStateChangeController = BehaviorSubject<AuthState>();
+
+  /// Receive a notification every time an auth event happens.
+  ///
+  /// ```dart
+  /// supabase.auth.onAuthStateChange.listen((data) {
+  ///   final AuthChangeEvent event = data.event;
+  ///   final Session? session = data.session;
+  ///   if(event == AuthChangeEvent.signedIn) {
+  ///     // handle signIn event
+  ///   }
+  /// });
+  /// ```
   Stream<AuthState> get onAuthStateChange =>
       _onAuthStateChangeController.stream;
 
