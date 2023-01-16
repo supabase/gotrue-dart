@@ -1,6 +1,6 @@
 ## [1.4.2]
 
-- fix: Use BehaviorSubject for _onAuthStateChangedController [#116](https://github.com/supabase/gotrue-dart/pull/116)
+- fix: `onAuthStateChanged` now emits the latest `AuthState` [#116](https://github.com/supabase/gotrue-dart/pull/116)
 
 ## [1.4.1]
 
