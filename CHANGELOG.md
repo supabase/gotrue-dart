@@ -1,3 +1,7 @@
+## [1.4.2]
+
+- fix: `onAuthStateChanged` now emits the latest `AuthState` [#116](https://github.com/supabase/gotrue-dart/pull/116)
+
 ## [1.4.1]
 
 - fix: downgrade minimum `collection` version to support wider range of Flutter SDK versions
