@@ -234,7 +234,7 @@ class GoTrueClient {
     }
 
     final response = await _fetch.request(
-      '$_url/token?grant_type=id_token',
+      '$_url/token',
       RequestMethodType.post,
       options: GotrueRequestOptions(
         headers: _headers,
@@ -244,6 +244,7 @@ class GoTrueClient {
           'nonce': nonce,
           'gotrue_meta_security': {'captcha_token': captchaToken},
         },
+        query: {'grant_type': 'id_token'},
       ),
     );
 
