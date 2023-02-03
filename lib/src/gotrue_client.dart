@@ -216,6 +216,51 @@ class GoTrueClient {
         redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
   }
 
+  /// Allows signing in with an ID token issued by certain supported providers.
+  /// The [idToken] is verified for validity and a new session is established.
+  ///
+  /// This method is experimental.
+  Future<AuthResponse> signInWithIdToken({
+    required Provider provider,
+    required String idToken,
+    String? nonce,
+    String? captchaToken,
+  }) async {
+    _removeSession();
+
+    if (provider != Provider.google || provider != Provider.apple) {
+      throw AuthException('Provider must either be '
+          '${Provider.google.name} or${Provider.apple.name}.');
+    }
+
+    final response = await _fetch.request(
+      '$_url/token?grant_type=id_token',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: _headers,
+        body: {
+          'provider': provider.name,
+          'id_token': idToken,
+          'nonce': nonce,
+          'gotrue_meta_security': {'captcha_token': captchaToken},
+        },
+      ),
+    );
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    if (authResponse.session == null) {
+      throw AuthException(
+        'An error occurred on token verification.',
+      );
+    }
+
+    _saveSession(authResponse.session!);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
+
+    return authResponse;
+  }
+
   /// Log in a user using magiclink or a one-time password (OTP).
   ///
   /// If the `{{ .ConfirmationURL }}` variable is specified in the email template, a magiclink will be sent.
