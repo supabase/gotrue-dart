@@ -228,9 +228,9 @@ class GoTrueClient {
   }) async {
     _removeSession();
 
-    if (provider != Provider.google || provider != Provider.apple) {
+    if (provider != Provider.google && provider != Provider.apple) {
       throw AuthException('Provider must either be '
-          '${Provider.google.name} or${Provider.apple.name}.');
+          '${Provider.google.name} or ${Provider.apple.name}.');
     }
 
     final response = await _fetch.request(
