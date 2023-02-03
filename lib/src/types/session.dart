@@ -5,6 +5,7 @@ import 'package:jwt_decode/jwt_decode.dart';
 
 class Session {
   final String? providerToken;
+  final String? providerRefreshToken;
   final String accessToken;
 
   /// The number of seconds until the token expires (since it was issued).
@@ -21,6 +22,7 @@ class Session {
     this.refreshToken,
     required this.tokenType,
     this.providerToken,
+    this.providerRefreshToken,
     required this.user,
   });
 
@@ -36,6 +38,7 @@ class Session {
       refreshToken: json['refresh_token'] as String?,
       tokenType: json['token_type'] as String,
       providerToken: json['provider_token'] as String?,
+      providerRefreshToken: json['provider_refresh_token'] as String?,
       user: User.fromJson(json['user'] as Map<String, dynamic>)!,
     );
   }
@@ -47,6 +50,7 @@ class Session {
       'refresh_token': refreshToken,
       'token_type': tokenType,
       'provider_token': providerToken,
+      'provider_refresh_token': providerRefreshToken,
       'user': user.toJson(),
     };
   }
@@ -73,6 +77,7 @@ class Session {
     String? refreshToken,
     String? tokenType,
     String? providerToken,
+    String? providerRefreshToken,
     User? user,
   }) {
     return Session(
@@ -81,6 +86,7 @@ class Session {
       refreshToken: refreshToken ?? this.refreshToken,
       tokenType: tokenType ?? this.tokenType,
       providerToken: providerToken ?? this.providerToken,
+      providerRefreshToken: providerRefreshToken ?? this.providerRefreshToken,
       user: user ?? this.user,
     );
   }
