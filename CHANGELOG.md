@@ -1,7 +1,6 @@
 ## [1.4.3]
 
 - feat: add support for `signInWithIdToken`.
-- 
 ## [1.4.2]
 
 - fix: `onAuthStateChanged` now emits the latest `AuthState` [#116](https://github.com/supabase/gotrue-dart/pull/116)
