@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:html_common';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -218,8 +219,7 @@ class GoTrueClient {
 
   /// Allows signing in with an ID token issued by certain supported providers.
   /// The [idToken] is verified for validity and a new session is established.
-  ///
-  /// This method is experimental.
+  @Experimental()
   Future<AuthResponse> signInWithIdToken({
     required Provider provider,
     required String idToken,
