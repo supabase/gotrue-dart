@@ -1,3 +1,4 @@
+import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
 import 'package:http/http.dart' as http;
 import 'package:test/test.dart';
@@ -5,8 +6,10 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  const gotrueUrl = 'http://localhost:9998';
-  const annonToken = 'anonKey';
+  load(); // Load env variables from .env file
+
+  final gotrueUrl = env['GOTRUE_URL'] ?? 'http://localhost:9998';
+  final anonToken = env['GOTRUE_TOKEN'] ?? 'anonKey';
 
   late GoTrueClient client;
   late Session session;
@@ -15,8 +18,8 @@ void main() {
     client = GoTrueClient(
       url: gotrueUrl,
       headers: {
-        'Authorization': 'Bearer $annonToken',
-        'apikey': annonToken,
+        'Authorization': 'Bearer $anonToken',
+        'apikey': anonToken,
       },
     );
   });
@@ -62,15 +65,17 @@ void main() {
       const refreshToken = 'my_refresh_token';
       const tokenType = 'my_token_type';
       const providerToken = 'my_provider_token_with_fragment';
+      const providerRefreshToken = 'my_provider_refresh_token';
 
       final url =
-          'http://my-callback-url.com/welcome#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
+          'http://my-callback-url.com/welcome#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken&provider_refresh_token=$providerRefreshToken';
       final res = await client.getSessionFromUrl(Uri.parse(url));
       expect(res.session.accessToken, accessToken);
       expect(res.session.expiresIn, expiresIn);
       expect(res.session.refreshToken, refreshToken);
       expect(res.session.tokenType, tokenType);
       expect(res.session.providerToken, providerToken);
+      expect(res.session.providerRefreshToken, providerRefreshToken);
     });
 
     test('parse provider callback url with fragment and query', () async {
@@ -79,14 +84,17 @@ void main() {
       const refreshToken = 'my_refresh_token';
       const tokenType = 'my_token_type';
       const providerToken = 'my_provider_token_fragment_and_query';
+      const providerRefreshToken = 'my_provider_refresh_token';
+
       final url =
-          'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken';
+          'http://my-callback-url.com?page=welcome&foo=bar#access_token=$accessToken&expires_in=$expiresIn&refresh_token=$refreshToken&token_type=$tokenType&provider_token=$providerToken&provider_refresh_token=$providerRefreshToken';
       final res = await client.getSessionFromUrl(Uri.parse(url));
       expect(res.session.accessToken, accessToken);
       expect(res.session.expiresIn, expiresIn);
       expect(res.session.refreshToken, refreshToken);
       expect(res.session.tokenType, tokenType);
       expect(res.session.providerToken, providerToken);
+      expect(res.session.providerRefreshToken, providerRefreshToken);
     });
 
     test('parse provider callback url with missing param error', () async {

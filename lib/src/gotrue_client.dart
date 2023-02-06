@@ -391,6 +391,7 @@ class GoTrueClient {
     final refreshToken = url.queryParameters['refresh_token'];
     final tokenType = url.queryParameters['token_type'];
     final providerToken = url.queryParameters['provider_token'];
+    final providerRefreshToken = url.queryParameters['provider_refresh_token'];
 
     if (accessToken == null) {
       throw _notifyException(AuthException('No access_token detected.'));
@@ -417,6 +418,7 @@ class GoTrueClient {
 
     final session = Session(
       providerToken: providerToken,
+      providerRefreshToken: providerRefreshToken,
       accessToken: accessToken,
       expiresIn: int.parse(expiresIn),
       refreshToken: refreshToken,
