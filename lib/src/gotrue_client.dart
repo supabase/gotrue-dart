@@ -10,6 +10,7 @@ import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:universal_io/io.dart';
 
@@ -221,6 +222,7 @@ class GoTrueClient {
   /// This method of signing in only supports [Provider.google] or [Provider.apple].
   ///
   /// This method is experimental.
+  @experimental
   Future<AuthResponse> signInWithIdToken({
     required Provider provider,
     required String idToken,
