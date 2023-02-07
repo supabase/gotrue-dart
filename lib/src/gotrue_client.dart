@@ -10,6 +10,7 @@ import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decode/jwt_decode.dart';
+import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:universal_io/io.dart';
 
@@ -214,6 +215,54 @@ class GoTrueClient {
     _removeSession();
     return _handleProviderSignIn(provider,
         redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
+  }
+
+  /// Allows signing in with an ID token issued by certain supported providers.
+  /// The [idToken] is verified for validity and a new session is established.
+  /// This method of signing in only supports [Provider.google] or [Provider.apple].
+  ///
+  /// This method is experimental.
+  @experimental
+  Future<AuthResponse> signInWithIdToken({
+    required Provider provider,
+    required String idToken,
+    String? nonce,
+    String? captchaToken,
+  }) async {
+    _removeSession();
+
+    if (provider != Provider.google && provider != Provider.apple) {
+      throw AuthException('Provider must either be '
+          '${Provider.google.name} or ${Provider.apple.name}.');
+    }
+
+    final response = await _fetch.request(
+      '$_url/token',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: _headers,
+        body: {
+          'provider': provider.name,
+          'id_token': idToken,
+          'nonce': nonce,
+          'gotrue_meta_security': {'captcha_token': captchaToken},
+        },
+        query: {'grant_type': 'id_token'},
+      ),
+    );
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    if (authResponse.session == null) {
+      throw AuthException(
+        'An error occurred on token verification.',
+      );
+    }
+
+    _saveSession(authResponse.session!);
+    _notifyAllSubscribers(AuthChangeEvent.signedIn);
+
+    return authResponse;
   }
 
   /// Log in a user using magiclink or a one-time password (OTP).
