@@ -1,3 +1,7 @@
+## [1.5.1]
+
+- fix: downgrade `meta` to support minimum Flutter version.
+
 ## [1.5.0]
 
 - feat: add support for `signInWithIdToken`.

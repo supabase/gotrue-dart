@@ -1,6 +1,6 @@
 name: gotrue
 description: A dart client library for the GoTrue API.
-version: 1.5.0
+version: 1.5.1
 homepage: 'https://supabase.io'
 repository: 'https://github.com/supabase/gotrue-dart'
 
@@ -13,7 +13,7 @@ dependencies:
   jwt_decode: ^0.3.1
   universal_io: ^2.0.4
   rxdart: ^0.27.7
-  meta: ^1.9.0
+  meta: ^1.8.0
 
 dev_dependencies:
   dart_jsonwebtoken: ^2.4.1
