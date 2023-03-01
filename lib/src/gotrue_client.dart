@@ -624,7 +624,8 @@ class GoTrueClient {
         );
       });
     } else {
-      final error = AuthException('Access token refresh retry limit exceeded.');
+      final error = AuthException(
+          'Access token refresh failed after ${Constants.maxRetryCount} retries. Please make sure to have network connection.');
       completer.completeError(error, StackTrace.current);
     }
   }
@@ -697,7 +698,7 @@ class GoTrueClient {
   }
 
   Exception _notifyException(Exception exception) {
-    _onAuthStateChangeController.addError(exception);
+    _onAuthStateChangeController.addError(exception, StackTrace.current);
     return exception;
   }
 }
