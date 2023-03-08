@@ -159,7 +159,7 @@ class Factor {
   final String id;
 
   /// Friendly name of the factor, useful to disambiguate between multiple factors.
-  final String friendlyName;
+  final String? friendlyName;
 
   /// Type of factor. Only `totp` supported with this version but may change in future versions.
   final FactorType factorType;
