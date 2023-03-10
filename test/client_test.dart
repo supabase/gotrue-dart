@@ -309,6 +309,14 @@ void main() {
         expect(res.provider, Provider.google);
       });
     });
+
+    test('Repeatedly recover session', () async {
+      await client.signInWithPassword(password: password, email: email1);
+      for (int i = 0; i < 10; i++) {
+        final json = client.currentSession!.persistSessionString;
+        await client.recoverSession(json);
+      }
+    });
   });
 
   group('Client with custom http client', () {

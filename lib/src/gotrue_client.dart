@@ -599,6 +599,7 @@ class GoTrueClient {
       final refreshDurationBeforeExpires = expiresIn > 60 ? 60 : 1;
       final nextDuration = expiresIn - refreshDurationBeforeExpires;
       if (nextDuration > 0) {
+        _refreshTokenRetryCount = 0;
         final timerDuration = Duration(seconds: nextDuration);
         _setTokenRefreshTimer(timerDuration, refreshCompleter);
       } else {
@@ -670,7 +671,6 @@ class GoTrueClient {
         completer.completeError(error, StackTrace.current);
         throw error;
       }
-      _refreshTokenRetryCount = 0;
 
       _saveSession(authResponse.session!);
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
