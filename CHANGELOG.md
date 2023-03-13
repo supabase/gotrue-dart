@@ -1,5 +1,9 @@
 ## [1.5.2]
 
+- fix: properly reset refresh retry count [#122](https://github.com/supabase/gotrue-dart/pull/122)
+
+## [1.5.2]
+
 - fix: make `Factor.friendlyName` nullable [#121](https://github.com/supabase/gotrue-dart/pull/121)
 
 ## [1.5.1]
