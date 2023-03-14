@@ -1,4 +1,4 @@
-## [1.5.2]
+## [1.5.3]
 
 - fix: properly reset refresh retry count [#122](https://github.com/supabase/gotrue-dart/pull/122)
 
