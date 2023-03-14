@@ -31,16 +31,17 @@ enum GenerateLinkType {
   recovery,
   emailChangeCurrent,
   emailChangeNew,
+  unknown,
 }
 
 extension GenerateLinkTypeExtended on GenerateLinkType {
-  static GenerateLinkType fromString(String val) {
+  static GenerateLinkType fromString(String? val) {
     for (final type in GenerateLinkType.values) {
       if (type.snakeCase == val) {
         return type;
       }
     }
-    throw Exception('GenerateLinkType of $val was not found');
+    return GenerateLinkType.unknown;
   }
 }
 

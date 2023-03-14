@@ -74,10 +74,10 @@ class GenerateLinkProperties {
   final GenerateLinkType verificationType;
 
   GenerateLinkProperties.fromJson(Map<String, dynamic> json)
-      : actionLink = json['action_link'],
-        emailOtp = json['email_otp'],
-        hashedToken = json['hashed_token'],
-        redirectTo = json['redirect_to'],
+      : actionLink = json['action_link'] ?? '',
+        emailOtp = json['email_otp'] ?? '',
+        hashedToken = json['hashed_token'] ?? '',
+        redirectTo = json['redirect_to'] ?? '',
         verificationType =
             GenerateLinkTypeExtended.fromString(json['verification_type']);
 }

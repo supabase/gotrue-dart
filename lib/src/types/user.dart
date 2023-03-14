@@ -107,10 +107,10 @@ class User {
 class UserIdentity {
   final String id;
   final String userId;
-  final Map<String, dynamic> identityData;
+  final Map<String, dynamic>? identityData;
   final String provider;
-  final String createdAt;
-  final String lastSignInAt;
+  final String? createdAt;
+  final String? lastSignInAt;
   final String? updatedAt;
 
   const UserIdentity({
@@ -147,10 +147,10 @@ class UserIdentity {
     return UserIdentity(
       id: map['id'] as String,
       userId: map['user_id'] as String,
-      identityData: (map['identity_data'] as Map).cast<String, dynamic>(),
+      identityData: (map['identity_data'] as Map?)?.cast<String, dynamic>(),
       provider: map['provider'] as String,
-      createdAt: map['created_at'] as String,
-      lastSignInAt: map['last_sign_in_at'] as String,
+      createdAt: map['created_at'] as String?,
+      lastSignInAt: map['last_sign_in_at'] as String?,
       updatedAt: map['updated_at'] as String?,
     );
   }
