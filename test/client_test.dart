@@ -317,6 +317,19 @@ void main() {
         await client.recoverSession(json);
       }
     });
+
+    test('Sign out on wrong refresh token', () async {
+      await client.signInWithPassword(password: password, email: email1);
+
+      final currentSession = client.currentSession!.toJson()
+        ..['refresh_token'] = 'wrong';
+      final data = {'currentSession': currentSession, 'expiresAt': 100};
+      final session = json.encode(data);
+
+      await client.recoverSession(session);
+
+      expect(client.currentSession, isNull);
+    });
   });
 
   group('Client with custom http client', () {

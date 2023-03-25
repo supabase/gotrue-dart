@@ -687,6 +687,11 @@ class GoTrueClient {
       );
       return completer.future;
     } catch (error, stack) {
+      if (error is AuthException) {
+        if (error.message == 'Invalid Refresh Token: Refresh Token Not Found') {
+          signOut();
+        }
+      }
       completer.completeError(error, stack);
       return completer.future;
     }
