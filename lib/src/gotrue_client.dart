@@ -556,8 +556,11 @@ class GoTrueClient {
         throw AuthException('Session expired.');
       }
     } else {
+      if (_currentSession != null ||
+          _currentSession?.user.id != session.user.id) {
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
+      }
       _saveSession(session);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
       return AuthResponse(session: session);
     }
   }
@@ -674,7 +677,6 @@ class GoTrueClient {
 
       _saveSession(authResponse.session!);
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
       completer.complete(authResponse);
       return completer.future;
