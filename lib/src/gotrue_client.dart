@@ -556,7 +556,7 @@ class GoTrueClient {
         throw AuthException('Session expired.');
       }
     } else {
-      if (_currentSession != null ||
+      if (_currentSession == null ||
           _currentSession?.user.id != session.user.id) {
         _notifyAllSubscribers(AuthChangeEvent.signedIn);
       }
