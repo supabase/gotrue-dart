@@ -321,6 +321,20 @@ void main() {
     test('Sign out on wrong refresh token', () async {
       await client.signInWithPassword(password: password, email: email1);
 
+      final stream = client.onAuthStateChange;
+
+      expect(
+        stream,
+        emitsInOrder([
+          predicate<AuthState>(
+              (event) => event.event == AuthChangeEvent.signedIn),
+          predicate<AuthState>(
+              (event) => event.event == AuthChangeEvent.tokenRefreshFailed),
+          predicate<AuthState>(
+              (event) => event.event == AuthChangeEvent.signedOut),
+        ]),
+      );
+
       final currentSession = client.currentSession!.toJson()
         ..['refresh_token'] = 'wrong';
       final data = {'currentSession': currentSession, 'expiresAt': 100};
