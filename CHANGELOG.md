@@ -1,3 +1,8 @@
+## [1.5.5]
+
+- fix: less sign in event [#127](https://github.com/supabase/gotrue-dart/pull/127)
+- fix: add default value to auth response [#128](https://github.com/supabase/gotrue-dart/pull/128)
+
 ## [1.5.4]
 
 - fix: lower the version of `meta` to v1.7.0 to match the requirement for Flutter 2.8.0
