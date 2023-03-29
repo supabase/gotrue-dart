@@ -544,7 +544,7 @@ class GoTrueClient {
     }
 
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    if (expiresAt < (timeNow - Constants.expiryMargin.inSeconds)) {
+    if (expiresAt < (timeNow + Constants.expiryMargin.inSeconds)) {
       if (_autoRefreshToken && session.refreshToken != null) {
         final response = await _callRefreshToken(
           refreshCompleter,
