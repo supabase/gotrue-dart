@@ -1,3 +1,9 @@
+## [1.5.6]
+
+- fix: sign out users silently when refresh token is invalid [#126](https://github.com/supabase/gotrue-dart/pull/126)
+- fix: correct expiry margin [#130](https://github.com/supabase/gotrue-dart/pull/130)
+- fix: pass recoverSession errors to `onAuthStateChanged` [#131](https://github.com/supabase/gotrue-dart/pull/131)
+
 ## [1.5.5]
 
 - fix: less sign in event [#127](https://github.com/supabase/gotrue-dart/pull/127)
