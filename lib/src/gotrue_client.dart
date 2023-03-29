@@ -689,12 +689,11 @@ class GoTrueClient {
     } catch (error, stack) {
       if (error is AuthException) {
         if (error.message == 'Invalid Refresh Token: Refresh Token Not Found') {
-          _notifyAllSubscribers(AuthChangeEvent.tokenRefreshFailed);
           await signOut();
-          completer.complete(AuthResponse(session: null, user: null));
         }
       }
-      if (!completer.isCompleted) completer.completeError(error, stack);
+      completer.completeError(error, stack);
+      _onAuthStateChangeController.addError(error, stack);
 
       return completer.future;
     }

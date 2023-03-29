@@ -329,8 +329,6 @@ void main() {
           predicate<AuthState>(
               (event) => event.event == AuthChangeEvent.signedIn),
           predicate<AuthState>(
-              (event) => event.event == AuthChangeEvent.tokenRefreshFailed),
-          predicate<AuthState>(
               (event) => event.event == AuthChangeEvent.signedOut),
         ]),
       );
