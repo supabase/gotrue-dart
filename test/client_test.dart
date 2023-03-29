@@ -338,7 +338,9 @@ void main() {
       final data = {'currentSession': currentSession, 'expiresAt': 100};
       final session = json.encode(data);
 
-      await client.recoverSession(session);
+      await expectLater(
+          client.recoverSession(session), throwsA(isA<AuthException>()));
+      expect(stream, emitsError(isA<AuthException>()));
 
       expect(client.currentSession, isNull);
     });
