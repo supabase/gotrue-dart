@@ -532,19 +532,19 @@ class GoTrueClient {
         persistedData['currentSession'] as Map<String, dynamic>?;
     final expiresAt = persistedData['expiresAt'] as int?;
     if (currentSession == null) {
-      throw AuthException('Missing currentSession.');
+      throw _notifyException(AuthException('Missing currentSession.'));
     }
     if (expiresAt == null) {
-      throw AuthException('Missing expiresAt.');
+      throw _notifyException(AuthException('Missing expiresAt.'));
     }
 
     final session = Session.fromJson(currentSession);
     if (session == null) {
-      throw AuthException('Current session is missing data.');
+      throw _notifyException(AuthException('Current session is missing data.'));
     }
 
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    if (expiresAt < (timeNow - Constants.expiryMargin.inSeconds)) {
+    if (expiresAt < (timeNow + Constants.expiryMargin.inSeconds)) {
       if (_autoRefreshToken && session.refreshToken != null) {
         final response = await _callRefreshToken(
           refreshCompleter,
@@ -553,7 +553,7 @@ class GoTrueClient {
         );
         return response;
       } else {
-        throw AuthException('Session expired.');
+        throw _notifyException(AuthException('Session expired.'));
       }
     } else {
       if (_currentSession == null ||
@@ -689,7 +689,14 @@ class GoTrueClient {
       );
       return completer.future;
     } catch (error, stack) {
+      if (error is AuthException) {
+        if (error.message == 'Invalid Refresh Token: Refresh Token Not Found') {
+          await signOut();
+        }
+      }
       completer.completeError(error, stack);
+      _onAuthStateChangeController.addError(error, stack);
+
       return completer.future;
     }
   }
@@ -698,8 +705,11 @@ class GoTrueClient {
     _onAuthStateChangeController.add(AuthState(event, currentSession));
   }
 
-  Exception _notifyException(Exception exception) {
-    _onAuthStateChangeController.addError(exception);
+  Exception _notifyException(Exception exception, [StackTrace? stackTrace]) {
+    _onAuthStateChangeController.addError(
+      exception,
+      stackTrace ?? StackTrace.current,
+    );
     return exception;
   }
 }
