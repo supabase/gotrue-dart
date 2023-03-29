@@ -532,15 +532,15 @@ class GoTrueClient {
         persistedData['currentSession'] as Map<String, dynamic>?;
     final expiresAt = persistedData['expiresAt'] as int?;
     if (currentSession == null) {
-      throw AuthException('Missing currentSession.');
+      throw _notifyException(AuthException('Missing currentSession.'));
     }
     if (expiresAt == null) {
-      throw AuthException('Missing expiresAt.');
+      throw _notifyException(AuthException('Missing expiresAt.'));
     }
 
     final session = Session.fromJson(currentSession);
     if (session == null) {
-      throw AuthException('Current session is missing data.');
+      throw _notifyException(AuthException('Current session is missing data.'));
     }
 
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
@@ -553,7 +553,7 @@ class GoTrueClient {
         );
         return response;
       } else {
-        throw AuthException('Session expired.');
+        throw _notifyException(AuthException('Session expired.'));
       }
     } else {
       if (_currentSession == null ||
