@@ -558,9 +558,13 @@ class GoTrueClient {
     } else {
       if (_currentSession == null ||
           _currentSession?.user.id != session.user.id) {
+     
+        _saveSession(session);
         _notifyAllSubscribers(AuthChangeEvent.signedIn);
+      } else {
+        _saveSession(session);
       }
-      _saveSession(session);
+
       return AuthResponse(session: session);
     }
   }
