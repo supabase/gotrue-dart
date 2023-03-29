@@ -698,8 +698,11 @@ class GoTrueClient {
     _onAuthStateChangeController.add(AuthState(event, currentSession));
   }
 
-  Exception _notifyException(Exception exception) {
-    _onAuthStateChangeController.addError(exception);
+  Exception _notifyException(Exception exception, [StackTrace? stackTrace]) {
+    _onAuthStateChangeController.addError(
+      exception,
+      stackTrace ?? StackTrace.current,
+    );
     return exception;
   }
 }
