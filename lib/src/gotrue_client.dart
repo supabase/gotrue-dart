@@ -6,8 +6,10 @@ import 'package:collection/collection.dart';
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
+import 'package:gotrue/src/helper.dart';
 import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
+import 'package:gotrue/src/types/oauth_flow_type.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:meta/meta.dart';
@@ -594,13 +596,13 @@ class GoTrueClient {
   }
 
   /// return provider url only
-  OAuthResponse _handleProviderSignIn(
+  Future<OAuthResponse> _handleProviderSignIn(
     Provider provider, {
     required String? scopes,
     required String? redirectTo,
     required Map<String, String>? queryParams,
-  }) {
-    // final url = admin.getUrlForProvider(provider, options);
+    OAuthFlowType? flowType,
+  }) async {
     final urlParams = {'provider': provider.name};
     if (scopes != null) {
       urlParams['scopes'] = scopes;
@@ -611,8 +613,19 @@ class GoTrueClient {
     if (queryParams != null) {
       urlParams.addAll(queryParams);
     }
-    final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
+    if (flowType == OAuthFlowType.pkce) {
+      final codeVerifier = generatePKCEVerifier();
+      // await setItemAsync() // TODO implement setItemAsync
 
+      final codeChallenge = generatePKCEChallenge(codeVerifier);
+      final flowParams = {
+        'flow_type': flowType!.name,
+        'code_challenge': codeChallenge,
+        'code_challenge_method': 's256',
+      };
+      urlParams.addAll(flowParams);
+    }
+    final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
     return OAuthResponse(provider: provider, url: url);
   }
 

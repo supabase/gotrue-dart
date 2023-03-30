@@ -1,0 +1,4 @@
+enum OAuthFlowType {
+  implicit,
+  pkce,
+}
