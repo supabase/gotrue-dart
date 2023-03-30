@@ -557,9 +557,9 @@ class GoTrueClient {
       }
     } else {
       final shouldEmitEvent = _currentSession == null ||
-          _currentSession?.user.id != session.user.id; 
+          _currentSession?.user.id != session.user.id;
       _saveSession(session);
-      
+
       if (shouldEmitEvent) _notifyAllSubscribers(AuthChangeEvent.signedIn);
 
       return AuthResponse(session: session);
