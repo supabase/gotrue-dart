@@ -217,6 +217,34 @@ class GoTrueClient {
         redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
   }
 
+  /// Log in an existing user via a third-party provider.
+  Future<AuthResponse> exchangeCodeForSession(String authCode) async {
+    // TODO get the code verifier here
+    // const codeVerifier = await getItemAsync(this.storage, `${this.storageKey}-oauth-code-verifier`)
+    final codeVerifier = '';
+
+    final Map<String, dynamic> response = await _fetch.request(
+      '$_url/token?grant_type=oauth_pkce',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(headers: _headers, body: {
+        'auth_code': authCode,
+        'code_verifier': codeVerifier,
+      }),
+    );
+    // TODO remove stored code verifier here
+    // await removeItemAsync(this.storage, `${this.storageKey}-oauth-code-verifier`)
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    final session = authResponse.session;
+    if (session != null) {
+      _saveSession(session);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
+
+    return authResponse;
+  }
+
   /// Allows signing in with an ID token issued by certain supported providers.
   /// The [idToken] is verified for validity and a new session is established.
   /// This method of signing in only supports [Provider.google] or [Provider.apple].
