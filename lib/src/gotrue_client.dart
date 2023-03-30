@@ -207,16 +207,22 @@ class GoTrueClient {
     return authResponse;
   }
 
-  /// Log in an existing user via a third-party provider.
+  /// Generates a link to log in an user via a third-party provider.
   Future<OAuthResponse> getOAuthSignInUrl({
     required Provider provider,
     String? redirectTo,
     String? scopes,
     Map<String, String>? queryParams,
+    OAuthFlowType flowType = OAuthFlowType.implicit,
   }) async {
     _removeSession();
-    return _handleProviderSignIn(provider,
-        redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
+    return _handleProviderSignIn(
+      provider,
+      redirectTo: redirectTo,
+      scopes: scopes,
+      queryParams: queryParams,
+      flowType: flowType,
+    );
   }
 
   /// Log in an existing user via a third-party provider.
@@ -601,7 +607,7 @@ class GoTrueClient {
     required String? scopes,
     required String? redirectTo,
     required Map<String, String>? queryParams,
-    OAuthFlowType? flowType,
+    required OAuthFlowType flowType,
   }) async {
     final urlParams = {'provider': provider.name};
     if (scopes != null) {
@@ -619,7 +625,7 @@ class GoTrueClient {
 
       final codeChallenge = generatePKCEChallenge(codeVerifier);
       final flowParams = {
-        'flow_type': flowType!.name,
+        'flow_type': flowType.name,
         'code_challenge': codeChallenge,
         'code_challenge_method': 's256',
       };
