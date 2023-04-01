@@ -380,7 +380,7 @@ class GoTrueClient {
       throw AuthException('Not logged in.');
     }
 
-    await _callRefreshToken(refreshCompleter);
+    _callRefreshToken(refreshCompleter);
     return refreshCompleter.future;
   }
 
@@ -414,7 +414,7 @@ class GoTrueClient {
     if (refreshToken.isEmpty) {
       throw AuthException('No current session.');
     }
-    await _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
+    _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
     return refreshCompleter.future;
   }
 
@@ -548,7 +548,7 @@ class GoTrueClient {
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     if (expiresAt < (timeNow + Constants.expiryMargin.inSeconds)) {
       if (_autoRefreshToken && session.refreshToken != null) {
-        await _callRefreshToken(
+        _callRefreshToken(
           refreshCompleter,
           refreshToken: session.refreshToken,
           accessToken: session.accessToken,
@@ -645,7 +645,7 @@ class GoTrueClient {
   }
 
   /// Generates a new JWT.
-  Future<void> _callRefreshToken(
+  void _callRefreshToken(
     Completer<AuthResponse> completer, {
     String? refreshToken,
     String? accessToken,
