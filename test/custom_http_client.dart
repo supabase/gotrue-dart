@@ -65,46 +65,66 @@ class NoEmailConfirmationHttpClient extends BaseClient {
 ///
 /// This client will fail the first 3 requests and succede on the 4th one.
 class RetryTestHttpClient extends BaseClient {
-  var _requestCount = 0;
+  var retryCount = 0;
+
   @override
   Future<StreamedResponse> send(BaseRequest request) async {
-    if (_requestCount < 3) {
-      throw SocketException('Retry #${_requestCount + 1}');
+    if (retryCount < 3) {
+      retryCount++;
+      throw SocketException('Retry #${retryCount + 1}');
     }
-    _requestCount++;
-    final now = DateTime.now().toIso8601String();
     return StreamedResponse(
       Stream.value(
         utf8.encode(
           jsonEncode(
             {
-              'id': 'ef507d02-ce6a-4b3a-a8a6-6f0e14740136',
-              'aud': 'authenticated',
-              'role': 'authenticated',
-              'email': 'fake1@email.com',
-              'phone': '',
-              'confirmation_sent_at': now,
-              'app_metadata': {
-                'provider': 'email',
-                'providers': ['email']
-              },
-              'user_metadata': {},
-              'identities': [
-                {
-                  'id': 'ef507d02-ce6a-4b3a-a8a6-6f0e14740136',
-                  'user_id': 'ef507d02-ce6a-4b3a-a8a6-6f0e14740136',
-                  'identity_data': {
-                    'email': 'fake1@email.com',
-                    'sub': 'ef507d02-ce6a-4b3a-a8a6-6f0e14740136'
-                  },
+              'access_token':
+                  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODAzNDU1MzksInN1YiI6IjE4YmM3YTRlLWMwOTUtNDU3My05M2RjLWUwYmUyOWJhZGE5NyIsImVtYWlsIjoiZmFrZTFAZW1haWwuY29tIiwicGhvbmUiOiIxNjY2MDAwMDAwMDAiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiIiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTY4MDM0MTkzOX1dLCJzZXNzaW9uX2lkIjoiYTg3NjdiOGEtMDcxMS00MGMyLTkzYTEtYTA4MTI3YzFjMzUzIn0.xNV0fCVB8QeeDp44UXlsQ-SdDZm8ZFPKuZVGVZE24Tw',
+              'token_type': 'bearer',
+              'expires_in': 3600,
+              'refresh_token': 'tDoDnvj5MKLuZOQ65KyVfQ',
+              'user': {
+                'id': '18bc7a4e-c095-4573-93dc-e0be29bada97',
+                'aud': '',
+                'role': '',
+                'email': 'fake1@email.com',
+                'email_confirmed_at': '2023-04-01T09:38:59.784028Z',
+                'phone': '166600000000',
+                'phone_confirmed_at': '2023-04-01T09:38:59.784028Z',
+                'confirmed_at': '2023-04-01T09:38:59.784028Z',
+                'last_sign_in_at': '2023-04-01T09:38:59.904492805Z',
+                'app_metadata': {
                   'provider': 'email',
-                  'last_sign_in_at': now,
-                  'created_at': now,
-                  'updated_at': now
-                }
-              ],
-              'created_at': now,
-              'updated_at': now,
+                  'providers': ['email']
+                },
+                'user_metadata': {},
+                'factors': [
+                  {
+                    'id': '1d3aa138-da96-4aea-8217-af07daa6b82d',
+                    'created_at': '2023-04-01T09:38:59.784028Z',
+                    'updated_at': '2023-04-01T09:38:59.784028Z',
+                    'status': 'unverified',
+                    'friendly_name': 'UnverifiedFactor',
+                    'factor_type': 'totp'
+                  }
+                ],
+                'identities': [
+                  {
+                    'id': '18bc7a4e-c095-4573-93dc-e0be29bada97',
+                    'user_id': '18bc7a4e-c095-4573-93dc-e0be29bada97',
+                    'identity_data': {
+                      'email': 'fake1@email.com',
+                      'sub': '18bc7a4e-c095-4573-93dc-e0be29bada97'
+                    },
+                    'provider': 'email',
+                    'last_sign_in_at': '2023-04-01T09:38:59.784028Z',
+                    'created_at': '2023-04-01T09:38:59.784028Z',
+                    'updated_at': '2023-04-01T09:38:59.784028Z'
+                  }
+                ],
+                'created_at': '2023-04-01T09:38:59.784028Z',
+                'updated_at': '2023-04-01T09:38:59.908816Z'
+              }
             },
           ),
         ),
