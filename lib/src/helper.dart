@@ -13,11 +13,8 @@ String generatePKCEVerifier() {
   const verifierLength = 56;
   final array = Uint32List(verifierLength);
   final random = Random();
-  if (true) {
-    // TODO gotrue-js checks if in browser
-    for (var i = 0; i < verifierLength; i++) {
-      array[i] = random.nextInt(255);
-    }
+  for (var i = 0; i < verifierLength; i++) {
+    array[i] = random.nextInt(255);
   }
   return array.map(dec2hex).join('');
 }
