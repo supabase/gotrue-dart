@@ -380,7 +380,8 @@ class GoTrueClient {
       throw AuthException('Not logged in.');
     }
 
-    return _callRefreshToken(refreshCompleter);
+    await _callRefreshToken(refreshCompleter);
+    return refreshCompleter.future;
   }
 
   /// Updates user data, if there is a logged in user.
@@ -413,7 +414,8 @@ class GoTrueClient {
     if (refreshToken.isEmpty) {
       throw AuthException('No current session.');
     }
-    return _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
+    await _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
+    return refreshCompleter.future;
   }
 
   /// Gets the session data from a oauth2 callback URL
@@ -546,12 +548,12 @@ class GoTrueClient {
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     if (expiresAt < (timeNow + Constants.expiryMargin.inSeconds)) {
       if (_autoRefreshToken && session.refreshToken != null) {
-        final response = await _callRefreshToken(
+        await _callRefreshToken(
           refreshCompleter,
           refreshToken: session.refreshToken,
           accessToken: session.accessToken,
         );
-        return response;
+        return refreshCompleter.future;
       } else {
         throw _notifyException(AuthException('Session expired.'));
       }
@@ -643,7 +645,7 @@ class GoTrueClient {
   }
 
   /// Generates a new JWT.
-  Future<AuthResponse> _callRefreshToken(
+  Future<void> _callRefreshToken(
     Completer<AuthResponse> completer, {
     String? refreshToken,
     String? accessToken,
@@ -680,7 +682,6 @@ class GoTrueClient {
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
 
       completer.complete(authResponse);
-      return completer.future;
     } on SocketException {
       _setTokenRefreshTimer(
         Constants.retryInterval * pow(2, _refreshTokenRetryCount),
@@ -688,7 +689,6 @@ class GoTrueClient {
         refreshToken: token,
         accessToken: accessToken,
       );
-      return completer.future;
     } catch (error, stack) {
       if (error is AuthException) {
         if (error.message == 'Invalid Refresh Token: Refresh Token Not Found') {
@@ -697,8 +697,6 @@ class GoTrueClient {
       }
       completer.completeError(error, stack);
       _onAuthStateChangeController.addError(error, stack);
-
-      return completer.future;
     }
   }
 
