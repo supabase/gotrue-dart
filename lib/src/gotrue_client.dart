@@ -9,6 +9,7 @@ import 'package:gotrue/src/fetch.dart';
 import 'package:gotrue/src/helper.dart';
 import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
+import 'package:gotrue/src/types/gotrue_async_storage.dart';
 import 'package:gotrue/src/types/oauth_flow_type.dart';
 import 'package:http/http.dart';
 import 'package:jwt_decode/jwt_decode.dart';
@@ -47,6 +48,9 @@ class GoTrueClient {
 
   final _onAuthStateChangeController = BehaviorSubject<AuthState>();
 
+  /// Local storage to store pkce code verifiers.
+  final GotrueAsyncStorage? _asyncStorage;
+
   /// Receive a notification every time an auth event happens.
   ///
   /// ```dart
@@ -66,9 +70,11 @@ class GoTrueClient {
     Map<String, String>? headers,
     bool? autoRefreshToken,
     Client? httpClient,
+    GotrueAsyncStorage? asyncStorage,
   })  : _url = url ?? Constants.defaultGotrueUrl,
         _headers = headers ?? {},
-        _httpClient = httpClient {
+        _httpClient = httpClient,
+        _asyncStorage = asyncStorage {
     _autoRefreshToken = autoRefreshToken ?? true;
 
     final gotrueUrl = url ?? Constants.defaultGotrueUrl;
@@ -227,20 +233,23 @@ class GoTrueClient {
 
   /// Log in an existing user via a third-party provider.
   Future<AuthResponse> exchangeCodeForSession(String authCode) async {
-    // TODO get the code verifier here
-    // const codeVerifier = await getItemAsync(this.storage, `${this.storageKey}-oauth-code-verifier`)
-    final codeVerifier = '';
+    assert(_asyncStorage != null,
+        'You need to provide asyncStorage to perform pkce flow.');
+
+    final codeVerifier = await _asyncStorage!
+        .getItem(key: '${Constants.defaultStorageKey}-oauth-code-verifier');
 
     final Map<String, dynamic> response = await _fetch.request(
-      '$_url/token?grant_type=oauth_pkce',
+      '$_url/token?grant_type=pkce',
       RequestMethodType.post,
       options: GotrueRequestOptions(headers: _headers, body: {
         'auth_code': authCode,
         'code_verifier': codeVerifier,
       }),
     );
-    // TODO remove stored code verifier here
-    // await removeItemAsync(this.storage, `${this.storageKey}-oauth-code-verifier`)
+
+    await _asyncStorage!
+        .removeItem(key: '${Constants.defaultStorageKey}-oauth-code-verifier');
 
     final authResponse = AuthResponse.fromJson(response);
 
@@ -609,6 +618,9 @@ class GoTrueClient {
     required Map<String, String>? queryParams,
     required OAuthFlowType flowType,
   }) async {
+    assert(_asyncStorage != null,
+        'You need to provide asyncStorage to perform pkce flow.');
+
     final urlParams = {'provider': provider.name};
     if (scopes != null) {
       urlParams['scopes'] = scopes;
@@ -621,7 +633,10 @@ class GoTrueClient {
     }
     if (flowType == OAuthFlowType.pkce) {
       final codeVerifier = generatePKCEVerifier();
-      // await setItemAsync() // TODO implement setItemAsync
+      await _asyncStorage!.setItem(
+        key: '${Constants.defaultStorageKey}-oauth-code-verifier',
+        value: codeVerifier,
+      );
 
       final codeChallenge = generatePKCEChallenge(codeVerifier);
       final flowParams = {
