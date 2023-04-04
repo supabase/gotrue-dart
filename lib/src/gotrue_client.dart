@@ -21,6 +21,17 @@ import 'types/mfa.dart';
 
 part 'gotrue_mfa_api.dart';
 
+/// {@template gotrue_client}
+/// API client to interact with gotrue server.
+///
+/// [url] URL of gotrue instance
+///
+/// [autoRefreshToken] whether to refresh the token automatically or not. Defaults to true.
+///
+/// [httpClient] custom http client.
+///
+/// [asyncStorage] local storage to store pkce code verifiers. Required when using the pkce flow.
+/// /// {@endtemplate}
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
@@ -65,6 +76,7 @@ class GoTrueClient {
   Stream<AuthState> get onAuthStateChange =>
       _onAuthStateChangeController.stream;
 
+  /// {@macro gotrue_client}
   GoTrueClient({
     String? url,
     Map<String, String>? headers,
