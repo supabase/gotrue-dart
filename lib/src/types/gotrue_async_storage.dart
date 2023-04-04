@@ -1,7 +1,7 @@
 /// Interface to provide async storage to store pkce tokens.
 abstract class GotrueAsyncStorage {
   /// Retrieves an item asynchronously from the storage with the key.
-  Future<String> getItem({required String key});
+  Future<String?> getItem({required String key});
 
   /// Stores the value asynchronously to the storage with the key.
   Future<void> setItem({
