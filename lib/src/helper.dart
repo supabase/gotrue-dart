@@ -6,7 +6,8 @@ import 'package:crypto/crypto.dart';
 
 /// Converts base 10 int into base 16 String and takes the last two digets.
 String dec2hex(int dec) {
-  return '0${dec.toRadixString(16)}'.substring(-2);
+  final radixString = '0${dec.toRadixString(16)}';
+  return radixString.substring(radixString.length - 2);
 }
 
 String generatePKCEVerifier() {
