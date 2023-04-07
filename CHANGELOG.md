@@ -1,3 +1,7 @@
+## [1.5.7]
+
+- fix: prevent onAuthStateChange emitting null session when signed in [#133](https://github.com/supabase/gotrue-dart/pull/133)
+
 ## [1.5.6]
 
 - fix: sign out users silently when refresh token is invalid [#126](https://github.com/supabase/gotrue-dart/pull/126)

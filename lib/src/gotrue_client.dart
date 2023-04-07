@@ -435,7 +435,8 @@ class GoTrueClient {
       throw AuthException('Not logged in.');
     }
 
-    return _callRefreshToken(refreshCompleter);
+    _callRefreshToken(refreshCompleter);
+    return refreshCompleter.future;
   }
 
   /// Updates user data, if there is a logged in user.
@@ -468,7 +469,8 @@ class GoTrueClient {
     if (refreshToken.isEmpty) {
       throw AuthException('No current session.');
     }
-    return _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
+    _callRefreshToken(refreshCompleter, refreshToken: refreshToken);
+    return refreshCompleter.future;
   }
 
   /// Gets the session data from a oauth2 callback URL
@@ -534,9 +536,10 @@ class GoTrueClient {
 
     if (storeSession == true) {
       _saveSession(session);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
       if (redirectType == 'recovery') {
         _notifyAllSubscribers(AuthChangeEvent.passwordRecovery);
+      } else {
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
       }
     }
 
@@ -601,21 +604,22 @@ class GoTrueClient {
     final timeNow = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     if (expiresAt < (timeNow + Constants.expiryMargin.inSeconds)) {
       if (_autoRefreshToken && session.refreshToken != null) {
-        final response = await _callRefreshToken(
+        _callRefreshToken(
           refreshCompleter,
           refreshToken: session.refreshToken,
           accessToken: session.accessToken,
         );
-        return response;
+        return refreshCompleter.future;
       } else {
         throw _notifyException(AuthException('Session expired.'));
       }
     } else {
-      if (_currentSession == null ||
-          _currentSession?.user.id != session.user.id) {
-        _notifyAllSubscribers(AuthChangeEvent.signedIn);
-      }
+      final shouldEmitEvent = _currentSession == null ||
+          _currentSession?.user.id != session.user.id;
       _saveSession(session);
+
+      if (shouldEmitEvent) _notifyAllSubscribers(AuthChangeEvent.signedIn);
+
       return AuthResponse(session: session);
     }
   }
@@ -714,7 +718,7 @@ class GoTrueClient {
   }
 
   /// Generates a new JWT.
-  Future<AuthResponse> _callRefreshToken(
+  void _callRefreshToken(
     Completer<AuthResponse> completer, {
     String? refreshToken,
     String? accessToken,
@@ -751,7 +755,6 @@ class GoTrueClient {
       _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
 
       completer.complete(authResponse);
-      return completer.future;
     } on SocketException {
       _setTokenRefreshTimer(
         Constants.retryInterval * pow(2, _refreshTokenRetryCount),
@@ -759,7 +762,6 @@ class GoTrueClient {
         refreshToken: token,
         accessToken: accessToken,
       );
-      return completer.future;
     } catch (error, stack) {
       if (error is AuthException) {
         if (error.message == 'Invalid Refresh Token: Refresh Token Not Found') {
@@ -768,8 +770,6 @@ class GoTrueClient {
       }
       completer.completeError(error, stack);
       _onAuthStateChangeController.addError(error, stack);
-
-      return completer.future;
     }
   }
 
