@@ -481,9 +481,10 @@ class GoTrueClient {
 
     if (storeSession == true) {
       _saveSession(session);
-      _notifyAllSubscribers(AuthChangeEvent.signedIn);
       if (redirectType == 'recovery') {
         _notifyAllSubscribers(AuthChangeEvent.passwordRecovery);
+      } else {
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
       }
     }
 

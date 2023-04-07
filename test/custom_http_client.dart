@@ -1,7 +1,10 @@
 import 'dart:convert';
 
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:http/http.dart';
 import 'package:universal_io/io.dart';
+
+import 'utils.dart';
 
 class CustomHttpClient extends BaseClient {
   @override
@@ -73,13 +76,19 @@ class RetryTestHttpClient extends BaseClient {
       retryCount++;
       throw SocketException('Retry #${retryCount + 1}');
     }
+    final jwt = JWT(
+      {'exp': (DateTime.now().millisecondsSinceEpoch / 1000).round() + 60},
+      subject: userId1,
+    );
+
     return StreamedResponse(
       Stream.value(
         utf8.encode(
           jsonEncode(
             {
-              'access_token':
-                  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODAzNDU1MzksInN1YiI6IjE4YmM3YTRlLWMwOTUtNDU3My05M2RjLWUwYmUyOWJhZGE5NyIsImVtYWlsIjoiZmFrZTFAZW1haWwuY29tIiwicGhvbmUiOiIxNjY2MDAwMDAwMDAiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6e30sInJvbGUiOiIiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTY4MDM0MTkzOX1dLCJzZXNzaW9uX2lkIjoiYTg3NjdiOGEtMDcxMS00MGMyLTkzYTEtYTA4MTI3YzFjMzUzIn0.xNV0fCVB8QeeDp44UXlsQ-SdDZm8ZFPKuZVGVZE24Tw',
+              'access_token': jwt.sign(
+                SecretKey('37c304f8-51aa-419a-a1af-06154e63707a'),
+              ),
               'token_type': 'bearer',
               'expires_in': 3600,
               'refresh_token': 'tDoDnvj5MKLuZOQ65KyVfQ',
