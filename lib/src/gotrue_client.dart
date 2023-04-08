@@ -632,9 +632,6 @@ class GoTrueClient {
     required Map<String, String>? queryParams,
     required OAuthFlowType flowType,
   }) async {
-    assert(_asyncStorage != null,
-        'You need to provide asyncStorage to perform pkce flow.');
-
     final urlParams = {'provider': provider.name};
     if (scopes != null) {
       urlParams['scopes'] = scopes;
@@ -646,6 +643,8 @@ class GoTrueClient {
       urlParams.addAll(queryParams);
     }
     if (flowType == OAuthFlowType.pkce) {
+      assert(_asyncStorage != null,
+          'You need to provide asyncStorage to perform pkce flow.');
       final codeVerifier = generatePKCEVerifier();
       await _asyncStorage!.setItem(
         key: '${Constants.defaultStorageKey}-oauth-code-verifier',
