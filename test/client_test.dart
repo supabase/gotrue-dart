@@ -30,12 +30,15 @@ void main() {
       newEmail = getNewEmail();
       newPhone = getNewPhone();
 
+      final asyncStorage = TestAsyncStorage();
+
       client = GoTrueClient(
         url: gotrueUrl,
         headers: {
           'Authorization': 'Bearer $anonToken',
           'apikey': anonToken,
         },
+        asyncStorage: asyncStorage,
       );
 
       clientWithAuthConfirmOff = GoTrueClient(
@@ -307,6 +310,20 @@ void main() {
             scopes: 'repo');
         expect(res.url, isA<String>());
         expect(res.provider, Provider.google);
+      });
+
+      test('getOAuthSignInUrl with PKCE flow has the correct query parameters',
+          () async {
+        final response = await client.getOAuthSignInUrl(
+          provider: Provider.google,
+          flowType: OAuthFlowType.pkce,
+        );
+        final url = Uri.parse(response.url!);
+        final queryParameters = url.queryParameters;
+        expect(queryParameters['provider'], 'google');
+        expect(queryParameters['flow_type'], 'pkce');
+        expect(queryParameters['code_challenge_method'], 's256');
+        expect(queryParameters['code_challenge'], isA<String>());
       });
     });
 
