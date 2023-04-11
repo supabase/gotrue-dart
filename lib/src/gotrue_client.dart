@@ -249,7 +249,7 @@ class GoTrueClient {
         'You need to provide asyncStorage to perform pkce flow.');
 
     final codeVerifier = await _asyncStorage!
-        .getItem(key: '${Constants.defaultStorageKey}-oauth-code-verifier');
+        .getItem(key: '${Constants.defaultStorageKey}-code-verifier');
 
     final Map<String, dynamic> response = await _fetch.request(
       '$_url/token?grant_type=pkce',
@@ -261,7 +261,7 @@ class GoTrueClient {
     );
 
     await _asyncStorage!
-        .removeItem(key: '${Constants.defaultStorageKey}-oauth-code-verifier');
+        .removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
 
     final authResponse = AuthResponse.fromJson(response);
 
@@ -348,6 +348,16 @@ class GoTrueClient {
     _removeSession();
 
     if (email != null) {
+      String? codeChallenge;
+      if (_flowType == AuthFlowType.pkce) {
+        assert(_asyncStorage != null,
+            'You need to provide asyncStorage to perform pkce flow.');
+        final codeVerifier = generatePKCEVerifier();
+        await _asyncStorage!.setItem(
+            key: '${Constants.defaultStorageKey}-code-verifier',
+            value: codeVerifier);
+        codeChallenge = generatePKCEChallenge(codeVerifier);
+      }
       await _fetch.request(
         '$_url/otp',
         RequestMethodType.post,
@@ -359,6 +369,8 @@ class GoTrueClient {
             'data': data ?? {},
             'create_user': shouldCreateUser ?? true,
             'gotrue_meta_security': {'captcha_token': captchaToken},
+            'code_challenge': codeChallenge,
+            'code_challenge_method': codeChallenge != null ? 's256' : null,
           },
         ),
       );
@@ -564,9 +576,22 @@ class GoTrueClient {
     String? redirectTo,
     String? captchaToken,
   }) async {
+    String? codeChallenge;
+    if (_flowType == AuthFlowType.pkce) {
+      assert(_asyncStorage != null,
+          'You need to provide asyncStorage to perform pkce flow.');
+      final codeVerifier = generatePKCEVerifier();
+      await _asyncStorage!.setItem(
+          key: '${Constants.defaultStorageKey}-code-verifier',
+          value: codeVerifier);
+      codeChallenge = generatePKCEChallenge(codeVerifier);
+    }
+
     final body = {
       'email': email,
       'gotrue_meta_security': {'captcha_token': captchaToken},
+      'code_challenge': codeChallenge,
+      'code_challenge_method': codeChallenge != null ? 's256' : null,
     };
 
     final fetchOptions = GotrueRequestOptions(
@@ -648,7 +673,7 @@ class GoTrueClient {
           'You need to provide asyncStorage to perform pkce flow.');
       final codeVerifier = generatePKCEVerifier();
       await _asyncStorage!.setItem(
-        key: '${Constants.defaultStorageKey}-oauth-code-verifier',
+        key: '${Constants.defaultStorageKey}-code-verifier',
         value: codeVerifier,
       );
 
