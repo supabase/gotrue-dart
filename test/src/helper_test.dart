@@ -8,6 +8,8 @@ void main() {
     final codeVerifier = generatePKCEVerifier();
     final codeChallenge = generatePKCEChallenge(codeVerifier);
     final regex = RegExp(r'^[A-Za-z0-9-~_]*$');
-    expect(regex.hasMatch(codeChallenge), true);
+    expect(regex.hasMatch(codeChallenge), true,
+        reason:
+            'codeChallenge was "$codeChallenge", which contains characters that are not alphanumeric characters, hyphens, periods, underscores or tildes.');
   });
 }

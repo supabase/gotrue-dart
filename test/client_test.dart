@@ -311,20 +311,6 @@ void main() {
         expect(res.url, isA<String>());
         expect(res.provider, Provider.google);
       });
-
-      test('getOAuthSignInUrl with PKCE flow has the correct query parameters',
-          () async {
-        final response = await client.getOAuthSignInUrl(
-          provider: Provider.google,
-          flowType: OAuthFlowType.pkce,
-        );
-        final url = Uri.parse(response.url!);
-        final queryParameters = url.queryParameters;
-        expect(queryParameters['provider'], 'google');
-        expect(queryParameters['flow_type'], 'pkce');
-        expect(queryParameters['code_challenge_method'], 's256');
-        expect(queryParameters['code_challenge'], isA<String>());
-      });
     });
 
     test('Repeatedly recover session', () async {
@@ -399,6 +385,31 @@ void main() {
       await client.recoverSession(
           '{"currentSession":{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODAzNDE3MDUsInN1YiI6IjRkMjU4M2RhLThkZTQtNDlkMy05Y2QxLTM3YTlhNzRmNTViZCIsImVtYWlsIjoiZmFrZTE2ODAzMzgxMDVAZW1haWwuY29tIiwicGhvbmUiOiIiLCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfSwidXNlcl9tZXRhZGF0YSI6eyJIZWxsbyI6IldvcmxkIn0sInJvbGUiOiIiLCJhYWwiOiJhYWwxIiwiYW1yIjpbeyJtZXRob2QiOiJwYXNzd29yZCIsInRpbWVzdGFtcCI6MTY4MDMzODEwNX1dLCJzZXNzaW9uX2lkIjoiYzhiOTg2Y2UtZWJkZC00ZGUxLWI4MjAtZjIyOWYyNjg1OGIwIn0.0x1rFlPKbIU1rZPY1SH_FNSZaXerfkFA1Y-EOlhuzUs","expires_in":3600,"refresh_token":"-yeS4omysFs9tpUYBws9Rg","token_type":"bearer","provider_token":null,"provider_refresh_token":null,"user":{"id":"4d2583da-8de4-49d3-9cd1-37a9a74f55bd","app_metadata":{"provider":"email","providers":["email"]},"user_metadata":{"Hello":"World"},"aud":"","email":"fake1680338105@email.com","phone":"","created_at":"2023-04-01T08:35:05.208586Z","confirmed_at":null,"email_confirmed_at":"2023-04-01T08:35:05.220096086Z","phone_confirmed_at":null,"last_sign_in_at":"2023-04-01T08:35:05.222755878Z","role":"","updated_at":"2023-04-01T08:35:05.226938Z"}},"expiresAt":1680341705}');
       expect(httpClient.retryCount, 3);
+    });
+  });
+
+  group('PKCE enabled client', () {
+    late GoTrueClient client;
+    late RetryTestHttpClient httpClient;
+
+    setUpAll(() {
+      client = GoTrueClient(
+        url: gotrueUrl,
+        flowType: AuthFlowType.pkce,
+      );
+    });
+
+    test('getOAuthSignInUrl with PKCE flow has the correct query parameters',
+        () async {
+      final response = await client.getOAuthSignInUrl(
+        provider: Provider.google,
+      );
+      final url = Uri.parse(response.url!);
+      final queryParameters = url.queryParameters;
+      expect(queryParameters['provider'], 'google');
+      expect(queryParameters['flow_type'], 'pkce');
+      expect(queryParameters['code_challenge_method'], 's256');
+      expect(queryParameters['code_challenge'], isA<String>());
     });
   });
 }

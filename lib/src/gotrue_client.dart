@@ -74,6 +74,8 @@ class GoTrueClient {
   Stream<AuthState> get onAuthStateChange =>
       _onAuthStateChangeController.stream;
 
+  final AuthFlowType _flowType;
+
   /// {@macro gotrue_client}
   GoTrueClient({
     String? url,
@@ -81,10 +83,12 @@ class GoTrueClient {
     bool? autoRefreshToken,
     Client? httpClient,
     GotrueAsyncStorage? asyncStorage,
+    AuthFlowType flowType = AuthFlowType.implicit,
   })  : _url = url ?? Constants.defaultGotrueUrl,
         _headers = headers ?? {},
         _httpClient = httpClient,
-        _asyncStorage = asyncStorage {
+        _asyncStorage = asyncStorage,
+        _flowType = flowType {
     _autoRefreshToken = autoRefreshToken ?? true;
 
     final gotrueUrl = url ?? Constants.defaultGotrueUrl;
@@ -229,7 +233,6 @@ class GoTrueClient {
     String? redirectTo,
     String? scopes,
     Map<String, String>? queryParams,
-    OAuthFlowType flowType = OAuthFlowType.implicit,
   }) async {
     _removeSession();
     return _handleProviderSignIn(
@@ -237,7 +240,6 @@ class GoTrueClient {
       redirectTo: redirectTo,
       scopes: scopes,
       queryParams: queryParams,
-      flowType: flowType,
     );
   }
 
@@ -630,7 +632,6 @@ class GoTrueClient {
     required String? scopes,
     required String? redirectTo,
     required Map<String, String>? queryParams,
-    required OAuthFlowType flowType,
   }) async {
     final urlParams = {'provider': provider.name};
     if (scopes != null) {
@@ -642,7 +643,7 @@ class GoTrueClient {
     if (queryParams != null) {
       urlParams.addAll(queryParams);
     }
-    if (flowType == OAuthFlowType.pkce) {
+    if (_flowType == AuthFlowType.pkce) {
       assert(_asyncStorage != null,
           'You need to provide asyncStorage to perform pkce flow.');
       final codeVerifier = generatePKCEVerifier();
@@ -653,7 +654,7 @@ class GoTrueClient {
 
       final codeChallenge = generatePKCEChallenge(codeVerifier);
       final flowParams = {
-        'flow_type': flowType.name,
+        'flow_type': _flowType.name,
         'code_challenge': codeChallenge,
         'code_challenge_method': 's256',
       };
