@@ -487,7 +487,7 @@ class GoTrueClient {
     return refreshCompleter.future;
   }
 
-  /// Gets the session data from a oauth2 callback URL
+  /// Gets the session data from a magic link or oauth2 callback URL
   Future<AuthSessionUrlResponse> getSessionFromUrl(
     Uri originUrl, {
     bool storeSession = true,
@@ -504,6 +504,12 @@ class GoTrueClient {
         throw AuthPKCEGrantCodeExchangeError(
             'No session found for the auth code.');
       }
+
+      if (storeSession == true) {
+        _saveSession(session);
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
+      }
+
       return AuthSessionUrlResponse(session: session, redirectType: null);
     }
     var url = originUrl;
