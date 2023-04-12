@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
 
@@ -13,15 +12,12 @@ String dec2hex(int dec) {
 /// Generates a random code verifier
 String generatePKCEVerifier() {
   const verifierLength = 56;
-  final array = Uint32List(verifierLength);
-  final random = Random();
-  for (var i = 0; i < verifierLength; i++) {
-    array[i] = random.nextInt(255);
-  }
-  return array.map(dec2hex).join('');
+  final random = Random.secure();
+  return base64UrlEncode(
+      List.generate(verifierLength, (_) => random.nextInt(256))).split('=')[0];
 }
 
 String generatePKCEChallenge(String verifier) {
-  final hash = sha256.convert(verifier.codeUnits);
-  return base64Encode(hash.bytes);
+  return base64UrlEncode(sha256.convert(ascii.encode(verifier)).bytes)
+      .split('=')[0];
 }
