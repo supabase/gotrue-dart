@@ -492,6 +492,20 @@ class GoTrueClient {
     Uri originUrl, {
     bool storeSession = true,
   }) async {
+    if (_flowType == AuthFlowType.pkce) {
+      final authCode = originUrl.queryParameters['code'];
+      if (authCode == null) {
+        throw AuthPKCEGrantCodeExchangeError(
+            'No code detected in query parameters.');
+      }
+      final data = await exchangeCodeForSession(authCode);
+      final session = data.session;
+      if (session == null) {
+        throw AuthPKCEGrantCodeExchangeError(
+            'No session found for the auth code.');
+      }
+      return AuthSessionUrlResponse(session: session, redirectType: null);
+    }
     var url = originUrl;
     if (originUrl.hasQuery) {
       final decoded = originUrl.toString().replaceAll('#', '&');
