@@ -85,6 +85,9 @@ class GoTrueClient {
     );
   }
 
+  /// Getter for the headers
+  Map<String, String> get headers => _headers;
+
   /// Returns the current logged in user, if any;
   User? get currentUser => _currentUser;
 
