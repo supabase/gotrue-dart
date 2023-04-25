@@ -1,3 +1,9 @@
+## [1.6.0]
+
+- feat: expose `headers` as a getter [#137](https://github.com/supabase/gotrue-dart/pull/137/files)
+- fix: prevent `signedIn` event from firing for passwordRecovery event [#136](https://github.com/supabase/gotrue-dart/pull/136/files)
+- fix: pass missing catchaToken parameter on the request of `signInWithPassword` [#138](https://github.com/supabase/gotrue-dart/pull/138)
+
 ## [1.5.7]
 
 - fix: prevent onAuthStateChange emitting null session when signed in [#133](https://github.com/supabase/gotrue-dart/pull/133)
