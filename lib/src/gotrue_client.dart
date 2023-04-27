@@ -252,11 +252,13 @@ class GoTrueClient {
         .getItem(key: '${Constants.defaultStorageKey}-code-verifier');
 
     final Map<String, dynamic> response = await _fetch.request(
-      '$_url/token?grant_type=pkce',
+      '$_url/token',
       RequestMethodType.post,
       options: GotrueRequestOptions(headers: _headers, body: {
         'auth_code': authCode,
         'code_verifier': codeVerifier,
+      }, query: {
+        'grant_type': 'pkce',
       }),
     );
 
