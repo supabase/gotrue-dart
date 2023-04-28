@@ -107,6 +107,9 @@ class GoTrueClient {
     );
   }
 
+  /// Getter for the headers
+  Map<String, String> get headers => _headers;
+
   /// Returns the current logged in user, if any;
   User? get currentUser => _currentUser;
 
@@ -198,7 +201,11 @@ class GoTrueClient {
         RequestMethodType.post,
         options: GotrueRequestOptions(
           headers: _headers,
-          body: {'email': email, 'password': password},
+          body: {
+            'email': email,
+            'password': password,
+            'gotrue_meta_security': {'captcha_token': captchaToken},
+          },
           query: {'grant_type': 'password'},
         ),
       );
@@ -208,7 +215,11 @@ class GoTrueClient {
         RequestMethodType.post,
         options: GotrueRequestOptions(
           headers: _headers,
-          body: {'phone': phone, 'password': password},
+          body: {
+            'phone': phone,
+            'password': password,
+            'gotrue_meta_security': {'captcha_token': captchaToken},
+          },
           query: {'grant_type': 'password'},
         ),
       );
