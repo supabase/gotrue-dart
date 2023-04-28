@@ -390,12 +390,12 @@ void main() {
 
   group('PKCE enabled client', () {
     late GoTrueClient client;
-    late RetryTestHttpClient httpClient;
 
     setUpAll(() {
       client = GoTrueClient(
         url: gotrueUrl,
         flowType: AuthFlowType.pkce,
+        asyncStorage: TestAsyncStorage(),
       );
     });
 
