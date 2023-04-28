@@ -1,7 +1,11 @@
+## [1.7.0]
+
+- feat: add PKCE flow support [#135](https://github.com/supabase/gotrue-dart/pull/135)
+
 ## [1.6.0]
 
-- feat: expose `headers` as a getter [#137](https://github.com/supabase/gotrue-dart/pull/137/files)
-- fix: prevent `signedIn` event from firing for passwordRecovery event [#136](https://github.com/supabase/gotrue-dart/pull/136/files)
+- feat: expose `headers` as a getter [#137](https://github.com/supabase/gotrue-dart/pull/137)
+- fix: prevent `signedIn` event from firing for passwordRecovery event [#136](https://github.com/supabase/gotrue-dart/pull/136)
 - fix: pass missing catchaToken parameter on the request of `signInWithPassword` [#138](https://github.com/supabase/gotrue-dart/pull/138)
 
 ## [1.5.7]
