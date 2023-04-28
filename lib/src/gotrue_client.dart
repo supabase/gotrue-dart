@@ -243,7 +243,7 @@ class GoTrueClient {
     );
   }
 
-  /// Log in an existing user via a third-party provider.
+  /// Verifies the PKCE code verifyer and retrieves a session.
   Future<AuthResponse> exchangeCodeForSession(String authCode) async {
     assert(_asyncStorage != null,
         'You need to provide asyncStorage to perform pkce flow.');
