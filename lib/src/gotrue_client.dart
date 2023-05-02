@@ -44,6 +44,8 @@ class GoTrueClient {
   int _refreshTokenRetryCount = 0;
 
   final _onAuthStateChangeController = BehaviorSubject<AuthState>();
+  final _onAuthStateChangeControllerSync =
+      BehaviorSubject<AuthState>(sync: true);
 
   /// Receive a notification every time an auth event happens.
   ///
@@ -58,6 +60,11 @@ class GoTrueClient {
   /// ```
   Stream<AuthState> get onAuthStateChange =>
       _onAuthStateChangeController.stream;
+
+  /// Don't use this, it's for internal use only.
+  @internal
+  Stream<AuthState> get onAuthStateChangeSync =>
+      _onAuthStateChangeControllerSync.stream;
 
   GoTrueClient({
     String? url,
@@ -691,9 +698,9 @@ class GoTrueClient {
       }
 
       _saveSession(authResponse.session!);
-      _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
 
       completer.complete(authResponse);
+      _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
     } on SocketException {
       _setTokenRefreshTimer(
         Constants.retryInterval * pow(2, _refreshTokenRetryCount),
@@ -713,7 +720,9 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    _onAuthStateChangeController.add(AuthState(event, currentSession));
+    final state = AuthState(event, currentSession);
+    _onAuthStateChangeController.add(state);
+    _onAuthStateChangeControllerSync.add(state);
   }
 
   Exception _notifyException(Exception exception, [StackTrace? stackTrace]) {
