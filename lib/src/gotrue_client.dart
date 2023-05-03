@@ -58,6 +58,8 @@ class GoTrueClient {
   int _refreshTokenRetryCount = 0;
 
   final _onAuthStateChangeController = BehaviorSubject<AuthState>();
+  final _onAuthStateChangeControllerSync =
+      BehaviorSubject<AuthState>(sync: true);
 
   /// Local storage to store pkce code verifiers.
   final GotrueAsyncStorage? _asyncStorage;
@@ -75,6 +77,11 @@ class GoTrueClient {
   /// ```
   Stream<AuthState> get onAuthStateChange =>
       _onAuthStateChangeController.stream;
+
+  /// Don't use this, it's for internal use only.
+  @internal
+  Stream<AuthState> get onAuthStateChangeSync =>
+      _onAuthStateChangeControllerSync.stream;
 
   final AuthFlowType _flowType;
 
@@ -816,9 +823,9 @@ class GoTrueClient {
       }
 
       _saveSession(authResponse.session!);
-      _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
 
       completer.complete(authResponse);
+      _notifyAllSubscribers(AuthChangeEvent.tokenRefreshed);
     } on SocketException {
       _setTokenRefreshTimer(
         Constants.retryInterval * pow(2, _refreshTokenRetryCount),
@@ -838,7 +845,9 @@ class GoTrueClient {
   }
 
   void _notifyAllSubscribers(AuthChangeEvent event) {
-    _onAuthStateChangeController.add(AuthState(event, currentSession));
+    final state = AuthState(event, currentSession);
+    _onAuthStateChangeController.add(state);
+    _onAuthStateChangeControllerSync.add(state);
   }
 
   Exception _notifyException(Exception exception, [StackTrace? stackTrace]) {
