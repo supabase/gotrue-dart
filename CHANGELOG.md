@@ -1,3 +1,9 @@
+## [1.7.0]
+
+- chore: export mfa types [#140](https://github.com/supabase/gotrue-dart/pull/140)
+- feat: add synchronous onAuthStateChange for internal use [#139](https://github.com/supabase/gotrue-dart/pull/139)
+- feat: add pkce flow support [#135](https://github.com/supabase/gotrue-dart/pull/135)
+
 ## [1.6.0]
 
 - feat: expose `headers` as a getter [#137](https://github.com/supabase/gotrue-dart/pull/137)
