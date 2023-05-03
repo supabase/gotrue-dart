@@ -1,7 +1,3 @@
-## [1.7.0]
-
-- feat: add PKCE flow support [#135](https://github.com/supabase/gotrue-dart/pull/135)
-
 ## [1.6.0]
 
 - feat: expose `headers` as a getter [#137](https://github.com/supabase/gotrue-dart/pull/137)
