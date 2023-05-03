@@ -29,6 +29,8 @@ part 'gotrue_mfa_api.dart';
 /// [httpClient] custom http client.
 ///
 /// [asyncStorage] local storage to store pkce code verifiers. Required when using the pkce flow.
+///
+/// Set [flowType] to `AuthFlowType.pkce` to perform pkce auth flow.
 /// /// {@endtemplate}
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
@@ -265,12 +267,16 @@ class GoTrueClient {
     final Map<String, dynamic> response = await _fetch.request(
       '$_url/token',
       RequestMethodType.post,
-      options: GotrueRequestOptions(headers: _headers, body: {
-        'auth_code': authCode,
-        'code_verifier': codeVerifier,
-      }, query: {
-        'grant_type': 'pkce',
-      }),
+      options: GotrueRequestOptions(
+        headers: _headers,
+        body: {
+          'auth_code': authCode,
+          'code_verifier': codeVerifier,
+        },
+        query: {
+          'grant_type': 'pkce',
+        },
+      ),
     );
 
     await _asyncStorage!
