@@ -1,7 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:dotenv/dotenv.dart' show env, load;
 import 'package:gotrue/gotrue.dart';
-import 'package:gotrue/src/types/mfa.dart';
 import 'package:http/http.dart' as http;
 import 'package:otp/otp.dart';
 import 'package:test/test.dart';
