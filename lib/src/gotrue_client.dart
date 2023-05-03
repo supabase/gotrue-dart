@@ -15,8 +15,6 @@ import 'package:meta/meta.dart';
 import 'package:rxdart/subjects.dart';
 import 'package:universal_io/io.dart';
 
-import 'types/mfa.dart';
-
 part 'gotrue_mfa_api.dart';
 
 /// {@template gotrue_client}
