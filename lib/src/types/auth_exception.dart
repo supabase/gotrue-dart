@@ -20,3 +20,7 @@ class AuthException implements Exception {
   @override
   int get hashCode => message.hashCode ^ statusCode.hashCode;
 }
+
+class AuthPKCEGrantCodeExchangeError extends AuthException {
+  AuthPKCEGrantCodeExchangeError(String message) : super(message);
+}
