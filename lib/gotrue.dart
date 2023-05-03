@@ -10,3 +10,5 @@ export 'src/types/session.dart';
 export 'src/types/user.dart';
 export 'src/types/user_attributes.dart';
 export 'src/types/auth_state.dart';
+export 'src/types/gotrue_async_storage.dart';
+export 'src/types/oauth_flow_type.dart';

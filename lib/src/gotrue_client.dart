@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import 'package:gotrue/gotrue.dart';
 import 'package:gotrue/src/constants.dart';
 import 'package:gotrue/src/fetch.dart';
+import 'package:gotrue/src/helper.dart';
 import 'package:gotrue/src/types/auth_response.dart';
 import 'package:gotrue/src/types/fetch_options.dart';
 import 'package:http/http.dart';
@@ -18,6 +19,19 @@ import 'types/mfa.dart';
 
 part 'gotrue_mfa_api.dart';
 
+/// {@template gotrue_client}
+/// API client to interact with gotrue server.
+///
+/// [url] URL of gotrue instance
+///
+/// [autoRefreshToken] whether to refresh the token automatically or not. Defaults to true.
+///
+/// [httpClient] custom http client.
+///
+/// [asyncStorage] local storage to store pkce code verifiers. Required when using the pkce flow.
+///
+/// Set [flowType] to `AuthFlowType.pkce` to perform pkce auth flow.
+/// /// {@endtemplate}
 class GoTrueClient {
   /// Namespace for the GoTrue API methods.
   /// These can be used for example to get a user from a JWT in a server environment or reset a user's password.
@@ -45,6 +59,9 @@ class GoTrueClient {
 
   final _onAuthStateChangeController = BehaviorSubject<AuthState>();
 
+  /// Local storage to store pkce code verifiers.
+  final GotrueAsyncStorage? _asyncStorage;
+
   /// Receive a notification every time an auth event happens.
   ///
   /// ```dart
@@ -59,14 +76,21 @@ class GoTrueClient {
   Stream<AuthState> get onAuthStateChange =>
       _onAuthStateChangeController.stream;
 
+  final AuthFlowType _flowType;
+
+  /// {@macro gotrue_client}
   GoTrueClient({
     String? url,
     Map<String, String>? headers,
     bool? autoRefreshToken,
     Client? httpClient,
+    GotrueAsyncStorage? asyncStorage,
+    AuthFlowType flowType = AuthFlowType.implicit,
   })  : _url = url ?? Constants.defaultGotrueUrl,
         _headers = headers ?? {},
-        _httpClient = httpClient {
+        _httpClient = httpClient,
+        _asyncStorage = asyncStorage,
+        _flowType = flowType {
     _autoRefreshToken = autoRefreshToken ?? true;
 
     final gotrueUrl = url ?? Constants.defaultGotrueUrl;
@@ -216,7 +240,7 @@ class GoTrueClient {
     return authResponse;
   }
 
-  /// Log in an existing user via a third-party provider.
+  /// Generates a link to log in an user via a third-party provider.
   Future<OAuthResponse> getOAuthSignInUrl({
     required Provider provider,
     String? redirectTo,
@@ -224,8 +248,49 @@ class GoTrueClient {
     Map<String, String>? queryParams,
   }) async {
     _removeSession();
-    return _handleProviderSignIn(provider,
-        redirectTo: redirectTo, scopes: scopes, queryParams: queryParams);
+    return _handleProviderSignIn(
+      provider,
+      redirectTo: redirectTo,
+      scopes: scopes,
+      queryParams: queryParams,
+    );
+  }
+
+  /// Verifies the PKCE code verifyer and retrieves a session.
+  Future<AuthResponse> exchangeCodeForSession(String authCode) async {
+    assert(_asyncStorage != null,
+        'You need to provide asyncStorage to perform pkce flow.');
+
+    final codeVerifier = await _asyncStorage!
+        .getItem(key: '${Constants.defaultStorageKey}-code-verifier');
+
+    final Map<String, dynamic> response = await _fetch.request(
+      '$_url/token',
+      RequestMethodType.post,
+      options: GotrueRequestOptions(
+        headers: _headers,
+        body: {
+          'auth_code': authCode,
+          'code_verifier': codeVerifier,
+        },
+        query: {
+          'grant_type': 'pkce',
+        },
+      ),
+    );
+
+    await _asyncStorage!
+        .removeItem(key: '${Constants.defaultStorageKey}-code-verifier');
+
+    final authResponse = AuthResponse.fromJson(response);
+
+    final session = authResponse.session;
+    if (session != null) {
+      _saveSession(session);
+      _notifyAllSubscribers(AuthChangeEvent.signedIn);
+    }
+
+    return authResponse;
   }
 
   /// Allows signing in with an ID token issued by certain supported providers.
@@ -302,6 +367,16 @@ class GoTrueClient {
     _removeSession();
 
     if (email != null) {
+      String? codeChallenge;
+      if (_flowType == AuthFlowType.pkce) {
+        assert(_asyncStorage != null,
+            'You need to provide asyncStorage to perform pkce flow.');
+        final codeVerifier = generatePKCEVerifier();
+        await _asyncStorage!.setItem(
+            key: '${Constants.defaultStorageKey}-code-verifier',
+            value: codeVerifier);
+        codeChallenge = generatePKCEChallenge(codeVerifier);
+      }
       await _fetch.request(
         '$_url/otp',
         RequestMethodType.post,
@@ -313,6 +388,8 @@ class GoTrueClient {
             'data': data ?? {},
             'create_user': shouldCreateUser ?? true,
             'gotrue_meta_security': {'captcha_token': captchaToken},
+            'code_challenge': codeChallenge,
+            'code_challenge_method': codeChallenge != null ? 's256' : null,
           },
         ),
       );
@@ -429,11 +506,31 @@ class GoTrueClient {
     return refreshCompleter.future;
   }
 
-  /// Gets the session data from a oauth2 callback URL
+  /// Gets the session data from a magic link or oauth2 callback URL
   Future<AuthSessionUrlResponse> getSessionFromUrl(
     Uri originUrl, {
     bool storeSession = true,
   }) async {
+    if (_flowType == AuthFlowType.pkce) {
+      final authCode = originUrl.queryParameters['code'];
+      if (authCode == null) {
+        throw AuthPKCEGrantCodeExchangeError(
+            'No code detected in query parameters.');
+      }
+      final data = await exchangeCodeForSession(authCode);
+      final session = data.session;
+      if (session == null) {
+        throw AuthPKCEGrantCodeExchangeError(
+            'No session found for the auth code.');
+      }
+
+      if (storeSession == true) {
+        _saveSession(session);
+        _notifyAllSubscribers(AuthChangeEvent.signedIn);
+      }
+
+      return AuthSessionUrlResponse(session: session, redirectType: null);
+    }
     var url = originUrl;
     if (originUrl.hasQuery) {
       final decoded = originUrl.toString().replaceAll('#', '&');
@@ -518,9 +615,22 @@ class GoTrueClient {
     String? redirectTo,
     String? captchaToken,
   }) async {
+    String? codeChallenge;
+    if (_flowType == AuthFlowType.pkce) {
+      assert(_asyncStorage != null,
+          'You need to provide asyncStorage to perform pkce flow.');
+      final codeVerifier = generatePKCEVerifier();
+      await _asyncStorage!.setItem(
+          key: '${Constants.defaultStorageKey}-code-verifier',
+          value: codeVerifier);
+      codeChallenge = generatePKCEChallenge(codeVerifier);
+    }
+
     final body = {
       'email': email,
       'gotrue_meta_security': {'captcha_token': captchaToken},
+      'code_challenge': codeChallenge,
+      'code_challenge_method': codeChallenge != null ? 's256' : null,
     };
 
     final fetchOptions = GotrueRequestOptions(
@@ -581,13 +691,12 @@ class GoTrueClient {
   }
 
   /// return provider url only
-  OAuthResponse _handleProviderSignIn(
+  Future<OAuthResponse> _handleProviderSignIn(
     Provider provider, {
     required String? scopes,
     required String? redirectTo,
     required Map<String, String>? queryParams,
-  }) {
-    // final url = admin.getUrlForProvider(provider, options);
+  }) async {
     final urlParams = {'provider': provider.name};
     if (scopes != null) {
       urlParams['scopes'] = scopes;
@@ -598,8 +707,24 @@ class GoTrueClient {
     if (queryParams != null) {
       urlParams.addAll(queryParams);
     }
-    final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
+    if (_flowType == AuthFlowType.pkce) {
+      assert(_asyncStorage != null,
+          'You need to provide asyncStorage to perform pkce flow.');
+      final codeVerifier = generatePKCEVerifier();
+      await _asyncStorage!.setItem(
+        key: '${Constants.defaultStorageKey}-code-verifier',
+        value: codeVerifier,
+      );
 
+      final codeChallenge = generatePKCEChallenge(codeVerifier);
+      final flowParams = {
+        'flow_type': _flowType.name,
+        'code_challenge': codeChallenge,
+        'code_challenge_method': 's256',
+      };
+      urlParams.addAll(flowParams);
+    }
+    final url = '$_url/authorize?${Uri(queryParameters: urlParams).query}';
     return OAuthResponse(provider: provider, url: url);
   }
 

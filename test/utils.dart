@@ -1,3 +1,5 @@
+import 'package:gotrue/gotrue.dart';
+
 /// Email of a user with unverified factor
 const email1 = 'fake1@email.com';
 
@@ -31,4 +33,22 @@ String getNewPhone() {
   final timestamp =
       (DateTime.now().microsecondsSinceEpoch / (1000 * 1000)).round();
   return '$timestamp';
+}
+
+class TestAsyncStorage extends GotrueAsyncStorage {
+  final Map<String, String> _map = {};
+  @override
+  Future<String?> getItem({required String key}) async {
+    return _map[key];
+  }
+
+  @override
+  Future<void> removeItem({required String key}) async {
+    _map.remove(key);
+  }
+
+  @override
+  Future<void> setItem({required String key, required String value}) async {
+    _map[key] = value;
+  }
 }

@@ -8,6 +8,8 @@ class Constants {
     'X-Client-Info': 'gotrue-dart/$version',
   };
   static const int defaultExpiryMargin = 60 * 1000;
+
+  /// storage key prefix to store code verifiers
   static const String defaultStorageKey = 'supabase.auth.token';
   static const expiryMargin = Duration(seconds: 10);
   static const int maxRetryCount = 10;
