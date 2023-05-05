@@ -91,6 +91,12 @@ class User {
         'app_metadata': appMetadata,
         'user_metadata': userMetadata,
         'aud': aud,
+        'confirmation_sent_at': confirmationSentAt,
+        'recovery_sent_at': recoverySentAt,
+        'email_change_sent_at': emailChangeSentAt,
+        'new_email': newEmail,
+        'invited_at': invitedAt,
+        'action_link': actionLink,
         'email': email,
         'phone': phone,
         'created_at': createdAt,
@@ -101,6 +107,8 @@ class User {
         'last_sign_in_at': lastSignInAt,
         'role': role,
         'updated_at': updatedAt,
+        'identities': identities?.map((identity) => identity.toJson()).toList(),
+        'factors': factors?.map((factor) => factor.toJson()).toList(),
       };
 }
 
@@ -158,6 +166,18 @@ class UserIdentity {
   @override
   String toString() {
     return 'UserIdentity(id: $id, userId: $userId, identityData: $identityData, provider: $provider, createdAt: $createdAt, lastSignInAt: $lastSignInAt, updatedAt: $updatedAt)';
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'identity_data': identityData,
+      'provider': provider,
+      'created_at': createdAt,
+      'last_sign_in_at': lastSignInAt,
+      'updated_at': updatedAt,
+    };
   }
 
   @override
