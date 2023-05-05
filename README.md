@@ -1,5 +1,8 @@
 # `gotrue-dart`
 
+> **Warning**
+> This repository has been moved [here](https://github.com/supabase/supabase-flutter/tree/main/packages/gotrue).
+
 Dart client for the [GoTrue](https://github.com/netlify/gotrue) API.
 
 [![pub package](https://img.shields.io/pub/v/gotrue.svg)](https://pub.dev/packages/gotrue)
