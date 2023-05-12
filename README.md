@@ -1,7 +1,7 @@
 # `gotrue-dart`
 
 > **Warning**
-> This repository has been moved [here](https://github.com/supabase/supabase-flutter/tree/main/packages/gotrue).
+> This repository has been moved [supabase-flutter repo](https://github.com/supabase/supabase-flutter/tree/main/packages/gotrue).
 
 Dart client for the [GoTrue](https://github.com/netlify/gotrue) API.
 
