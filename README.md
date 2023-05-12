@@ -5,9 +5,6 @@
 
 Dart client for the [GoTrue](https://github.com/netlify/gotrue) API.
 
-[![pub package](https://img.shields.io/pub/v/gotrue.svg)](https://pub.dev/packages/gotrue)
-[![pub test](https://github.com/supabase/gotrue-dart/workflows/Test/badge.svg)](https://github.com/supabase/gotrue-dart/actions?query=workflow%3ATest)
-
 ## Using
 
 The usage should be the same as gotrue-js except:
