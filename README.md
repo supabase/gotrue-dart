@@ -1,9 +1,9 @@
 # `gotrue-dart`
 
-Dart client for the [GoTrue](https://github.com/netlify/gotrue) API.
+> **Warning**
+> This repository has been moved to the [supabase-flutter repo](https://github.com/supabase/supabase-flutter/tree/main/packages/gotrue).
 
-[![pub package](https://img.shields.io/pub/v/gotrue.svg)](https://pub.dev/packages/gotrue)
-[![pub test](https://github.com/supabase/gotrue-dart/workflows/Test/badge.svg)](https://github.com/supabase/gotrue-dart/actions?query=workflow%3ATest)
+Dart client for the [GoTrue](https://github.com/netlify/gotrue) API.
 
 ## Using
 
